@@ -2,9 +2,15 @@
 # promptwise's sandbox image installs it with `npm i -g <release asset url>`.
 name: promptwise release
 
+# Push a promptwise-v* tag, or run it by hand with the tag to create on the commit it runs on.
 on:
   push:
     tags: ["promptwise-v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, e.g. promptwise-v1
+        required: true
 
 permissions:
   contents: write
@@ -23,9 +29,10 @@ jobs:
       - run: bun run build
         env:
           VITE_HYPERFRAMES_NO_TELEMETRY: "1"
-      # Published as "hyperframes" upstream (see publish.yml), so the sandbox's paths stay the same.
+      # Upstream publishes the CLI as "hyperframes", so the sandbox's paths stay the same.
       - run: npm pkg set name=hyperframes && npm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/cli
-      - run: gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/hyperframes-*.tgz --title "$GITHUB_REF_NAME" --notes "HyperFrames CLI with the promptwise Studio."
+      - run: gh release create "$TAG" "$RUNNER_TEMP"/hyperframes-*.tgz --target "$GITHUB_SHA" --title "$TAG" --notes "HyperFrames CLI with the promptwise Studio."
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
