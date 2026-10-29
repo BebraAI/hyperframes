@@ -1,7 +1,5 @@
-/** True when Studio runs inside promptwise's Timeline tab. */
-export const embedded = typeof window !== "undefined" && window.parent !== window;
+export const embeddedInPromptwise = typeof window !== "undefined" && window.parent !== window;
 
-/** Asks promptwise to focus its chat, so the user can describe a change to the agent. */
-export function askAgent() {
+export function askPromptwiseAgent() {
   window.parent.postMessage({ type: "promptwise:ask-agent" }, "*");
 }
