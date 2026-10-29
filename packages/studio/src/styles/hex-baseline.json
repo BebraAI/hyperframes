@@ -1,5 +1,5 @@
 {
-  "total": 258,
+  "total": 259,
   "files": {
     "packages/studio/src/captions/components/CaptionOverlay.tsx": 5,
     "packages/studio/src/captions/components/CaptionTimeline.tsx": 11,
@@ -38,6 +38,7 @@
     "packages/studio/src/components/panels/VariablesValueControls.tsx": 2,
     "packages/studio/src/components/sidebar/AudioRow.tsx": 2,
     "packages/studio/src/components/ui/HyperframesMark.tsx": 4,
+    "packages/studio/src/components/ui/Tooltip.tsx": 1,
     "packages/studio/src/hooks/useInlineTextEdit.ts": 1,
     "packages/studio/src/player/components/AudioWaveform.tsx": 2,
     "packages/studio/src/player/components/BeatStrip.tsx": 6,

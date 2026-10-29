@@ -72,7 +72,7 @@ async function loadStylesheet(id: string, base: string) {
 
 /** How Tailwind escapes a candidate into a selector: `\` before each symbol. */
 function asSelector(candidate: string): string {
-  return candidate.replace(/[^a-zA-Z0-9-]/g, (char) => `\\${char}`);
+  return candidate.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
 }
 
 let compileStudioCss: (candidates: string[]) => string;
@@ -171,15 +171,15 @@ describe("value control classes", () => {
     }
   });
 
-  it("boxes every value control, so an input reads as an input", () => {
-    // R10. The three text-shaped controls carry a real border and a background
-    // that differs from the panel behind them.
+  it("fills every text-shaped control, so an input reads as an input", () => {
+    // R10. Input, NumberField and the Select trigger sit on BoardUI's tertiary fill, which differs from the
+    // panel behind them, and ring on hover and focus.
     const host = render(allFive());
-    const boxes = [...host.querySelectorAll(".border-border-input")];
+    const boxes = [...host.querySelectorAll(".bg-background-tertiary-default.ring-inset")];
 
-    expect(boxes.length).toBe(4); // Input, NumberField, Select trigger, Toggle
+    expect(boxes.length).toBe(3);
     for (const box of boxes) {
-      expect([...box.classList]).toContain("bg-input");
+      expect([...box.classList]).toContain("focus-within:ring-border-button-active");
     }
   });
 });

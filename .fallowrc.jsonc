@@ -1,6 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/config-schema.json",
   "entry": [
+    // promptwise: run by hand to sync BoardUI from a bebraai checkout.
+    "packages/studio/scripts/sync-boardui.mjs",
     // IconButton, Tabs and cn are exported before their first consumer exists.
     "packages/studio/src/components/ui/index.ts",
     "packages/producer/src/**/*.test.ts",
@@ -83,6 +85,8 @@
   ],
   "ignorePatterns": [
     "docs/**",
+    // promptwise: BoardUI, copied in whole by packages/studio/scripts/sync-boardui.mjs.
+    "packages/studio/src/boardui/**",
     // Chrome browser binaries downloaded by puppeteer — not project source.
     "chrome/**",
     // Standalone spike scripts and benchmark runners used during R&D.
@@ -429,6 +433,9 @@
     },
   ],
   "ignoreDependencies": [
+    // promptwise: used by src/boardui, which is ignored above as synced code.
+    "react-aria-components",
+    "tailwind-merge",
     // Runtime/dynamic deps not visible to static analysis: tsup `external`,
     // dynamic require() resolution, peer/static-file consumption in tests,
     // and bun-hoisted workspace devDeps (e.g. happy-dom in root package.json

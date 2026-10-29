@@ -7,6 +7,7 @@ import { ContextMenu as BaseContextMenu } from "@base-ui/react/context-menu";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { useRef } from "react";
 import type { ComponentPropsWithoutRef, ElementType, ReactElement, ReactNode } from "react";
+import { IconCheck } from "../../boardui/components/icons";
 import { cn } from "./cn";
 
 /**
@@ -60,7 +61,7 @@ export function floatingMotion(openDuration: "duration-open" | "duration-tooltip
  * Chrome shared by every floating panel (`Popover` too); callers add their own shadow token.
  */
 export const popupSurface = cn(
-  "rounded-lg border border-border-input bg-surface",
+  "rounded-2xl border border-border-button-default bg-background-primary-default",
   floatingMotion("duration-open"),
   "data-[preview-state=open]:opacity-100 data-[preview-state=open]:scale-100",
 );
@@ -68,21 +69,20 @@ export const popupSurface = cn(
 /** Every floating list, menu, popover and tooltip sits on this layer, above panel chrome and modals. */
 export const POPUP_LAYER = "z-200";
 
-const menuPopup = cn(popupSurface, "min-w-36 p-1 shadow-menu");
+const menuPopup = cn(popupSurface, "flex min-w-44 flex-col gap-1 p-2.5 shadow-dropdown");
 
 /** One row. `data-highlighted` is set by keyboard and pointer alike, so the seen row is the Enter row. */
 const itemBase = cn(
-  "flex cursor-default select-none items-center justify-between gap-6 rounded-sm px-2 py-1.5",
-  "text-step-11 whitespace-nowrap text-text-1",
-  "outline-hidden transition-colors ease-out-quint duration-hover",
-  "data-[highlighted]:bg-hover data-[highlighted]:text-text-0",
-  "data-[preview-state=hover]:bg-hover data-[preview-state=hover]:text-text-0",
-  "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+  "flex cursor-pointer select-none items-center justify-between gap-6 rounded-2lg p-2",
+  "text-body-medium whitespace-nowrap text-text-primary",
+  "outline-hidden transition-colors",
+  "[&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-foreground-icon-secondary",
+  "data-[highlighted]:bg-dropdown-item-hover-background",
+  "data-[preview-state=hover]:bg-dropdown-item-hover-background",
+  "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 );
 
-const itemDanger = cn(
-  "text-danger-ink data-[highlighted]:bg-danger/15 data-[highlighted]:text-danger-ink",
-);
+const itemDanger = cn("text-text-destructive [&_svg]:text-foreground-icon-error");
 
 export type MenuItemTone = "default" | "danger";
 
@@ -192,7 +192,7 @@ export function ContextMenu({
 export function MenuShortcut({ className, ...props }: StyledProps<"span">) {
   return (
     <span
-      className={cn("shrink-0 font-mono text-step-10 tabular-nums text-text-4", className)}
+      className={cn("shrink-0 text-caption-1-medium tabular-nums text-text-tertiary", className)}
       aria-hidden="true"
       {...props}
     />
@@ -233,7 +233,7 @@ export function MenuRadioItem({ className, children, ...props }: MenuRadioItemPr
       <span className="truncate">{children}</span>
       {/* Fixed box so a checked and an unchecked row keep the same width. */}
       <span className="flex size-3 shrink-0 items-center justify-center">
-        <BaseMenu.RadioItemIndicator className="size-1.5 rounded-full bg-accent" />
+        <BaseMenu.RadioItemIndicator className="size-1.5 rounded-full bg-accent-500" />
       </span>
     </BaseMenu.RadioItem>
   );
@@ -248,8 +248,10 @@ export function MenuCheckboxItem({
   return (
     <BaseMenu.CheckboxItem className={cn(itemBase, className)} {...props}>
       <span className="truncate">{children}</span>
-      <span className="flex size-3 shrink-0 items-center justify-center text-accent-ink">
-        <BaseMenu.CheckboxItemIndicator>✓</BaseMenu.CheckboxItemIndicator>
+      <span className="flex size-4 shrink-0 items-center justify-center text-text-primary">
+        <BaseMenu.CheckboxItemIndicator>
+          <IconCheck />
+        </BaseMenu.CheckboxItemIndicator>
       </span>
     </BaseMenu.CheckboxItem>
   );
@@ -257,5 +259,10 @@ export function MenuCheckboxItem({
 
 /** A hairline between two groups of items. */
 export function MenuSeparator({ className, ...props }: StyledProps<typeof BaseMenu.Separator>) {
-  return <BaseMenu.Separator className={cn("my-1 h-px bg-hairline", className)} {...props} />;
+  return (
+    <BaseMenu.Separator
+      className={cn("-mx-2.5 my-1 h-px shrink-0 bg-border-button-default", className)}
+      {...props}
+    />
+  );
 }

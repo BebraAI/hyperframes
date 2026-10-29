@@ -30,7 +30,10 @@ export function TabsList({ className, ...props }: StyledProps<typeof BaseTabs.Li
     <BaseTabs.List
       // Arrow keys move selection, matching today's sidebar strip.
       activateOnFocus
-      className={cn("inline-flex items-center gap-0.5 rounded-lg bg-surface-alt p-1", className)}
+      className={cn(
+        "inline-flex items-center gap-0.5 rounded-2lg bg-segmented-control-background p-1",
+        className,
+      )}
       {...props}
     />
   );
@@ -51,13 +54,13 @@ export function Tab({ value, className, ...props }: TabProps) {
       value={value}
       data-tab-id={value}
       className={cn(
-        "inline-flex h-ctl-sm cursor-pointer select-none items-center justify-center rounded-sm px-2.5",
-        "text-step-11 font-semibold whitespace-nowrap text-text-3",
-        "transition-[background-color,color] ease-out-quint duration-hover",
-        "hover:text-text-1 data-[preview-state=hover]:text-text-1",
-        "aria-selected:bg-hover aria-selected:text-text-0",
-        "outline-hidden focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent",
-        "data-[preview-state=focus]:outline-solid data-[preview-state=focus]:outline-2 data-[preview-state=focus]:outline-offset-1 data-[preview-state=focus]:outline-accent",
+        "inline-flex cursor-pointer select-none items-center justify-center rounded-md px-2.5 py-1",
+        "text-body-regular whitespace-nowrap text-text-secondary",
+        "transition-colors duration-200",
+        "hover:text-text-primary data-[preview-state=hover]:text-text-primary",
+        "aria-selected:bg-segmented-control-selected-background aria-selected:text-body-medium aria-selected:text-text-primary aria-selected:shadow-2xs",
+        "outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+        "data-[preview-state=focus]:ring-2 data-[preview-state=focus]:ring-border-focus-ring",
         className,
       )}
       {...props}
