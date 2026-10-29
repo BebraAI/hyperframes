@@ -320,6 +320,8 @@ export default defineConfig({
       // openComposition and silently loses its SDK session. See the stub.
       canvas: resolve(__dirname, "src/shims/canvasBrowserStub.js"),
       "@hyperframes/player": resolve(__dirname, "../player/src/hyperframes-player.ts"),
+      // promptwise: Remix icons under Phosphor's names (src/promptwise/phosphor-remix.tsx).
+      "@phosphor-icons/react": resolve(__dirname, "src/promptwise/phosphor-remix.tsx"),
       "@hyperframes/studio-server/source-mutation": resolve(
         __dirname,
         "../studio-server/src/helpers/sourceMutation.ts",

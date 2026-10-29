@@ -23,11 +23,12 @@ function renderInto(node: React.ReactElement) {
 }
 
 describe("PropertyPanelEmptyState — flat empty", () => {
-  it("shows the cursor glyph, headline, and the two shortcut rows", () => {
+  it("shows the cursor glyph, headline, and the gesture row", () => {
     const { host, root } = renderInto(<PropertyPanelEmptyState flat multiSelectCount={0} />);
     expect(host.textContent).toContain("Nothing selected");
     expect(host.textContent).toContain("Record a gesture");
-    expect(host.textContent).toContain("Describe a change to the agent");
+    // The agent chip only shows inside promptwise, whose chat it opens.
+    expect(host.textContent).not.toContain("Describe a change to the agent");
     act(() => root.unmount());
   });
 });

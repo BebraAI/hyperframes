@@ -1,0 +1,31 @@
+# Builds the CLI (with our Studio) as an npm tarball and attaches it to a GitHub release.
+# promptwise's sandbox image installs it with `npm i -g <release asset url>`.
+name: promptwise release
+
+on:
+  push:
+    tags: ["promptwise-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      # Studio checks this at build time; the sandbox sets HYPERFRAMES_NO_TELEMETRY for the CLI.
+      - run: bun run build
+        env:
+          VITE_HYPERFRAMES_NO_TELEMETRY: "1"
+      # Published as "hyperframes" upstream (see publish.yml), so the sandbox's paths stay the same.
+      - run: npm pkg set name=hyperframes && npm pack --pack-destination "$RUNNER_TEMP"
+        working-directory: packages/cli
+      - run: gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/hyperframes-*.tgz --title "$GITHUB_REF_NAME" --notes "HyperFrames CLI with the promptwise Studio."
+        env:
+          GH_TOKEN: ${{ github.token }}

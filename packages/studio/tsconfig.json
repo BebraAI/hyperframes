@@ -4,7 +4,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "@hyperframes/player": ["../player/src/hyperframes-player.ts"]
+      "@hyperframes/player": ["../player/src/hyperframes-player.ts"],
+      "@phosphor-icons/react": ["./src/promptwise/phosphor-remix.tsx"]
     },
     "jsx": "react-jsx",
     "strict": true,

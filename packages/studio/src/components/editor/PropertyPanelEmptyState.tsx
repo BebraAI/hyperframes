@@ -2,6 +2,7 @@ import { Eye, Layers } from "../../icons/SystemIcons";
 import type { DomEditSelection } from "./domEditingTypes";
 import { canHideSelections } from "../../utils/timelineInspector";
 import { useTrackDesignInput } from "../../contexts/DesignPanelInputContext";
+import { askPromptwiseAgent, embeddedInPromptwise } from "../../promptwise/embed";
 
 function FlatEmptyState() {
   return (
@@ -32,15 +33,16 @@ function FlatEmptyState() {
             R
           </span>
         </span>
-        <span className="flex items-center justify-between rounded-lg border border-panel-border bg-panel-bg px-3 py-2">
-          <span className="flex items-center gap-2 text-[11px] text-panel-text-2">
+        {embeddedInPromptwise && (
+          <button
+            type="button"
+            onClick={askPromptwiseAgent}
+            className="flex items-center gap-2 rounded-lg border border-panel-border bg-panel-bg px-3 py-2 text-[11px] text-panel-text-2 hover:bg-hover"
+          >
             <span className="text-accent-ink">✦</span>
             Describe a change to the agent
-          </span>
-          <span className="rounded-sm border border-panel-border-input px-[5px] py-px font-mono text-[9px] text-panel-text-5">
-            ⌘K
-          </span>
-        </span>
+          </button>
+        )}
       </div>
     </div>
   );

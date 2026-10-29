@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { IconContext } from "@phosphor-icons/react";
 import { StudioApp } from "./App";
 import { ShowThemeToggle } from "./components/ThemeToggle";
+import { embeddedInPromptwise } from "./promptwise/embed";
 import { StudioErrorBoundary } from "./components/StudioErrorBoundary";
 import { readIconTokens } from "./styles/iconTokens";
 import { trackStudioEvent } from "./utils/studioTelemetry";
@@ -116,7 +117,7 @@ createRoot(document.getElementById("root")!).render(
         Icons that pass their own size or weight still win. */}
     <IconContext.Provider value={readIconTokens()}>
       <StudioErrorBoundary>
-        <ShowThemeToggle.Provider value>
+        <ShowThemeToggle.Provider value={!embeddedInPromptwise}>
           <StudioApp />
         </ShowThemeToggle.Provider>
       </StudioErrorBoundary>
