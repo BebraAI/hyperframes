@@ -6,12 +6,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>promptwise Timeline</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
     <script>
       // Before the first paint: promptwise passes its theme as ?theme=light|dark; else the theme the toggle saved, else light (owner: src/utils/studioTheme.ts).
       try {
         var asked = new URLSearchParams(location.search).get("theme");
-        if (asked ? asked !== "dark" : JSON.parse(localStorage.getItem("hf-studio-ui-preferences") || "{}").theme !== "dark")
+        if (
+          asked
+            ? asked !== "dark"
+            : JSON.parse(localStorage.getItem("hf-studio-ui-preferences") || "{}").theme !== "dark"
+        )
           document.documentElement.dataset.theme = "paper";
       } catch (e) {
         document.documentElement.dataset.theme = "paper";
