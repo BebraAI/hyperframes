@@ -12,7 +12,7 @@ import { recordBreadcrumb } from "./breadcrumbs";
 import { studioApiFetch } from "../utils/studioApiFetch";
 
 // Write-only PostHog project key, safe to embed in client code.
-const POSTHOG_API_KEY = "";
+const POSTHOG_API_KEY = "phc_zjjbX0PnWxERXrMHhkEJWj9A9BhGVLRReICgsfTMmpx";
 const POSTHOG_HOST = "https://us.i.posthog.com";
 const FLUSH_INTERVAL_MS = 1_000;
 

@@ -33,3 +33,9 @@
   --timeline-clip-label-active: light-dark(#441608, #fff5f1);
   --timeline-clip-selection: light-dark(#c4471a, rgba(255, 255, 255, 0.85));
 }
+
+/* Inter sets the dock's tab labels wider than the system font, so the tabs keep a little less padding to fit
+ * the left group's four at its default width (scripts/studio-runtime-smoke.mjs checks it). */
+.hf-dock .dv-tab.dv-tab {
+  padding: 0 4px;
+}

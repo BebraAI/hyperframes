@@ -19,7 +19,10 @@ jobs:
         with:
           node-version: 22
       - run: bun install --frozen-lockfile
+      # Studio checks this at build time; the sandbox sets HYPERFRAMES_NO_TELEMETRY for the CLI.
       - run: bun run build
+        env:
+          VITE_HYPERFRAMES_NO_TELEMETRY: "1"
       # Published as "hyperframes" upstream (see publish.yml), so the sandbox's paths stay the same.
       - run: npm pkg set name=hyperframes && npm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/cli

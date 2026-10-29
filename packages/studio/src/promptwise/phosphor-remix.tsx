@@ -3,6 +3,7 @@
 import {
   createContext,
   forwardRef,
+  useContext,
   type ForwardRefExoticComponent,
   type RefAttributes,
   type SVGProps,
@@ -21,14 +22,17 @@ export type Icon = ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGEle
 
 type Remix = typeof Ri.RiAddLine;
 
+/** Phosphor's context for default props (size, weight) of the icons under it. */
+export const IconContext = createContext<IconProps>({});
+
 /** Phosphor's weight and mirroring props have no Remix twin; `fill` picks the filled icon when there is one. */
 function icon(line: Remix, fill = line): Icon {
   return forwardRef<SVGSVGElement, IconProps>(function RemixIcon(
     {
-      weight,
+      weight: ownWeight,
       mirrored,
       alt,
-      size = "1em",
+      size: ownSize,
       style,
       width: _width,
       height: _height,
@@ -39,7 +43,10 @@ function icon(line: Remix, fill = line): Icon {
     },
     _ref,
   ) {
-    const Shape = weight === "fill" ? fill : line;
+    // Like Phosphor, a prop the icon doesn't set comes from IconContext.
+    const defaults = useContext(IconContext);
+    const size = ownSize ?? defaults.size ?? "1em";
+    const Shape = (ownWeight ?? defaults.weight) === "fill" ? fill : line;
     const flip = mirrored ? { transform: "scaleX(-1)", ...style } : style;
     return (
       <Shape
@@ -52,9 +59,6 @@ function icon(line: Remix, fill = line): Icon {
     );
   });
 }
-
-/** Phosphor's context for default props; Remix has none, so it only carries them through. */
-export const IconContext = createContext<IconProps>({});
 
 export const Aperture = icon(Ri.RiCameraLensLine, Ri.RiCameraLensFill);
 export const ArrowClockwise = icon(Ri.RiArrowGoForwardLine);
