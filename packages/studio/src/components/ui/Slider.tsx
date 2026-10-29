@@ -130,20 +130,21 @@ export function Slider({
           abort();
         }}
       >
-        <BaseSlider.Track className="h-0.5 w-full rounded-full bg-hover">
-          <BaseSlider.Indicator className="rounded-full bg-text-5" />
+        <BaseSlider.Track className="h-1.5 w-full rounded-full bg-background-tertiary-default shadow-[inset_0_1px_1px_rgb(0_0_0/0.06)]">
+          <BaseSlider.Indicator className="rounded-full bg-linear-to-r from-accent-500 to-accent-600" />
           <BaseSlider.Thumb
             aria-label={label}
             className={cn(
               // The ring separates the thumb from the track behind it. A drop
               // shadow would need a raw colour literal, which R5 does not allow
               // outside the token file, and no shadow token fits a 10px dot.
-              "size-2.5 rounded-full bg-text-0 ring-2 ring-bg-1",
+              "flex size-4 items-center justify-center rounded-full border border-border-button-default bg-control-indicator-background shadow-xs",
               "cursor-grab active:cursor-grabbing data-[preview-state=active]:cursor-grabbing",
               "hover:scale-110 data-[preview-state=hover]:scale-110",
+              "after:size-1.5 after:rounded-full after:bg-linear-to-b after:from-accent-500 after:to-accent-600",
               "transition-transform ease-standard duration-hover",
-              "has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
-              "data-[preview-state=focus]:outline-solid data-[preview-state=focus]:outline-2 data-[preview-state=focus]:outline-offset-2 data-[preview-state=focus]:outline-accent",
+              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-border-focus-ring has-[:focus-visible]:ring-offset-2",
+              "data-[preview-state=focus]:ring-2 data-[preview-state=focus]:ring-border-focus-ring data-[preview-state=focus]:ring-offset-2",
             )}
           />
         </BaseSlider.Track>

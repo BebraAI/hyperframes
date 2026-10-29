@@ -89,12 +89,19 @@ export function Popover({
             aria-label={ariaLabel}
             initialFocus={initialFocus}
             data-preview-state={previewState}
-            className={cn(popupSurface, "p-3 text-step-11 text-text-1 shadow-popover", className)}
+            className={cn(
+              popupSurface,
+              "p-3 text-body-medium text-text-primary shadow-dropdown",
+              className,
+            )}
           >
             {arrow && (
               <BasePopover.Arrow className={arrowPlace}>
                 <svg width="14" height="8" viewBox="0 0 14 8" aria-hidden="true" className="block">
-                  <path d="M0 8 L7 1 L14 8" className="fill-surface stroke-border-input" />
+                  <path
+                    d="M0 8 L7 1 L14 8"
+                    className="fill-background-primary-default stroke-border-button-default"
+                  />
                 </svg>
               </BasePopover.Arrow>
             )}

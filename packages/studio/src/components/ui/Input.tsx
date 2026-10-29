@@ -13,24 +13,20 @@ import type { PreviewState } from "./Button";
  * twice, real and `data-[preview-state=...]`; `valueControls.test.tsx` asserts the lists match.
  */
 export const fieldBase = cn(
-  "flex min-w-0 items-center gap-1.5 h-ctl px-2 rounded-md",
-  "bg-input border border-border-input text-step-11 font-medium text-text-1",
-  "transition-[border-color,background-color] ease-standard duration-focus",
-  "hover:border-border-strong data-[preview-state=hover]:border-border-strong",
+  "flex min-w-0 items-center gap-1.5 h-8 px-1.5 rounded-2lg",
+  "bg-background-tertiary-default text-body-regular text-text-primary",
+  "ring-2 ring-inset ring-transparent transition-[background-color,box-shadow,color] duration-150",
+  "hover:ring-border-button-hover data-[preview-state=hover]:ring-border-button-hover",
   "outline-hidden",
-  "focus-within:outline-solid focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent",
-  "data-[preview-state=focus]:outline-solid data-[preview-state=focus]:outline-2 data-[preview-state=focus]:outline-offset-1 data-[preview-state=focus]:outline-accent",
-  // `aria-invalid` is not one of Tailwind's built-in aria variants, so the
-  // arbitrary form is the one that compiles. The token gate would have caught
-  // the bare `aria-invalid:` spelling as a class that resolves to nothing.
-  "aria-[invalid]:border-danger-ink",
-  "has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed",
+  "focus-within:ring-border-button-active data-[preview-state=focus]:ring-border-button-active",
+  // `aria-invalid` is not one of Tailwind's built-in aria variants, so the arbitrary form is the one that compiles.
+  "aria-[invalid]:bg-background-tertiary-error aria-[invalid]:ring-transparent",
+  "has-[:disabled]:bg-input-disabled-background has-[:disabled]:text-input-disabled-text has-[:disabled]:cursor-not-allowed",
 );
 
-/** The text itself, inside the box. The box owns the border and the ring. */
 export const fieldText = cn(
   "min-w-0 w-full bg-transparent text-inherit outline-hidden",
-  "placeholder:text-text-5 disabled:cursor-not-allowed",
+  "placeholder:text-text-tertiary disabled:cursor-not-allowed",
 );
 
 export interface InputProps extends Omit<

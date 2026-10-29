@@ -28,6 +28,7 @@ export interface NumberFieldProps {
   "data-preview-state"?: PreviewState;
 }
 
+// fallow-ignore-next-line complexity
 export function NumberField({
   label,
   value,
@@ -112,7 +113,10 @@ export function NumberField({
           }}
         />
         {unit && (
-          <span className="shrink-0 select-none text-step-10 text-text-4" aria-hidden="true">
+          <span
+            className="shrink-0 select-none text-caption-1-medium text-text-tertiary"
+            aria-hidden="true"
+          >
             {unit}
           </span>
         )}

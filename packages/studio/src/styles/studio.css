@@ -1,6 +1,9 @@
 @import "tailwindcss" source(none);
 @import "./palette-reset.css";
 @import "./theme.css";
+@import "../boardui/styles/theme.css";
+@import "../boardui/styles/typography.css";
+@import "../promptwise/boardui.css";
 @import "../promptwise/theme.css";
 @import "./components.css";
 

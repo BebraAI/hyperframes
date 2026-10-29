@@ -173,7 +173,7 @@ it("keeps Capture a real download link rather than a button", () => {
   expect(capture.tagName).toBe("A");
   expect(capture.getAttribute("download")).toBe("frame.png");
   // h-full replaces the md height: the group's own h-ctl sets the shared control height.
-  expectRecipe(capture, "px-3", "text-step-12");
+  expectRecipe(capture, "px-2", "text-body-medium");
 });
 
 it("classifies the new header controls for the hotkey filters as the old ones were (KTD13)", () => {

@@ -1,10 +1,8 @@
-/**
- * IconButton — Button's square sibling; shares its base/variant classes so
- * the two never drift. `aria-label` is required for screen readers.
- */
+/** IconButton — Button's square sibling on BoardUI's icon-only sizes. `aria-label` is required. */
 
 import { forwardRef } from "react";
 import type { ReactNode } from "react";
+import { buttonStyles } from "../../boardui/components/base/buttons/button";
 import { buttonBase, buttonVariants, type ButtonBaseProps, type ButtonSize } from "./Button";
 import { cn } from "./cn";
 
@@ -13,11 +11,10 @@ interface IconButtonProps extends ButtonBaseProps {
   "aria-label": string;
 }
 
-/** Square boxes on the same 24 / 28 / 32 px control heights as Button. */
 const iconSizeStyles: Record<ButtonSize, string> = {
-  sm: "size-ctl-sm rounded-sm",
-  md: "size-ctl rounded-md",
-  lg: "size-ctl-lg rounded-md",
+  sm: cn(buttonStyles.size.xs, buttonStyles.iconOnlySize.xs, "[&_svg]:size-3.5"),
+  md: cn(buttonStyles.size.small, buttonStyles.iconOnlySize.small, "[&_svg]:size-4"),
+  lg: cn(buttonStyles.size.medium, "size-9 p-0 [&_svg]:size-5"),
 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -25,6 +22,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     return (
       <button
         ref={ref}
+        type="button"
         disabled={disabled}
         aria-disabled={disabled || undefined}
         className={cn(buttonBase, buttonVariants[variant], iconSizeStyles[size], className)}

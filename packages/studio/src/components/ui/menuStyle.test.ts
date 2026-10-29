@@ -28,12 +28,13 @@ const files = sources(root).map((path) => ({
 }));
 
 describe("menu style", () => {
-  it("adds no padding or margin around a menu's rows", () => {
-    for (const key of ["panel", "group", "divider"] as const)
-      expect(menuClasses[key], key).not.toMatch(spacing);
+  it("pads the panel and rounds its rows, as BoardUI's menu does", () => {
+    expect(menuClasses.panel).toMatch(/(^| )p-2\.5( |$)/);
+    expect(menuClasses.row).toMatch(/(^| )rounded-2lg( |$)/);
+    expect(menuClasses.group, "group").not.toMatch(spacing);
   });
 
-  it("clips the panel to its own rounded corners, so a highlight never pokes out of them", () => {
+  it("clips the panel to its own rounded corners", () => {
     expect(menuClasses.panel).toContain("overflow-hidden");
     expect(menuClasses.panel).toMatch(/(^| )rounded-/);
   });

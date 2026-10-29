@@ -1,5 +1,5 @@
 /**
- * Tooltip: Base UI's tooltip in Studio tokens. The trigger is a box-less
+ * Tooltip: BoardUI's tooltip surface and caret on Base UI's behaviour. The trigger is a box-less
  * `display: contents` wrapper so a disabled control still gets hover.
  */
 
@@ -12,6 +12,7 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
+import { TOOLTIP_CARETS } from "../../boardui/components/base/tooltip/tooltip";
 import { cn } from "./cn";
 import { floatingMotion, POPUP_LAYER } from "./Menu";
 
@@ -28,8 +29,16 @@ interface TooltipProps {
 }
 
 /** Matches the old bubble's gap from its trigger, and its viewport margin. */
-const SIDE_OFFSET = 6;
+const SIDE_OFFSET = 10;
 const VIEWPORT_MARGIN = 8;
+
+/** Sets the caret on the popup's edge facing the trigger, over its border. */
+const ARROW_PLACEMENT = {
+  top: "top-full -mt-px",
+  bottom: "bottom-full -mb-px",
+  left: "left-full -ml-px",
+  right: "right-full -mr-px",
+};
 
 export function Tooltip({
   label,
@@ -62,11 +71,35 @@ export function Tooltip({
             id={tooltipId}
             role="tooltip"
             className={cn(
-              "pointer-events-none rounded-md border border-border-input bg-surface px-2 py-1 text-step-10 font-medium text-text-1 shadow-menu",
+              "pointer-events-none select-none rounded-lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-caption-1-medium text-text-primary shadow-dropdown",
               lines ? "max-w-[300px] whitespace-normal break-words" : "whitespace-nowrap",
               floatingMotion("duration-tooltip"),
             )}
           >
+            <BaseTooltip.Arrow
+              render={({ className: _className, ...arrowProps }, { side: placed }) => {
+                const caret =
+                  TOOLTIP_CARETS[placed as keyof typeof TOOLTIP_CARETS] ?? TOOLTIP_CARETS.top;
+                return (
+                  <svg
+                    {...arrowProps}
+                    width={caret.width}
+                    height={caret.height}
+                    viewBox={`0 0 ${caret.width} ${caret.height}`}
+                    className={cn(
+                      "block overflow-visible fill-background-primary-default stroke-border-button-default",
+                      ARROW_PLACEMENT[placed as keyof typeof ARROW_PLACEMENT],
+                    )}
+                    style={{
+                      ...arrowProps.style,
+                      filter: `drop-shadow(${caret.shadow} rgb(0 0 0 / 0.05))`,
+                    }}
+                  >
+                    <path d={caret.path} />
+                  </svg>
+                );
+              }}
+            />
             {lines ? (
               <span
                 className="line-clamp-(--tooltip-lines)"

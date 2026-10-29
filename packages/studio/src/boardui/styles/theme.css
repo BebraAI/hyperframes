@@ -1,0 +1,1085 @@
+/* ---------------------------------------------------------------------------
+ * BoardUI theme tokens
+ *
+ * Layered as Tailwind v4 expects:
+ *   @theme { ... }     primitives + ramp overrides → Tailwind utilities
+ *   :root { ... }      semantic tokens (light mode) — reference primitives
+ *   .dark { ... }      semantic overrides (dark mode) — landed when designed
+ *   @theme inline {..} re-export of semantic tokens so they become utilities
+ *
+ * See docs/FIGMA_WORKFLOW.md for how tokens get added (Figma is source of truth).
+ * --------------------------------------------------------------------------- */
+
+@theme {
+  /* ----- Color primitives ----------------------------------------------------
+   * Almost the entire palette matches Tailwind v4's OKLCH defaults. The four
+   * overrides below are the only intentional deviations (see Figma → variables
+   * → color/...).
+   * --------------------------------------------------------------------------*/
+  --bui-slate-200:   #ebeff5;
+  --bui-neutral-100: #f7f7f7;
+  --bui-neutral-200: #ebebeb;
+  --bui-neutral-925: #121212;
+  --bui-blue-400:    #3392ff;
+
+  /* ----- Accent ramp ---------------------------------------------------------
+   * The CTA hue. Interactive/selection surfaces (primary button gradient,
+   * ghost + link buttons, checkbox, radio, switch, slider, tabs, sidebar
+   * selected, focus ring, date-range selection) reference accent-* instead of
+   * a raw hue, so the whole system re-tints by overriding these eleven
+   * variables at runtime (see components/application/theme/accent.ts) or in
+   * a customer project after importing this file. Set to the logo's orange,
+   * which the logo mark itself also reads. Content/data blues (charts, status
+   * chips, calendar events, info notifications) deliberately keep blue-*.
+   * --------------------------------------------------------------------------*/
+  --color-accent-50:  #fff5f1;
+  --color-accent-100: #ffe8df;
+  --color-accent-200: #ffd0bf;
+  --color-accent-300: #ffb295;
+  --color-accent-400: #ff946c;
+  --color-accent-500: #ff7948;
+  --color-accent-600: #ec5f2c;
+  --color-accent-700: #c4471a;
+  --color-accent-800: #9c3916;
+  --color-accent-900: #7d3115;
+  --color-accent-950: #441608;
+
+  /* ----- Typography ----------------------------------------------------------
+   * Font sizes, weights, line-heights, and tracking all match Tailwind v4
+   * defaults. The only override is the family: Inter, loaded via next/font
+   * in app/layout.tsx, which exposes --font-inter to the document.
+   * --------------------------------------------------------------------------*/
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif,
+               "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+               "Noto Color Emoji";
+
+  /* Monospace ramp for code blocks. Loaded via next/font in app/layout.tsx
+   * (--font-mono-source → JetBrains Mono). Figma's spec uses IBM Plex Mono;
+   * JetBrains Mono is the closest already-bundled face. */
+  --font-mono: var(--font-mono-source), ui-monospace, "SFMono-Regular", Menlo,
+               Consolas, "Liberation Mono", monospace;
+
+  /* ----- Radii ---------------------------------------------------------------
+   * Extra step between lg (8) and xl (12). Used by medium-size buttons.
+   * Figma name: radius/2lg.
+   * --------------------------------------------------------------------------*/
+  --radius-2lg: 10px;
+  /* Figma `radius/2,5xl`: kanban columns and other large inset panels. */
+  --radius-2-5xl: 20px;
+  --radius-notification-card: 10px;
+
+  /* ----- Shadows -------------------------------------------------------------
+   * 2xs, xs, 2xl and the inner shadows already match Tailwind v4. Sizes sm, md,
+   * lg, xl follow the Figma 6%/10% recipe (slightly softer than Tailwind v4's
+   * 10%/10% default).
+   * --------------------------------------------------------------------------*/
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 1px 3px 0 rgb(0 0 0 / 0.10);
+  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.06), 0 4px 6px -1px rgb(0 0 0 / 0.10);
+  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 0.05), 0 10px 15px -3px rgb(0 0 0 / 0.10);
+  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 0.04), 0 20px 25px -5px rgb(0 0 0 / 0.10);
+
+  /* Figma effect style "Background/Sidebar Elevation" — copied 1:1:
+   *   DROP_SHADOW #00000005 offset(0,1) radius 0  spread 0  → 0 1px 0px  0 / 0.0196
+   *   DROP_SHADOW #0000000F offset(0,1) radius 12 spread 0  → 0 1px 12px 0 / 0.0588
+   *   DROP_SHADOW #00000052 offset(0,0) radius 1  spread 0  → 0 0   1px  0 / 0.3216
+   * (alpha = hex byte / 255: 05→0.0196, 0F→0.0588, 52→0.3216). */
+  --shadow-sidebar:
+    0 1px 0 0 rgb(0 0 0 / 0.0196),
+    0 1px 12px 0 rgb(0 0 0 / 0.0588),
+    0 0 1px 0 rgb(0 0 0 / 0.3216);
+
+  /* Figma effect style "Sidebar selected" — copied 1:1:
+   *   DROP_SHADOW  color/blue/500 offset(0,0) radius 0 spread 1 → 0 0 0 1px blue-500
+   *   INNER_SHADOW #FFFFFF40       offset(0,1) radius 0 spread 0 → inset 0 1px 0 0 / 0.251
+   * (#FFFFFF40 alpha = 0x40/255 = 0.251). */
+  --shadow-nav-selected:
+    0 0 0 1px var(--color-accent-500),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.251);
+
+  /* Checkbox checked/indeterminate surface (from the Figma Checkbox component):
+   * inner top highlight + 1px inner blue edge over the primary gradient. */
+  --shadow-checkbox-selected:
+    inset 0 2px 0 0 rgb(255 255 255 / 0.25),
+    inset 0 0 0 1px var(--color-accent-500);
+
+  /* 1px contact shadow used on white cards/dropdown triggers sitting on the
+   * secondary background (Figma drop shadow 0 1 1 5%). */
+  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 0.05);
+
+  /* Floating menu/dropdown panel (Figma → sidebar profile menu node 3823:3699):
+   *   DROP_SHADOW #0000000A offset(0,1) radius 1 → 0 1px 1px 0 / 0.04
+   *   DROP_SHADOW #00000005 offset(0,4) radius 4 → 0 4px 4px 0 / 0.02 */
+  --shadow-dropdown:
+    0 1px 1px 0 rgb(0 0 0 / 0.04),
+    0 4px 4px 0 rgb(0 0 0 / 0.02);
+
+  /* Floating template waitlist (Figma node 4117:32737). This extends the
+   * sidebar elevation recipe with the two broad ambient layers used by the
+   * signup surface. */
+  --shadow-waitlist:
+    0 0 6px 0 rgb(0 0 0 / 0.06),
+    0 0 64px 0 rgb(0 0 0 / 0.16),
+    0 0 1px 0 rgb(0 0 0 / 0.32),
+    0 1px 12px 0 rgb(0 0 0 / 0.06),
+    0 1px 0 0 rgb(0 0 0 / 0.02);
+
+  /* Inner shadows (Figma names inner-shadow/*; Tailwind utility prefix is
+   * inset-shadow-*).
+   */
+  --inset-shadow-2xs: inset 0 1px 0 0 rgb(0 0 0 / 0.05);
+  --inset-shadow-xs:  inset 0 1px 1px 0 rgb(0 0 0 / 0.05);
+  --inset-shadow-sm:  inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+}
+
+/* ---------------------------------------------------------------------------
+ * Semantic tokens — light mode.
+ *
+ * All values reference primitives via var(--color-{family}-{shade}). Edit the
+ * primitives in @theme above and these update automatically.
+ *
+ * Figma name on the left, var name on the right:
+ *   foreground/full                  → --color-foreground-full
+ *   foreground/icon/primary          → --color-foreground-icon-primary
+ *   foreground/disabled              → --color-foreground-disabled
+ *   foreground/disabled-danger       → --color-foreground-disabled-danger
+ *   text/primary                     → --color-text-primary
+ *   text/tertiary                    → --color-text-tertiary
+ *   text/disabled-danger             → --color-text-disabled-danger
+ *   background/primary/default       → --color-background-primary-default
+ *   background/primary/hover         → --color-background-primary-hover
+ *   background/primary/active        → --color-background-primary-active
+ *   background/primary/disabled      → --color-background-primary-disabled
+ *   background/secondary/default     → --color-background-secondary-default
+ *   border/button/default            → --color-border-button-default
+ *   border/button/hover              → --color-border-button-hover
+ *   border/button/active             → --color-border-button-active
+ *
+ * Button gradients (linear, 180°, light stop → dark stop) sourced from the
+ * blue/red primitives that each Button/{type}/{state} style references in
+ * Figma. Direction inferred — confirm visually against Figma.
+ * --------------------------------------------------------------------------- */
+:root {
+  /* Foreground (icons + on-fill content) */
+  --color-foreground-full:               var(--color-white);
+  --color-foreground-icon-primary:       var(--bui-neutral-950);
+  --color-foreground-icon-hover:         var(--color-black);
+  --color-foreground-icon-secondary:     var(--bui-neutral-500);
+  --color-foreground-icon-tertiary:      var(--bui-neutral-400);
+  --color-foreground-icon-quaternary:    var(--bui-neutral-300);
+  --color-foreground-icon-error:         var(--bui-red-600);
+  --color-foreground-icon-disabled:      var(--bui-neutral-300);
+  --color-foreground-disabled:           var(--bui-neutral-400);
+  --color-foreground-disabled-danger:    var(--bui-red-300);
+  --color-input-disabled-foreground:     var(--bui-neutral-300);
+  --color-icon-button-disabled-foreground: var(--bui-neutral-300);
+  --color-button-primary-disabled-foreground: var(--bui-neutral-400);
+
+  /* Text */
+  --color-text-primary:         var(--bui-neutral-950);
+  --color-text-secondary:       var(--bui-neutral-500);
+  --color-text-tertiary:        var(--bui-neutral-400);
+  --color-text-disabled:        var(--bui-neutral-300);
+  --color-text-disabled-danger: var(--bui-red-300);
+  --color-text-placeholder:     var(--bui-neutral-400);
+  --color-text-error-primary:   var(--bui-red-500);
+  --color-text-destructive: color-mix(in srgb, var(--bui-red-700) 80%, var(--bui-neutral-600));
+  --color-input-disabled-text:  var(--bui-neutral-300);
+  --color-text-white:           var(--color-white);
+
+  /* Background */
+  --color-background-full:              var(--color-white);
+  /* Ticket detail, Figma 4509:12272. The raw #fafafa surface matches neutral/50. */
+  --color-ticket-detail-surface: var(--color-white);
+  --color-ticket-detail-low-background: var(--bui-indigo-200);
+  --color-ticket-detail-low-hover: var(--bui-indigo-300);
+  --color-ticket-detail-medium-hover: var(--bui-yellow-300);
+  --color-ticket-detail-high-hover: var(--bui-orange-300);
+  --color-ticket-detail-urgent-hover: var(--bui-rose-300);
+  --color-ticket-detail-low-text: var(--bui-indigo-800);
+  --color-ticket-detail-resource-background: var(--bui-blue-100);
+  --color-ticket-detail-resource-text: var(--bui-blue-600);
+  --color-ticket-detail-favorite: #ffb83c; /* raw Figma fill, no token yet */
+  /* Empty-state illustration: raw Figma fills from node 4488:11848. */
+  --color-project-board-empty-panel: rgb(242 242 242 / 0.8);
+  --color-project-board-empty-front: #d9d9d9;
+  --color-project-board-empty-middle: #e5e5e5;
+  --color-project-board-empty-back: #ededed;
+  --color-project-board-empty-detail: var(--color-white);
+  --color-background-primary-default:   var(--color-white);
+  --color-background-inner-default:     var(--color-white);
+  --color-background-primary-hover:     var(--bui-neutral-100);
+  --color-background-primary-active:    var(--bui-neutral-200);
+  --color-background-primary-disabled:  var(--bui-neutral-100);
+  --color-input-disabled-background:    var(--bui-neutral-100);
+  --color-background-secondary-default: var(--bui-neutral-100);
+  --color-background-secondary-hover:   var(--bui-neutral-200);
+  --color-background-tertiary-default:  var(--bui-neutral-200);
+  --color-background-tertiary-hover:    var(--bui-neutral-300);
+  --color-background-tertiary-error:    var(--bui-red-100);
+  --color-background-recent-hire-role:  var(--bui-neutral-100);
+  --color-avatar-neutral-background:    var(--bui-neutral-300);
+  /* Figma background/quaternary/default — first used by the Storage
+   * dropzone's upload-icon disc (node 4106:26587). */
+  --color-background-quaternary-default: var(--bui-neutral-300);
+  --color-background-quaternary-hover:   var(--bui-neutral-400);
+  --color-background-quaternary-error:   var(--bui-red-200);
+  --color-file-upload-icon-background:   var(--bui-neutral-300);
+  --color-file-upload-icon-foreground:   var(--bui-neutral-400);
+  --color-file-upload-icon-foreground-hover: var(--bui-neutral-500);
+
+  /* Border */
+  --color-border-button-default:   var(--bui-neutral-200);
+  --color-border-button-hover:     var(--bui-neutral-300);
+  --color-border-button-active:    var(--bui-neutral-400);
+  --color-border-button-white:     var(--color-white);
+  /* The system had no red border. Matches text/error/primary so an invalid
+     field's edge and its message are the same red. */
+  --color-border-error-default:    var(--bui-red-500);
+  --color-border-checkbox-default: var(--bui-neutral-300);
+  --color-border-checkbox-hover:   var(--bui-neutral-400);
+  --color-border-checkbox-active:  var(--bui-neutral-400);
+  --color-border-checkbox-white:   var(--color-white);
+  --color-border-component-detail-container: var(--bui-neutral-200);
+  --color-border-ai-profile-card:             var(--bui-neutral-200);
+  --color-border-table:            var(--bui-neutral-200);
+  --color-border-button-group:     var(--bui-neutral-200);
+  --color-border-sidebar-profile-hover: var(--bui-neutral-300);
+  --color-separator-border:        var(--bui-neutral-200);
+  --color-separator-border-strong: var(--bui-neutral-200);
+  --color-border-focus-ring:       var(--color-accent-500);
+
+  /* State */
+  --color-state-success-text: var(--bui-lime-800);
+  --color-state-success-base: var(--bui-lime-200);
+
+  /* Selected control interiors remain light on colored tracks in both themes. */
+  --color-control-indicator-background:        var(--color-white);
+  --color-control-indicator-background-subtle: var(--bui-neutral-100);
+  --color-switch-off-chip-start:                var(--color-white);
+  --color-switch-off-chip-end:                  var(--bui-neutral-100);
+  /* Selected switch chip: the Figma comps use hexes a touch deeper than the
+   * plain 500→600 ramp (#2473fe → #0450e2 for blue). Expressed as oklab mixes
+   * of neighbouring accent stops so the recipe survives a re-tint. */
+  --color-switch-on-chip-start:                 color-mix(in oklab, var(--color-accent-500) 63%, var(--color-accent-600));
+  --color-switch-on-chip-end:                   color-mix(in oklab, var(--color-accent-600) 16%, var(--color-accent-700));
+  --color-stat-card-icon-background:            var(--color-white);
+  --color-segmented-control-background:          var(--bui-neutral-100);
+  --color-segmented-control-selected-background: var(--color-white);
+  --color-theme-toggle-sidebar-background:       var(--bui-neutral-200);
+  --color-theme-toggle-sidebar-selected-background: var(--color-white);
+  /* Stepped against the composer: the pill is white and the add button is the
+   * subtle grey sitting on it, so the control separates from the surface it
+   * shares an edge with. Dark mode keeps its own pair, where the pill is the
+   * lighter of the two and the button steps the other way. */
+  --color-ai-chat-composer-add-background:       var(--bui-neutral-100);
+  --color-ai-chat-composer-add-hover-background: var(--bui-neutral-200);
+  /* Composer Panel (Figma node 4430:12203): the status tab hanging off the
+   * card's top edge and the card's plus button are both neutral-200 in light
+   * mode. Dark mode steps them up instead, so they still separate from the
+   * neutral-800 card they touch. */
+  --color-composer-panel-tab-background:         var(--bui-neutral-200);
+  --color-composer-panel-add-background:         var(--bui-neutral-200);
+  --color-composer-panel-add-hover-background:   var(--bui-neutral-300);
+  /* Attachment tile edge: the Figma neutral-200 in light mode; dark mode
+   * uses a translucent white so the ring reads on the neutral-800 card
+   * (border/button/default is one neutral step away there and vanishes). */
+  --color-composer-panel-tile-border:            var(--bui-neutral-200);
+  /* Model picker provider rail: background/secondary in light mode, at
+   * half opacity in dark so it recedes on the neutral-800 panel. */
+  --color-composer-panel-rail-background:        var(--bui-neutral-100);
+  /* Questionnaire (Figma nodes 4435:14749 / 4435:15042): the answer rows share
+   * the card's background/primary surface in both modes, separated by their
+   * border alone, and the "Other" row uses the stock Input untouched. The
+   * single-select number key is background/secondary in light mode and one
+   * tone lighter than the row in dark mode (never darker), stepping again
+   * while its row is hovered so it stays legible on the lifted fill. */
+  --color-questionnaire-key-background:          var(--bui-neutral-100);
+  --color-questionnaire-key-hover-background:    var(--bui-neutral-200);
+  --color-agent-progress-ring:                     var(--bui-neutral-700);
+  --color-button-ghost-background:                var(--color-accent-100);
+  --color-button-ghost-hover:                     var(--color-accent-200);
+  --color-button-ghost-active:                    var(--color-accent-300);
+  --color-button-ghost-disabled:                  var(--color-accent-50);
+  --color-button-ghost-foreground:                var(--color-accent-700);
+  --color-button-ghost-disabled-foreground:       var(--color-accent-300);
+  --color-dropdown-item-hover-background:        var(--bui-neutral-100);
+  --color-kbd-background:                        var(--bui-neutral-300);
+  --color-kbd-foreground:                        var(--bui-neutral-500);
+  --color-docs-file-chip-background:             var(--bui-purple-50);
+  --color-docs-file-chip-border:                 var(--bui-purple-100);
+  --color-docs-file-chip-foreground:             var(--bui-purple-500);
+  --color-docs-command-accent:                    var(--bui-purple-400);
+  --color-docs-code-background:                   var(--color-background-primary-default);
+  --color-docs-install-rail:                      var(--color-border-button-default);
+
+  /* Recently shipped component badge. Kept semantic so its compact blue
+   * surface can retain the same hierarchy in both themes. */
+  --color-badge-neutral-background: var(--bui-neutral-200);
+  --color-team-menu-count-background: var(--bui-neutral-200);
+  --color-team-menu-count-foreground: var(--bui-neutral-500);
+  --color-badge-new-background: var(--color-accent-100);
+  /* Controls laid over images and video (a tile's download, menu): dark glass in both themes. */
+  --color-media-control-background: color-mix(in srgb, var(--bui-neutral-950) 45%, transparent);
+  --color-media-control-hover: color-mix(in srgb, var(--bui-neutral-950) 65%, transparent);
+  /* A favourite's star: the same gold in both themes, over pictures and panels. */
+  --color-favourite: #ffc783;
+  /* What's selected on a canvas (Flow, Design, Timeline, 3D): the same blue in both themes. */
+  --color-canvas-selection: #4486f1;
+  /* Live voice mode's orb, deepest shade to core plus halo, for each phase; read by its shader. The same in both themes. */
+  --voice-orb-listening-deep: #122c80;
+  --voice-orb-listening-mid: #3866e2;
+  --voice-orb-listening-mid2: #5ca8ff;
+  --voice-orb-listening-hi: #bad2ff;
+  --voice-orb-listening-core: #f6f9ff;
+  --voice-orb-listening-halo: #709eff;
+  --voice-orb-thinking-deep: #2c227c;
+  --voice-orb-thinking-mid: #4e62e8;
+  --voice-orb-thinking-mid2: #ff7948;
+  --voice-orb-thinking-hi: #ffceba;
+  --voice-orb-thinking-core: #fff8f2;
+  --voice-orb-thinking-halo: #b09cff;
+  --voice-orb-speaking-deep: #721805;
+  --voice-orb-speaking-mid: #ff571a;
+  --voice-orb-speaking-mid2: #ff8c2c;
+  --voice-orb-speaking-hi: #ffc47c;
+  --voice-orb-speaking-core: #fff4e4;
+  --voice-orb-speaking-halo: #ff8c50;
+  --color-badge-new-text:       var(--color-accent-600);
+  --color-tab-count-selected-background: var(--color-accent-100);
+  --color-pill-tab-blue-selected-background: color-mix(in srgb, var(--color-accent-500) 12%, transparent);
+  --color-pill-tab-blue-selected-foreground: var(--color-accent-500);
+  --color-pill-tab-blue-hover-background: var(--bui-neutral-100);
+
+  /* Notification status-icon surfaces. */
+  --color-notification-information-background: var(--bui-blue-100);
+  --color-notification-information-foreground: var(--bui-blue-600);
+  --color-notification-success-background:     var(--bui-lime-100);
+  --color-notification-success-foreground:     var(--bui-lime-600);
+  --color-notification-error-background:       var(--bui-rose-100);
+  --color-notification-error-foreground:       var(--bui-rose-600);
+  --color-notification-center-background:      var(--color-white);
+
+  /* Table status chips. Dark mappings come from the medical dashboard table
+   * in Figma (4139:7202, 4139:7240, 4139:7278, 4139:7315). */
+  --color-status-lime-background:   var(--bui-lime-200);
+  --color-status-lime-text:         var(--bui-lime-800);
+  --color-status-yellow-background: var(--bui-yellow-200);
+  --color-status-yellow-text:       var(--bui-yellow-800);
+  --color-status-rose-background:   var(--bui-rose-200);
+  --color-status-rose-text:         var(--bui-rose-800);
+  --color-status-cyan-background:   var(--bui-cyan-200);
+  --color-status-cyan-text:         var(--bui-cyan-800);
+  --color-status-orange-background: var(--bui-orange-200);
+  --color-status-orange-text: var(--bui-orange-800);
+  --color-status-blue-background:   var(--bui-blue-200);
+  --color-status-blue-text:         var(--bui-blue-800);
+  --color-status-purple-background: var(--bui-purple-100);
+  --color-status-purple-text:       var(--bui-purple-600);
+  --color-status-dot-green-halo:    var(--bui-green-100);
+  --color-status-dot-yellow-halo:   var(--bui-yellow-200);
+  --color-status-dot-indigo-halo:   var(--bui-indigo-100);
+
+  /* Date range selection: the connecting band and its start/end caps. */
+  --color-date-range-background:      var(--color-accent-100);
+  --color-date-range-edge-background: var(--color-accent-300);
+
+  /* Calendar event chips. Title/time stay separate so the original light
+   * hierarchy remains intact while dark mode can normalize both to /300. */
+  --color-calendar-event-blue-background:    var(--bui-blue-100);
+  --color-calendar-event-blue-title:         var(--bui-blue-700);
+  --color-calendar-event-blue-time:          var(--bui-blue-700);
+  --color-calendar-event-pink-background:    var(--bui-pink-100);
+  --color-calendar-event-pink-title:         var(--bui-pink-700);
+  --color-calendar-event-pink-time:          var(--bui-pink-700);
+  --color-calendar-event-purple-background:  var(--bui-purple-100);
+  --color-calendar-event-purple-title:       var(--bui-purple-700);
+  --color-calendar-event-purple-time:        var(--bui-purple-700);
+  --color-calendar-event-lime-background:    var(--bui-lime-100);
+  --color-calendar-event-lime-title:         var(--bui-lime-800);
+  --color-calendar-event-lime-time:          var(--bui-lime-700);
+  --color-calendar-event-emerald-background: var(--bui-emerald-100);
+  --color-calendar-event-emerald-title:      var(--bui-emerald-800);
+  --color-calendar-event-emerald-time:       var(--bui-emerald-700);
+
+  /* Placeholder colors that don't map cleanly to existing text tokens */
+  --color-text-error-placeholder: var(--bui-red-400);
+
+  /* Charts (graphs) — shared neutrals + a categorical accent ramp.
+   * `track` is the background bar/ring behind a series; `cursor` the hover
+   * outline / dashed reference line; `neutral` a data color for "other"-style
+   * slices. Each numbered accent pairs a base fill with a one-tone-darker
+   * `-active` used for hover emphasis (the 400 → 500 recipe every chart
+   * follows). Numbered (not hue-named) so the palette can be retuned without
+   * renaming, mirroring the chart-1…n convention common to chart systems. */
+  --color-chart-track:    var(--bui-neutral-200);
+  --color-chart-cursor:   var(--bui-neutral-300);
+  --color-chart-neutral:  var(--bui-neutral-300);
+  --color-chart-1:        var(--bui-teal-400);
+  --color-chart-1-active: var(--bui-teal-500);
+  --color-chart-2:        var(--bui-lime-400);
+  --color-chart-2-active: var(--bui-lime-500);
+  --color-chart-3:        var(--bui-pink-400);
+  --color-chart-3-active: var(--bui-pink-500);
+  --color-chart-4:        var(--bui-sky-400);
+  --color-chart-4-active: var(--bui-sky-500);
+  --color-chart-5:        var(--bui-purple-400);
+  --color-chart-5-active: var(--bui-purple-500);
+  --color-chart-6:        var(--bui-blue-400);
+  --color-chart-6-active: var(--bui-blue-500);
+  --color-chart-7:        var(--bui-emerald-400);
+  --color-chart-7-active: var(--bui-emerald-500);
+  --color-chart-8:        var(--bui-yellow-400);
+  --color-chart-8-active: var(--bui-yellow-500);
+  --color-chart-9:        var(--bui-indigo-400);
+  --color-chart-9-active: var(--bui-indigo-500);
+  --color-chart-agents-bar:        var(--bui-purple-300);
+  --color-chart-agents-bar-active: var(--bui-purple-400);
+
+  /* Button gradients */
+  --gradient-button-primary-default:  linear-gradient(180deg, var(--color-accent-600)    0%, var(--color-accent-700)    100%);
+  --gradient-button-primary-hover:    linear-gradient(180deg, var(--color-accent-500)    0%, var(--color-accent-600)    100%);
+  --gradient-button-primary-active:   linear-gradient(180deg, var(--color-accent-700)    0%, var(--color-accent-800)    100%);
+  --gradient-button-primary-disabled: linear-gradient(180deg, var(--bui-neutral-200) 0%, var(--bui-neutral-300) 100%);
+
+  --gradient-button-danger-default:   linear-gradient(180deg, var(--bui-red-500) 0%, var(--bui-red-600) 100%);
+  --gradient-button-danger-hover:     linear-gradient(180deg, var(--bui-red-400) 0%, var(--bui-red-500) 100%);
+  --gradient-button-danger-active:    linear-gradient(180deg, var(--bui-red-600) 0%, var(--bui-red-700) 100%);
+  --gradient-button-danger-disabled:  linear-gradient(180deg, var(--bui-red-100) 0%, var(--bui-red-200) 100%);
+}
+
+:root:not([data-theme="paper"]) {
+  /* Foreground */
+  --color-foreground-full:            var(--bui-neutral-700);
+  --color-foreground-icon-primary:    var(--bui-neutral-50);
+  --color-foreground-icon-hover:      var(--color-white);
+  --color-foreground-icon-error:      var(--bui-red-400);
+  --color-foreground-icon-tertiary:   var(--bui-neutral-600);
+  --color-foreground-icon-quaternary: var(--bui-neutral-700);
+  --color-foreground-icon-disabled:   var(--bui-neutral-800);
+  --color-foreground-disabled:        var(--bui-neutral-700);
+  --color-foreground-disabled-danger: var(--bui-red-400);
+  --color-input-disabled-foreground:  var(--bui-neutral-600);
+  --color-icon-button-disabled-foreground: var(--bui-neutral-500);
+  --color-button-primary-disabled-foreground: var(--bui-neutral-500);
+
+  /* Text */
+  --color-text-primary:  var(--bui-neutral-50);
+  --color-text-tertiary: var(--bui-neutral-600);
+  --color-text-disabled: var(--bui-neutral-800);
+  --color-text-error-primary: var(--bui-red-400);
+  --color-text-destructive: color-mix(in srgb, var(--bui-red-500) 80%, var(--bui-neutral-500));
+  --color-input-disabled-text: color-mix(in srgb, var(--bui-neutral-500) 40%, transparent);
+
+  /* Background */
+  --color-background-full:              var(--bui-neutral-925);
+  --color-ticket-detail-surface: var(--bui-neutral-925);
+  --color-ticket-detail-low-background: color-mix(in srgb, var(--bui-indigo-950) 60%, transparent);
+  --color-ticket-detail-low-hover: color-mix(in srgb, var(--bui-indigo-950) 80%, transparent);
+  --color-ticket-detail-medium-hover: color-mix(in srgb, var(--bui-yellow-950) 80%, transparent);
+  --color-ticket-detail-high-hover: color-mix(in srgb, var(--bui-orange-950) 80%, transparent);
+  --color-ticket-detail-urgent-hover: color-mix(in srgb, var(--bui-rose-950) 80%, transparent);
+  --color-ticket-detail-low-text: var(--bui-indigo-300);
+  --color-ticket-detail-resource-background: color-mix(in srgb, var(--bui-blue-950) 60%, transparent);
+  --color-ticket-detail-resource-text: var(--bui-blue-300);
+  --color-project-board-empty-panel: color-mix(in srgb, var(--bui-neutral-800) 60%, transparent);
+  --color-project-board-empty-front: color-mix(in srgb, var(--bui-neutral-800) 75%, var(--bui-neutral-700));
+  --color-project-board-empty-middle: var(--bui-neutral-700);
+  --color-project-board-empty-back: color-mix(in srgb, var(--bui-neutral-600) 35%, var(--bui-neutral-700));
+  --color-project-board-empty-detail: var(--bui-neutral-500);
+  --color-background-primary-default:   var(--bui-neutral-800);
+  --color-background-inner-default:     color-mix(in srgb, var(--bui-neutral-800) 60%, transparent);
+  --color-background-primary-hover:     color-mix(in srgb, var(--bui-neutral-700) 60%, transparent);
+  --color-background-primary-active:    var(--bui-neutral-800);
+  --color-background-primary-disabled:  var(--bui-neutral-800);
+  --color-input-disabled-background:    color-mix(in srgb, var(--bui-neutral-800) 30%, transparent);
+  --color-switch-off-chip-start:        var(--color-background-tertiary-default);
+  --color-switch-off-chip-end:          var(--color-background-tertiary-default);
+  --color-background-secondary-default: var(--bui-neutral-900);
+  --color-background-secondary-hover:   var(--bui-neutral-800);
+  --color-background-tertiary-default:  var(--bui-neutral-800);
+  --color-background-tertiary-hover:    var(--bui-neutral-700);
+  --color-background-tertiary-error:    color-mix(in srgb, var(--bui-red-950) 60%, transparent);
+  --color-background-quaternary-default: var(--bui-neutral-700);
+  --color-background-quaternary-hover:   var(--bui-neutral-600);
+  --color-background-recent-hire-role:  color-mix(in srgb, var(--bui-neutral-900) 60%, transparent);
+  --color-avatar-neutral-background:    var(--color-background-primary-default);
+  --color-file-upload-icon-background:  var(--bui-neutral-600);
+  --color-file-upload-icon-foreground:  var(--bui-neutral-400);
+  --color-file-upload-icon-foreground-hover: var(--bui-neutral-300);
+  --color-stat-card-icon-background:    var(--bui-neutral-800);
+  --color-segmented-control-background:          var(--bui-neutral-925);
+  --color-segmented-control-selected-background: var(--bui-neutral-800);
+  --color-theme-toggle-sidebar-background:       var(--bui-neutral-800);
+  --color-theme-toggle-sidebar-selected-background: var(--bui-neutral-700);
+  --color-ai-chat-composer-add-background:       var(--bui-neutral-700);
+  --color-ai-chat-composer-add-hover-background: var(--bui-neutral-600);
+  --color-composer-panel-tab-background:         color-mix(in srgb, var(--bui-neutral-700) 50%, transparent);
+  --color-composer-panel-add-background:         var(--bui-neutral-700);
+  --color-composer-panel-add-hover-background:   var(--bui-neutral-600);
+  --color-composer-panel-tile-border:            color-mix(in srgb, var(--color-white) 14%, transparent);
+  --color-composer-panel-rail-background:        color-mix(in srgb, var(--bui-neutral-900) 50%, transparent);
+  --color-questionnaire-key-background:          var(--bui-neutral-700);
+  --color-questionnaire-key-hover-background:    var(--bui-neutral-600);
+  --color-agent-progress-ring:                     color-mix(in srgb, var(--color-white) 50%, transparent);
+  --color-button-ghost-background:                var(--color-accent-900);
+  --color-button-ghost-hover:                     var(--color-accent-800);
+  --color-button-ghost-active:                    var(--color-accent-700);
+  --color-button-ghost-disabled:                  var(--bui-neutral-800);
+  --color-button-ghost-foreground:                var(--color-accent-300);
+  --color-button-ghost-disabled-foreground:       var(--bui-neutral-600);
+  --color-dropdown-item-hover-background:        color-mix(in srgb, var(--bui-neutral-700) 60%, transparent);
+  --color-kbd-background:                        var(--bui-neutral-700);
+  --color-kbd-foreground:                        var(--bui-neutral-400);
+  --color-docs-file-chip-background:             color-mix(in srgb, var(--bui-purple-950) 50%, transparent);
+  --color-docs-file-chip-border:                 var(--bui-purple-800);
+  --color-docs-file-chip-foreground:             var(--bui-purple-400);
+  --color-docs-code-background:                  var(--color-background-full);
+  --color-docs-install-rail:                     color-mix(in srgb, var(--bui-neutral-800) 60%, transparent);
+
+  /* Dark surfaces absorb low-alpha shadows more readily than white ones.
+   * Preserve the light-mode geometry and raise only the black alpha: tighter
+   * contact shadows stay crisp, while higher elevations receive a restrained
+   * ambient layer without introducing a grey glow. */
+  --shadow-2xs: 0 1px rgb(0 0 0 / 0.16);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.18);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.12), 0 1px 3px 0 rgb(0 0 0 / 0.16);
+  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.12), 0 4px 6px -1px rgb(0 0 0 / 0.18);
+  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 0.10), 0 10px 15px -3px rgb(0 0 0 / 0.18);
+  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 0.08), 0 20px 25px -5px rgb(0 0 0 / 0.20);
+  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 0.14);
+  --shadow-dropdown:
+    0 1px 1px 0 rgb(0 0 0 / 0.14),
+    0 4px 4px 0 rgb(0 0 0 / 0.10);
+  --shadow-sidebar:
+    0 1px 0 0 rgb(0 0 0 / 0.10),
+    0 1px 12px 0 rgb(0 0 0 / 0.16),
+    0 0 1px 0 rgb(0 0 0 / 0.42);
+  --shadow-waitlist:
+    0 0 6px 0 rgb(0 0 0 / 0.12),
+    0 0 64px 0 rgb(0 0 0 / 0.22),
+    0 0 1px 0 rgb(0 0 0 / 0.42),
+    0 1px 12px 0 rgb(0 0 0 / 0.14),
+    0 1px 0 0 rgb(0 0 0 / 0.08);
+
+  /* Badges */
+  --color-badge-neutral-background: var(--bui-neutral-800);
+  --color-team-menu-count-background: var(--bui-neutral-700);
+  --color-team-menu-count-foreground: var(--bui-neutral-400);
+  --color-badge-new-background: var(--color-accent-950);
+  --color-badge-new-text:       var(--color-accent-400);
+  --color-tab-count-selected-background: color-mix(in srgb, var(--color-accent-800) 60%, transparent);
+
+  /* Dark status discs use /800 surfaces with /300 foregrounds so the icon
+   * remains crisp without reverting to a bright pastel circle. */
+  --color-notification-information-background: color-mix(in srgb, var(--bui-blue-800) 50%, transparent);
+  --color-notification-information-foreground: var(--bui-blue-300);
+  --color-notification-success-background:     color-mix(in srgb, var(--bui-lime-800) 50%, transparent);
+  --color-notification-success-foreground:     var(--bui-lime-300);
+  --color-notification-error-background:       color-mix(in srgb, var(--bui-rose-800) 50%, transparent);
+  --color-notification-error-foreground:       var(--bui-rose-300);
+  --color-notification-center-background:      var(--bui-neutral-900);
+
+  /* Borders and separators */
+  --color-border-button-default:   var(--bui-neutral-700);
+  --color-border-button-hover:     var(--bui-neutral-500);
+  --color-border-button-active:    var(--bui-neutral-600);
+  --color-border-button-white:     var(--bui-zinc-800);
+  --color-border-error-default:    var(--bui-red-400);
+  --color-border-checkbox-default: var(--bui-neutral-700);
+  --color-border-checkbox-hover:   var(--bui-neutral-500);
+  --color-border-checkbox-active:  var(--bui-neutral-500);
+  --color-border-component-detail-container: var(--bui-neutral-800);
+  --color-border-ai-profile-card:             var(--bui-neutral-800);
+  --color-border-table:            var(--bui-neutral-800);
+  --color-border-button-group:     color-mix(in srgb, var(--bui-neutral-600) 60%, transparent);
+  --color-border-sidebar-profile-hover: var(--bui-neutral-600);
+  --color-separator-border:        var(--bui-neutral-800);
+  --color-separator-border-strong: color-mix(in srgb, var(--bui-neutral-700) 60%, transparent);
+
+  /* Figma's dark table status pairs. */
+  --color-status-lime-background:   color-mix(in srgb, var(--bui-lime-950) 60%, transparent);
+  --color-status-lime-text:         var(--bui-lime-500);
+  --color-status-yellow-background: color-mix(in srgb, var(--bui-yellow-950) 60%, transparent);
+  --color-status-yellow-text:       var(--bui-yellow-500);
+  --color-status-rose-background:   color-mix(in srgb, var(--bui-rose-950) 60%, transparent);
+  --color-status-rose-text:         var(--bui-rose-500);
+  --color-status-cyan-background:   color-mix(in srgb, var(--bui-cyan-950) 60%, transparent);
+  --color-status-cyan-text:         var(--bui-cyan-400);
+  --color-status-orange-background: color-mix(in srgb, var(--bui-orange-950) 60%, transparent);
+  --color-status-orange-text: var(--bui-orange-500);
+  --color-status-blue-background:   color-mix(in srgb, var(--bui-blue-950) 60%, transparent);
+  --color-status-blue-text:         var(--bui-blue-300);
+  --color-status-purple-background: color-mix(in srgb, var(--bui-purple-900) 50%, transparent);
+  --color-status-purple-text:       var(--bui-purple-300);
+  --color-status-dot-green-halo:    color-mix(in srgb, var(--bui-green-800) 40%, transparent);
+  --color-status-dot-yellow-halo:   color-mix(in srgb, var(--bui-yellow-800) 40%, transparent);
+  --color-status-dot-indigo-halo:   color-mix(in srgb, var(--bui-indigo-800) 40%, transparent);
+
+  --color-date-range-background:      var(--color-accent-950);
+  --color-date-range-edge-background: var(--color-accent-800);
+
+  --color-pill-tab-blue-selected-background: color-mix(in srgb, var(--color-accent-500) 18%, transparent);
+  --color-pill-tab-blue-selected-foreground: var(--color-accent-500);
+  --color-pill-tab-blue-hover-background: var(--bui-neutral-800);
+
+  /* Calendar event families share the same dark-mode depth/contrast recipe. */
+  --color-calendar-event-blue-background:    var(--bui-blue-950);
+  --color-calendar-event-blue-title:         var(--bui-blue-300);
+  --color-calendar-event-blue-time:          var(--bui-blue-300);
+  --color-calendar-event-pink-background:    var(--bui-pink-950);
+  --color-calendar-event-pink-title:         var(--bui-pink-300);
+  --color-calendar-event-pink-time:          var(--bui-pink-300);
+  --color-calendar-event-purple-background:  var(--bui-purple-950);
+  --color-calendar-event-purple-title:       var(--bui-purple-300);
+  --color-calendar-event-purple-time:        var(--bui-purple-300);
+  --color-calendar-event-lime-background:    var(--bui-lime-950);
+  --color-calendar-event-lime-title:         var(--bui-lime-300);
+  --color-calendar-event-lime-time:          var(--bui-lime-300);
+  --color-calendar-event-emerald-background: var(--bui-emerald-950);
+  --color-calendar-event-emerald-title:      var(--bui-emerald-300);
+  --color-calendar-event-emerald-time:       var(--bui-emerald-300);
+
+  /* Disabled primary CTA: dark, low-emphasis fill with readable muted text. */
+  --gradient-button-primary-disabled: linear-gradient(
+    180deg,
+    var(--bui-neutral-700) 0%,
+    var(--bui-neutral-800) 100%
+  );
+  --gradient-button-danger-disabled: linear-gradient(
+    180deg,
+    var(--bui-red-900) 0%,
+    var(--bui-red-950) 100%
+  );
+
+  /* Neutral graph structure; categorical and status colors stay unchanged. */
+  --color-chart-track:   var(--bui-neutral-800);
+  --color-chart-cursor:  var(--bui-neutral-700);
+  --color-chart-neutral: var(--bui-neutral-800);
+  --color-chart-agents-bar:        var(--bui-purple-500);
+  --color-chart-agents-bar-active: var(--bui-purple-600);
+}
+
+/* Non-default accents (data-accent set by the accent engine) can land on a
+ * /950 that glows too loudly against the dark sidebar; halve the NEW badge
+ * fill there. Light mode keeps the solid /100 surface. */
+:root:not([data-theme="paper"])[data-accent] {
+  --color-badge-new-background: color-mix(in srgb, var(--color-accent-950) 50%, transparent);
+}
+
+/* Re-export semantic tokens as Tailwind utilities. The `inline` form means
+ * Tailwind reads the *current* computed value of the variable, so light↔dark
+ * flips work without rebuild. */
+@theme inline {
+  --color-foreground-full:            var(--color-foreground-full);
+  --color-foreground-icon-primary:    var(--color-foreground-icon-primary);
+  --color-foreground-icon-hover:      var(--color-foreground-icon-hover);
+  --color-foreground-icon-secondary:  var(--color-foreground-icon-secondary);
+  --color-foreground-icon-tertiary:   var(--color-foreground-icon-tertiary);
+  --color-foreground-icon-quaternary: var(--color-foreground-icon-quaternary);
+  --color-foreground-icon-error:      var(--color-foreground-icon-error);
+  --color-foreground-icon-disabled:   var(--color-foreground-icon-disabled);
+  --color-foreground-disabled:        var(--color-foreground-disabled);
+  --color-foreground-disabled-danger: var(--color-foreground-disabled-danger);
+  --color-input-disabled-foreground:  var(--color-input-disabled-foreground);
+  --color-icon-button-disabled-foreground: var(--color-icon-button-disabled-foreground);
+  --color-button-primary-disabled-foreground: var(--color-button-primary-disabled-foreground);
+
+  --color-text-primary:         var(--color-text-primary);
+  --color-text-secondary:       var(--color-text-secondary);
+  --color-text-tertiary:        var(--color-text-tertiary);
+  --color-text-disabled:        var(--color-text-disabled);
+  --color-text-disabled-danger: var(--color-text-disabled-danger);
+  --color-text-placeholder:     var(--color-text-placeholder);
+  --color-text-error-primary:   var(--color-text-error-primary);
+  --color-text-destructive: var(--color-text-destructive);
+  --color-input-disabled-text:  var(--color-input-disabled-text);
+  --color-text-white:           var(--color-text-white);
+
+  --color-background-full:              var(--color-background-full);
+  --color-ticket-detail-surface: var(--color-ticket-detail-surface);
+  --color-ticket-detail-low-background: var(--color-ticket-detail-low-background);
+  --color-ticket-detail-low-hover: var(--color-ticket-detail-low-hover);
+  --color-ticket-detail-medium-hover: var(--color-ticket-detail-medium-hover);
+  --color-ticket-detail-high-hover: var(--color-ticket-detail-high-hover);
+  --color-ticket-detail-urgent-hover: var(--color-ticket-detail-urgent-hover);
+  --color-ticket-detail-low-text: var(--color-ticket-detail-low-text);
+  --color-ticket-detail-resource-background: var(--color-ticket-detail-resource-background);
+  --color-ticket-detail-resource-text: var(--color-ticket-detail-resource-text);
+  --color-ticket-detail-favorite: var(--color-ticket-detail-favorite);
+  --color-background-primary-default:   var(--color-background-primary-default);
+  --color-background-inner-default:     var(--color-background-inner-default);
+  --color-background-primary-hover:     var(--color-background-primary-hover);
+  --color-background-primary-active:    var(--color-background-primary-active);
+  --color-background-primary-disabled:  var(--color-background-primary-disabled);
+  --color-input-disabled-background:    var(--color-input-disabled-background);
+  --color-background-secondary-default: var(--color-background-secondary-default);
+  --color-background-secondary-hover:   var(--color-background-secondary-hover);
+  --color-background-tertiary-default:  var(--color-background-tertiary-default);
+  --color-background-tertiary-hover:    var(--color-background-tertiary-hover);
+  --color-background-tertiary-error:    var(--color-background-tertiary-error);
+  --color-background-recent-hire-role:  var(--color-background-recent-hire-role);
+  --color-avatar-neutral-background:    var(--color-avatar-neutral-background);
+  --color-background-quaternary-default: var(--color-background-quaternary-default);
+  --color-background-quaternary-hover:   var(--color-background-quaternary-hover);
+  --color-background-quaternary-error:   var(--color-background-quaternary-error);
+  --color-file-upload-icon-background:   var(--color-file-upload-icon-background);
+  --color-file-upload-icon-foreground:   var(--color-file-upload-icon-foreground);
+  --color-file-upload-icon-foreground-hover: var(--color-file-upload-icon-foreground-hover);
+
+  --color-border-button-default:   var(--color-border-button-default);
+  --color-border-button-hover:     var(--color-border-button-hover);
+  --color-border-button-active:    var(--color-border-button-active);
+  --color-border-button-white:     var(--color-border-button-white);
+  --color-border-error-default:    var(--color-border-error-default);
+  --color-border-checkbox-default: var(--color-border-checkbox-default);
+  --color-border-checkbox-hover:   var(--color-border-checkbox-hover);
+  --color-border-checkbox-active:  var(--color-border-checkbox-active);
+  --color-border-checkbox-white:   var(--color-border-checkbox-white);
+  --color-border-component-detail-container: var(--color-border-component-detail-container);
+  --color-border-ai-profile-card:             var(--color-border-ai-profile-card);
+  --color-border-table:            var(--color-border-table);
+  --color-border-button-group:     var(--color-border-button-group);
+  --color-border-sidebar-profile-hover: var(--color-border-sidebar-profile-hover);
+  --color-separator-border:        var(--color-separator-border);
+  --color-separator-border-strong: var(--color-separator-border-strong);
+  --color-border-focus-ring:       var(--color-border-focus-ring);
+
+  --color-state-success-text: var(--color-state-success-text);
+  --color-state-success-base: var(--color-state-success-base);
+  --color-control-indicator-background:        var(--color-control-indicator-background);
+  --color-control-indicator-background-subtle: var(--color-control-indicator-background-subtle);
+  --color-switch-off-chip-start:                var(--color-switch-off-chip-start);
+  --color-switch-off-chip-end:                  var(--color-switch-off-chip-end);
+  --color-switch-on-chip-start:                 var(--color-switch-on-chip-start);
+  --color-switch-on-chip-end:                   var(--color-switch-on-chip-end);
+  --color-stat-card-icon-background:            var(--color-stat-card-icon-background);
+  --color-segmented-control-background:          var(--color-segmented-control-background);
+  --color-segmented-control-selected-background: var(--color-segmented-control-selected-background);
+  --color-theme-toggle-sidebar-background:       var(--color-theme-toggle-sidebar-background);
+  --color-theme-toggle-sidebar-selected-background: var(--color-theme-toggle-sidebar-selected-background);
+  --color-ai-chat-composer-add-background:       var(--color-ai-chat-composer-add-background);
+  --color-ai-chat-composer-add-hover-background: var(--color-ai-chat-composer-add-hover-background);
+  --color-composer-panel-tab-background:         var(--color-composer-panel-tab-background);
+  --color-composer-panel-add-background:         var(--color-composer-panel-add-background);
+  --color-composer-panel-add-hover-background:   var(--color-composer-panel-add-hover-background);
+  --color-composer-panel-tile-border:            var(--color-composer-panel-tile-border);
+  --color-composer-panel-rail-background:        var(--color-composer-panel-rail-background);
+  --color-questionnaire-key-background:          var(--color-questionnaire-key-background);
+  --color-questionnaire-key-hover-background:    var(--color-questionnaire-key-hover-background);
+  --color-agent-progress-ring:                     var(--color-agent-progress-ring);
+  --color-button-ghost-background:                var(--color-button-ghost-background);
+  --color-button-ghost-hover:                     var(--color-button-ghost-hover);
+  --color-button-ghost-active:                    var(--color-button-ghost-active);
+  --color-button-ghost-disabled:                  var(--color-button-ghost-disabled);
+  --color-button-ghost-foreground:                var(--color-button-ghost-foreground);
+  --color-button-ghost-disabled-foreground:       var(--color-button-ghost-disabled-foreground);
+  --color-dropdown-item-hover-background:        var(--color-dropdown-item-hover-background);
+  --color-kbd-background:                        var(--color-kbd-background);
+  --color-kbd-foreground:                        var(--color-kbd-foreground);
+  --color-docs-file-chip-background:             var(--color-docs-file-chip-background);
+  --color-docs-file-chip-border:                 var(--color-docs-file-chip-border);
+  --color-docs-file-chip-foreground:             var(--color-docs-file-chip-foreground);
+  --color-docs-command-accent:                    var(--color-docs-command-accent);
+  --color-docs-code-background:                   var(--color-docs-code-background);
+  --color-docs-install-rail:                      var(--color-docs-install-rail);
+  --color-badge-neutral-background: var(--color-badge-neutral-background);
+  --color-team-menu-count-background: var(--color-team-menu-count-background);
+  --color-team-menu-count-foreground: var(--color-team-menu-count-foreground);
+  --color-badge-new-background: var(--color-badge-new-background);
+  --color-media-control-background: var(--color-media-control-background);
+  --color-media-control-hover: var(--color-media-control-hover);
+  --color-favourite: var(--color-favourite);
+  --color-canvas-selection: var(--color-canvas-selection);
+  --color-badge-new-text:       var(--color-badge-new-text);
+  --color-tab-count-selected-background: var(--color-tab-count-selected-background);
+  --color-pill-tab-blue-selected-background: var(--color-pill-tab-blue-selected-background);
+  --color-pill-tab-blue-selected-foreground: var(--color-pill-tab-blue-selected-foreground);
+  --color-pill-tab-blue-hover-background: var(--color-pill-tab-blue-hover-background);
+  --color-notification-information-background: var(--color-notification-information-background);
+  --color-notification-information-foreground: var(--color-notification-information-foreground);
+  --color-notification-success-background:     var(--color-notification-success-background);
+  --color-notification-success-foreground:     var(--color-notification-success-foreground);
+  --color-notification-error-background:       var(--color-notification-error-background);
+  --color-notification-error-foreground:       var(--color-notification-error-foreground);
+  --color-notification-center-background:      var(--color-notification-center-background);
+  --color-status-lime-background:   var(--color-status-lime-background);
+  --color-status-lime-text:         var(--color-status-lime-text);
+  --color-status-yellow-background: var(--color-status-yellow-background);
+  --color-status-yellow-text:       var(--color-status-yellow-text);
+  --color-status-rose-background:   var(--color-status-rose-background);
+  --color-status-rose-text:         var(--color-status-rose-text);
+  --color-status-cyan-background:   var(--color-status-cyan-background);
+  --color-status-cyan-text:         var(--color-status-cyan-text);
+  --color-status-orange-background: var(--color-status-orange-background);
+  --color-status-orange-text: var(--color-status-orange-text);
+  --color-status-blue-background:   var(--color-status-blue-background);
+  --color-status-blue-text:         var(--color-status-blue-text);
+  --color-status-purple-background: var(--color-status-purple-background);
+  --color-status-purple-text:       var(--color-status-purple-text);
+  --color-status-dot-green-halo:    var(--color-status-dot-green-halo);
+  --color-status-dot-yellow-halo:   var(--color-status-dot-yellow-halo);
+  --color-status-dot-indigo-halo:   var(--color-status-dot-indigo-halo);
+  --color-date-range-background:      var(--color-date-range-background);
+  --color-date-range-edge-background: var(--color-date-range-edge-background);
+  --color-calendar-event-blue-background:    var(--color-calendar-event-blue-background);
+  --color-calendar-event-blue-title:         var(--color-calendar-event-blue-title);
+  --color-calendar-event-blue-time:          var(--color-calendar-event-blue-time);
+  --color-calendar-event-pink-background:    var(--color-calendar-event-pink-background);
+  --color-calendar-event-pink-title:         var(--color-calendar-event-pink-title);
+  --color-calendar-event-pink-time:          var(--color-calendar-event-pink-time);
+  --color-calendar-event-purple-background:  var(--color-calendar-event-purple-background);
+  --color-calendar-event-purple-title:       var(--color-calendar-event-purple-title);
+  --color-calendar-event-purple-time:        var(--color-calendar-event-purple-time);
+  --color-calendar-event-lime-background:    var(--color-calendar-event-lime-background);
+  --color-calendar-event-lime-title:         var(--color-calendar-event-lime-title);
+  --color-calendar-event-lime-time:          var(--color-calendar-event-lime-time);
+  --color-calendar-event-emerald-background: var(--color-calendar-event-emerald-background);
+  --color-calendar-event-emerald-title:      var(--color-calendar-event-emerald-title);
+  --color-calendar-event-emerald-time:       var(--color-calendar-event-emerald-time);
+
+  --color-text-error-placeholder: var(--color-text-error-placeholder);
+
+  --color-chart-track:    var(--color-chart-track);
+  --color-chart-cursor:   var(--color-chart-cursor);
+  --color-chart-neutral:  var(--color-chart-neutral);
+  --color-chart-1:        var(--color-chart-1);
+  --color-chart-1-active: var(--color-chart-1-active);
+  --color-chart-2:        var(--color-chart-2);
+  --color-chart-2-active: var(--color-chart-2-active);
+  --color-chart-3:        var(--color-chart-3);
+  --color-chart-3-active: var(--color-chart-3-active);
+  --color-chart-4:        var(--color-chart-4);
+  --color-chart-4-active: var(--color-chart-4-active);
+  --color-chart-5:        var(--color-chart-5);
+  --color-chart-5-active: var(--color-chart-5-active);
+  --color-chart-6:        var(--color-chart-6);
+  --color-chart-6-active: var(--color-chart-6-active);
+  --color-chart-7:        var(--color-chart-7);
+  --color-chart-7-active: var(--color-chart-7-active);
+  --color-chart-8:        var(--color-chart-8);
+  --color-chart-8-active: var(--color-chart-8-active);
+  --color-chart-9:        var(--color-chart-9);
+  --color-chart-9-active: var(--color-chart-9-active);
+  --color-chart-agents-bar:        var(--color-chart-agents-bar);
+  --color-chart-agents-bar-active: var(--color-chart-agents-bar-active);
+}
+
+/* ---------------------------------------------------------------------------
+ * Component utilities — Buttons
+ *
+ * Each variant collapses the four interactive states (default / hover / active
+ * / disabled) into a single class. Use them on the component:
+ *
+ *   <button class="bg-button-primary">…</button>
+ *   <button class="bg-button-danger">…</button>
+ *
+ * Smooth default→hover transition trick:
+ *   CSS can't interpolate `background-image`, so swapping gradients on :hover
+ *   would snap. Instead we keep the *default* gradient on the element and
+ *   layer the *hover* gradient on a `::before` pseudo-element whose opacity
+ *   fades 0→1 over `--button-transition-ms`. Active/disabled gradients still
+ *   swap instantly (we hide the pseudo to reveal them).
+ *
+ * Stacking: `isolation: isolate` keeps the pseudo behind the button's text
+ * and icons (z-index -1) while staying above the element's own background.
+ * `border-radius: inherit` + `overflow: hidden` keeps it within the rounded
+ * corners.
+ * --------------------------------------------------------------------------- */
+@theme {
+  --button-transition-ms: 150ms;
+  --input-transition-ms:  150ms;
+}
+
+/* Keep color feedback quick while the physical press motion remains soft.
+ * The transform uses a shorter duration on press and the slower duration only
+ * when returning to rest, so hover styles never inherit the 700ms timing. */
+@utility button-press-motion {
+  transition:
+    background-color var(--button-transition-ms) ease,
+    border-color var(--button-transition-ms) ease,
+    box-shadow var(--button-transition-ms) ease,
+    color var(--button-transition-ms) ease,
+    transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(0.98);
+    transition-duration: 150ms, 150ms, 150ms, 150ms, 220ms;
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    transform: none;
+  }
+}
+
+@utility bg-button-primary {
+  position: relative;
+  isolation: isolate;
+  background-image: var(--gradient-button-primary-default);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background-image: var(--gradient-button-primary-hover);
+    opacity: 0;
+    transition: opacity var(--button-transition-ms) ease;
+  }
+  &:hover:not(:disabled):not([aria-disabled="true"])::before {
+    opacity: 1;
+  }
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    background-image: var(--gradient-button-primary-active);
+  }
+  &:active:not(:disabled):not([aria-disabled="true"])::before {
+    opacity: 0;
+  }
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-image: var(--gradient-button-primary-disabled);
+  }
+  &:disabled::before,
+  &[aria-disabled="true"]::before {
+    display: none;
+  }
+}
+
+@utility bg-button-danger {
+  position: relative;
+  isolation: isolate;
+  background-image: var(--gradient-button-danger-default);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background-image: var(--gradient-button-danger-hover);
+    opacity: 0;
+    transition: opacity var(--button-transition-ms) ease;
+  }
+  &:hover:not(:disabled):not([aria-disabled="true"])::before {
+    opacity: 1;
+  }
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    background-image: var(--gradient-button-danger-active);
+  }
+  &:active:not(:disabled):not([aria-disabled="true"])::before {
+    opacity: 0;
+  }
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-image: var(--gradient-button-danger-disabled);
+  }
+  &:disabled::before,
+  &[aria-disabled="true"]::before {
+    display: none;
+  }
+}
+
+:root {
+  --bui-blue-100: oklch(93.2% 0.032 255.585);
+  --bui-blue-200: oklch(88.2% 0.059 254.128);
+  --bui-blue-300: oklch(80.9% 0.105 251.813);
+  --bui-blue-500: oklch(62.3% 0.214 259.815);
+  --bui-blue-600: oklch(54.6% 0.245 262.881);
+  --bui-blue-700: oklch(48.8% 0.243 264.376);
+  --bui-blue-800: oklch(42.4% 0.199 265.638);
+  --bui-blue-950: oklch(28.2% 0.091 267.935);
+  --bui-cyan-200: oklch(91.7% 0.08 205.041);
+  --bui-cyan-400: oklch(78.9% 0.154 211.53);
+  --bui-cyan-800: oklch(45% 0.085 224.283);
+  --bui-cyan-950: oklch(30.2% 0.056 229.695);
+  --bui-emerald-100: oklch(95% 0.052 163.051);
+  --bui-emerald-300: oklch(84.5% 0.143 164.978);
+  --bui-emerald-400: oklch(76.5% 0.177 163.223);
+  --bui-emerald-500: oklch(69.6% 0.17 162.48);
+  --bui-emerald-700: oklch(50.8% 0.118 165.612);
+  --bui-emerald-800: oklch(43.2% 0.095 166.913);
+  --bui-emerald-950: oklch(26.2% 0.051 172.552);
+  --bui-green-100: oklch(96.2% 0.044 156.743);
+  --bui-green-800: oklch(44.8% 0.119 151.328);
+  --bui-indigo-100: oklch(93% 0.034 272.788);
+  --bui-indigo-200: oklch(87% 0.065 274.039);
+  --bui-indigo-300: oklch(78.5% 0.115 274.713);
+  --bui-indigo-400: oklch(67.3% 0.182 276.935);
+  --bui-indigo-500: oklch(58.5% 0.233 277.117);
+  --bui-indigo-800: oklch(39.8% 0.195 277.366);
+  --bui-indigo-950: oklch(25.7% 0.09 281.288);
+  --bui-lime-100: oklch(96.7% 0.067 122.328);
+  --bui-lime-200: oklch(93.8% 0.127 124.321);
+  --bui-lime-300: oklch(89.7% 0.196 126.665);
+  --bui-lime-400: oklch(84.1% 0.238 128.85);
+  --bui-lime-500: oklch(76.8% 0.233 130.85);
+  --bui-lime-600: oklch(64.8% 0.2 131.684);
+  --bui-lime-700: oklch(53.2% 0.157 131.589);
+  --bui-lime-800: oklch(45.3% 0.124 130.933);
+  --bui-lime-950: oklch(27.4% 0.072 132.109);
+  --bui-neutral-300: oklch(87% 0 none);
+  --bui-neutral-400: oklch(70.8% 0 none);
+  --bui-neutral-50: oklch(98.5% 0 none);
+  --bui-neutral-500: oklch(55.6% 0 none);
+  --bui-neutral-600: oklch(43.9% 0 none);
+  --bui-neutral-700: oklch(37.1% 0 none);
+  --bui-neutral-800: oklch(26.9% 0 none);
+  --bui-neutral-900: oklch(20.5% 0 none);
+  --bui-neutral-950: oklch(14.5% 0 none);
+  --bui-orange-200: oklch(90.1% 0.076 70.697);
+  --bui-orange-300: oklch(83.7% 0.128 66.29);
+  --bui-orange-500: oklch(70.5% 0.213 47.604);
+  --bui-orange-800: oklch(47% 0.157 37.304);
+  --bui-orange-950: oklch(26.6% 0.079 36.259);
+  --bui-pink-100: oklch(94.8% 0.028 342.258);
+  --bui-pink-300: oklch(82.3% 0.12 346.018);
+  --bui-pink-400: oklch(71.8% 0.202 349.761);
+  --bui-pink-500: oklch(65.6% 0.241 354.308);
+  --bui-pink-700: oklch(52.5% 0.223 3.958);
+  --bui-pink-950: oklch(28.4% 0.109 3.907);
+  --bui-purple-100: oklch(94.6% 0.033 307.174);
+  --bui-purple-300: oklch(82.7% 0.119 306.383);
+  --bui-purple-400: oklch(71.4% 0.203 305.504);
+  --bui-purple-50: oklch(97.7% 0.014 308.299);
+  --bui-purple-500: oklch(62.7% 0.265 303.9);
+  --bui-purple-600: oklch(55.8% 0.288 302.321);
+  --bui-purple-700: oklch(49.6% 0.265 301.924);
+  --bui-purple-800: oklch(43.8% 0.218 303.724);
+  --bui-purple-900: oklch(38.1% 0.176 304.987);
+  --bui-purple-950: oklch(29.1% 0.149 302.717);
+  --bui-red-100: oklch(93.6% 0.032 17.717);
+  --bui-red-200: oklch(88.5% 0.062 18.334);
+  --bui-red-300: oklch(80.8% 0.114 19.571);
+  --bui-red-400: oklch(70.4% 0.191 22.216);
+  --bui-red-500: oklch(63.7% 0.237 25.331);
+  --bui-red-600: oklch(57.7% 0.245 27.325);
+  --bui-red-700: oklch(50.5% 0.213 27.518);
+  --bui-red-900: oklch(39.6% 0.141 25.723);
+  --bui-red-950: oklch(25.8% 0.092 26.042);
+  --bui-rose-100: oklch(94.1% 0.03 12.58);
+  --bui-rose-200: oklch(89.2% 0.058 10.001);
+  --bui-rose-300: oklch(81% 0.117 11.638);
+  --bui-rose-500: oklch(64.5% 0.246 16.439);
+  --bui-rose-600: oklch(58.6% 0.253 17.585);
+  --bui-rose-800: oklch(45.5% 0.188 13.697);
+  --bui-rose-950: oklch(27.1% 0.105 12.094);
+  --bui-sky-400: oklch(74.6% 0.16 232.661);
+  --bui-sky-500: oklch(68.5% 0.169 237.323);
+  --bui-teal-400: oklch(77.7% 0.152 181.912);
+  --bui-teal-500: oklch(70.4% 0.14 182.503);
+  --bui-yellow-200: oklch(94.5% 0.129 101.54);
+  --bui-yellow-300: oklch(90.5% 0.182 98.111);
+  --bui-yellow-400: oklch(85.2% 0.199 91.936);
+  --bui-yellow-500: oklch(79.5% 0.184 86.047);
+  --bui-yellow-800: oklch(47.6% 0.114 61.907);
+  --bui-yellow-950: oklch(28.6% 0.066 53.813);
+  --bui-zinc-800: oklch(27.4% 0.006 286.033);
+}

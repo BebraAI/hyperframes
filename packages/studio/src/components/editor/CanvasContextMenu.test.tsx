@@ -77,7 +77,7 @@ describe("CanvasContextMenu — handler gating", () => {
     expect(zOrderButtons()).toHaveLength(4);
     expect(hasDeleteItem()).toBe(true);
     // The divider only appears between the two groups.
-    expect(document.body.querySelector(".border-t")).not.toBeNull();
+    expect(document.body.querySelector(".h-px.bg-border-button-default")).not.toBeNull();
   });
 
   it("hides every item and does NOT render the menu when no handlers are present", () => {

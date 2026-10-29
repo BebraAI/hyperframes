@@ -10,6 +10,7 @@ import path from "node:path";
 import React, { act } from "react";
 import { compile } from "tailwindcss";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { buttonStyles } from "../../boardui/components/base/buttons/button";
 import { Button, type ButtonSize, type ButtonVariant } from "./Button";
 import { IconButton } from "./IconButton";
 import { Tab, Tabs, TabsList } from "./Tabs";
@@ -97,44 +98,21 @@ describe("Button classes", () => {
     expect(classes).not.toContain("text-step-12");
   });
 
-  it("keeps every interactive look reachable without a pointer", () => {
-    // `data-preview-state` exists so a gallery can show the hover, active and
-    // focus looks. It is worth nothing if it drifts from the real state, so
-    // each pair is matched here in both directions.
-    const realPrefix = {
-      hover: ["enabled:hover:", "hover:"],
-      active: ["enabled:active:", "active:"],
-      focus: ["focus-visible:"],
-    };
-
+  it("wears BoardUI's button for every variant", () => {
     for (const variant of VARIANTS) {
       const classes = classesOf(mountHost(<Button variant={variant}>Export</Button>));
       cleanupMounted();
-
-      for (const [state, prefixes] of Object.entries(realPrefix)) {
-        const previewPrefix = `data-[preview-state=${state}]:`;
-        const preview = classes
-          .filter((cls) => cls.startsWith(previewPrefix))
-          .map((cls) => cls.slice(previewPrefix.length));
-        const real = classes
-          .filter((cls) => prefixes.some((prefix) => cls.startsWith(prefix)))
-          .map((cls) => cls.slice(cls.lastIndexOf(":") + 1));
-
-        expect([...preview].sort(), `${variant} ${state}`).toEqual([...real].sort());
-        expect(preview.length, `${variant} ${state}`).toBeGreaterThan(0);
+      for (const cls of buttonStyles.variant[variant].split(" ").filter(Boolean)) {
+        expect(classes, `${variant} ${cls}`).toContain(cls);
       }
     }
   });
 
-  it("uses a motion token that zeroes itself under reduced motion", () => {
-    // AE4. The zero-duration case lives in the `duration-press` utility itself
-    // (theme.css), not in a `motion-reduce:` class beside it, so a caller
-    // cannot use the token and forget the reduced-motion half. The button's
-    // job is to name the token; the stylesheet's job is the media query.
-    expect(classesOf(mountHost(<Button>Export</Button>))).toContain("duration-press");
+  it("uses BoardUI's press motion, which stills itself under reduced motion", () => {
+    expect(classesOf(mountHost(<Button>Export</Button>))).toContain("button-press-motion");
 
-    expect(compileStudioCss(["duration-press"])).toMatch(
-      /\.duration-press \{[\s\S]*?prefers-reduced-motion: reduce[\s\S]*?transition-duration: 0ms/,
+    expect(compileStudioCss(["button-press-motion"])).toMatch(
+      /\.button-press-motion \{[\s\S]*?prefers-reduced-motion: reduce[\s\S]*?transition: none/,
     );
   });
 });

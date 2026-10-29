@@ -35,7 +35,8 @@ export function listSourceFiles(
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name !== "node_modules" && entry.name !== "dist") walk(full);
+        // src/boardui is promptwise's BoardUI, synced whole and checked where it is written.
+        if (!["node_modules", "dist", "boardui"].includes(entry.name)) walk(full);
       } else {
         const relative = toPosixPath(path.relative(from, full));
         if (keep(relative)) files.set(relative, readFileSync(full, "utf8"));

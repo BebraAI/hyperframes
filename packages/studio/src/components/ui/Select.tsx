@@ -4,6 +4,7 @@
  */
 
 import { Select as BaseSelect } from "@base-ui/react/select";
+import { IconCheck } from "../../boardui/components/icons";
 import { cn } from "./cn";
 import { fieldBase } from "./Input";
 import { floatingMotion, POPUP_LAYER } from "./Menu";
@@ -57,13 +58,13 @@ export function Select({
         className={cn(
           fieldBase,
           "w-full cursor-pointer justify-between text-left",
-          "data-[popup-open]:border-border-strong",
+          "data-[popup-open]:ring-border-button-active",
           className,
         )}
         data-preview-state={previewState}
       >
         <BaseSelect.Value className="truncate" />
-        <BaseSelect.Icon className="shrink-0 text-text-4" aria-hidden="true">
+        <BaseSelect.Icon className="shrink-0 text-foreground-icon-tertiary" aria-hidden="true">
           <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
             <path
               d="M1 1L4 4L7 1"
@@ -80,25 +81,27 @@ export function Select({
         <BaseSelect.Positioner sideOffset={4} alignItemWithTrigger={false} className={POPUP_LAYER}>
           <BaseSelect.Popup
             className={cn(
-              "min-w-[var(--anchor-width)] rounded-md border border-border bg-surface py-1 shadow-menu",
+              "min-w-[var(--anchor-width)] rounded-2xl border border-border-button-default bg-background-primary-default p-2.5 shadow-dropdown",
               floatingMotion("duration-open"),
             )}
           >
-            <BaseSelect.List>
+            <BaseSelect.List className="flex flex-col gap-1">
               {options.map((option) => (
                 <BaseSelect.Item
                   key={option.value}
                   value={option.value}
                   disabled={option.disabled}
                   className={cn(
-                    "flex h-ctl-sm cursor-pointer select-none items-center gap-2 px-2.5",
-                    "text-step-11 text-text-2 outline-hidden",
-                    "data-[highlighted]:bg-hover data-[highlighted]:text-text-0",
-                    "data-[selected]:text-text-0",
-                    "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40",
+                    "flex cursor-pointer select-none items-center gap-2 rounded-2lg p-2",
+                    "text-body-medium text-text-primary outline-hidden",
+                    "data-[highlighted]:bg-dropdown-item-hover-background",
+                    "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
                   )}
                 >
                   <BaseSelect.ItemText className="truncate">{option.label}</BaseSelect.ItemText>
+                  <BaseSelect.ItemIndicator className="ms-auto flex shrink-0">
+                    <IconCheck className="size-4" />
+                  </BaseSelect.ItemIndicator>
                 </BaseSelect.Item>
               ))}
             </BaseSelect.List>

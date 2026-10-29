@@ -1,9 +1,10 @@
 /**
- * Toggle: a switch, not a checkbox (immediate effect). `role="switch"` needed an entry in
+ * Toggle: BoardUI's switch on Base UI's behaviour; a switch, not a checkbox (immediate effect). `role="switch"` needed an entry in
  * `typingTarget.ts` so Space is not leaked to the global playback shortcut.
  */
 
 import { Switch } from "@base-ui/react/switch";
+import { SwitchTrack } from "../../boardui/components/base/switch/switch";
 import { cn } from "./cn";
 import type { PreviewState } from "./Button";
 
@@ -40,23 +41,16 @@ export function Toggle({
       }}
       data-preview-state={previewState}
       className={cn(
-        "relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full p-0.5",
-        "border border-border-input bg-input",
-        "transition-[background-color,border-color] ease-standard duration-press",
-        "hover:border-border-strong data-[preview-state=hover]:border-border-strong",
-        "data-[checked]:border-accent data-[checked]:bg-accent",
-        "outline-hidden focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent",
-        "data-[preview-state=focus]:outline-solid data-[preview-state=focus]:outline-2 data-[preview-state=focus]:outline-offset-1 data-[preview-state=focus]:outline-accent",
-        "disabled:cursor-not-allowed disabled:opacity-40",
+        "inline-flex shrink-0 cursor-pointer rounded-full outline-hidden",
+        "focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2",
+        "data-[preview-state=focus]:ring-2 data-[preview-state=focus]:ring-border-focus-ring data-[preview-state=focus]:ring-offset-2",
+        "disabled:cursor-not-allowed",
         className,
       )}
     >
-      <Switch.Thumb
-        className={cn(
-          "size-3 rounded-full bg-text-3",
-          "transition-[transform,background-color] ease-standard duration-press",
-          "data-[checked]:translate-x-3 data-[checked]:bg-bg-0",
-        )}
+      <SwitchTrack
+        size="sm"
+        state={{ isSelected: checked, isDisabled: !!disabled, isFocusVisible: false }}
       />
     </Switch.Root>
   );
