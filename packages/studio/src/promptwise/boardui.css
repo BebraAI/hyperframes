@@ -62,10 +62,18 @@
   }
 }
 @utility scroll-fade-y {
-  mask-image: linear-gradient(to bottom, transparent, black var(--fade-start), black calc(100% - var(--fade-end)), transparent);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--fade-start),
+    black calc(100% - var(--fade-end)),
+    transparent
+  );
   animation-name: fade-start, fade-end;
   animation-fill-mode: both;
   animation-timing-function: linear;
   animation-timeline: scroll(self block);
-  animation-range: 0 1.5rem, calc(100% - 1.5rem) 100%;
+  animation-range:
+    0 1.5rem,
+    calc(100% - 1.5rem) 100%;
 }
