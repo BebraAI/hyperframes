@@ -268,7 +268,7 @@ function ClipLight({ clip }: { clip: RefObject<ClipLatch> }) {
 
 function Bar({ maskRef, peakRef }: { maskRef: Ref<HTMLDivElement>; peakRef: Ref<HTMLDivElement> }) {
   return (
-    <div className="scheme-dark relative h-full w-[18px] overflow-hidden rounded-[2px] bg-neutral-900">
+    <div className="scheme-dark relative h-full w-[18px] overflow-hidden rounded-[2px] bg-background-tertiary-default">
       <div
         className="absolute inset-x-0 bottom-0 bg-green-500"
         style={{ height: `${AMBER_AT * 100}%` }}
@@ -284,7 +284,7 @@ function Bar({ maskRef, peakRef }: { maskRef: Ref<HTMLDivElement>; peakRef: Ref<
       <div
         ref={maskRef}
         data-testid="meter-mask"
-        className="absolute inset-x-0 top-0 bg-neutral-900"
+        className="absolute inset-x-0 top-0 bg-background-tertiary-default"
         style={{ height: "100%" }}
       />
       <div
@@ -379,7 +379,7 @@ function Fader({
         onCommit(audioFaderPositionToGain(clampNumber(next, AUDIO_GAIN_FADER_MIN, maxPosition)));
         e.preventDefault();
       }}
-      className="relative h-full w-2 shrink-0 cursor-ns-resize touch-none rounded-full bg-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-studio-accent"
+      className="relative h-full w-2 shrink-0 cursor-ns-resize touch-none rounded-full bg-background-tertiary-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-studio-accent"
     >
       <div
         className="absolute inset-x-[-3px] h-1.5 -translate-y-1/2 rounded-full bg-neutral-200"
@@ -432,7 +432,7 @@ function MeterStrip({
           onLive={(v) => onLive(strip.id, v)}
           onCommit={(v) => onCommit(strip.id, v)}
         />
-        <div className="relative w-5 font-mono text-[9px] leading-none text-neutral-500">
+        <div className="relative w-5 font-mono text-[9px] leading-none text-text-tertiary">
           {METER_DB_MARKS.map((db) => (
             <span
               key={db}
@@ -448,7 +448,7 @@ function MeterStrip({
           <Bar maskRef={refs[2]} peakRef={refs[3]} />
         </div>
       </div>
-      <span className="max-w-full truncate text-[10px] text-neutral-400" title={strip.label}>
+      <span className="max-w-full truncate text-[10px] text-text-secondary" title={strip.label}>
         {strip.label}
       </span>
     </div>
@@ -482,7 +482,7 @@ function MeterStripBody({ previewIframeRef }: AudioMeterStripProps) {
   return (
     <div
       data-testid="audio-meter-strip"
-      className="flex shrink-0 overflow-x-auto border-l border-neutral-800/50 bg-neutral-950"
+      className="flex shrink-0 overflow-x-auto border-l border-border-button-default bg-background-tertiary-default"
     >
       {strips.map((strip) => (
         <MeterStrip

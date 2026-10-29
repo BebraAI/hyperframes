@@ -1,3 +1,5 @@
+import { Banner } from "./ui/Dialog";
+
 interface CompositionMissingBannerProps {
   /** The composition this tab has open, that the server can no longer find. */
   path: string;
@@ -20,13 +22,10 @@ interface CompositionMissingBannerProps {
  */
 export function CompositionMissingBanner({ path }: CompositionMissingBannerProps) {
   return (
-    <div
-      role="alert"
-      className="hf-backdrop-in absolute left-1/2 top-14 z-92 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md border border-amber-500/30 bg-amber-950/85 px-4 py-2 text-[12px] font-medium text-amber-100 shadow-lg shadow-black/30"
-    >
+    <Banner tone="warning">
       <span>
         <strong>{path}</strong> is no longer on disk. Select another composition to keep editing.
       </span>
-    </div>
+    </Banner>
   );
 }

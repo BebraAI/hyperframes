@@ -193,7 +193,7 @@ export function FlatEffectsSection({
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-panel-text-3">Custom palette</span>
+              <span className="text-caption-2-regular text-panel-text-3">Custom palette</span>
               <button
                 type="button"
                 title="Use default palette"
@@ -291,9 +291,7 @@ export function FlatEffectsSection({
           className="space-y-1 border-l-2 border-panel-border-input pl-2.5"
         >
           <div className="flex min-h-[26px] items-center justify-between gap-2">
-            <span className="text-[11px] font-medium text-panel-text-1">
-              {selectedEffect.label}
-            </span>
+            <span className="text-caption-2-medium text-panel-text-1">{selectedEffect.label}</span>
             <span className="flex items-center gap-2">
               <button
                 type="button"

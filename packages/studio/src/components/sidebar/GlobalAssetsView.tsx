@@ -60,11 +60,13 @@ export function GlobalAssetsView({ searchQuery }: { searchQuery: string }) {
   const rows = useMemo(() => globalAssetRows(records ?? [], searchQuery), [records, searchQuery]);
 
   if (records === null) {
-    return <p className="px-4 py-3 text-[11px] text-panel-text-5">Loading global assets…</p>;
+    return (
+      <p className="px-4 py-3 text-caption-1-regular text-panel-text-5">Loading global assets…</p>
+    );
   }
   if (rows.length === 0) {
     return (
-      <p className="px-4 py-3 text-[11px] text-panel-text-5">
+      <p className="px-4 py-3 text-caption-1-regular text-panel-text-5">
         No assets in the global cache yet. Resolved media is promoted to <code>~/.media</code> and
         becomes reusable across projects.
       </p>
@@ -72,19 +74,19 @@ export function GlobalAssetsView({ searchQuery }: { searchQuery: string }) {
   }
   return (
     <div>
-      <div className="px-4 py-2 border-t border-panel-border text-[11px] text-panel-text-5">
+      <div className="px-4 py-2 border-t border-panel-border text-caption-1-regular text-panel-text-5">
         {rows.length} reusable across all projects
       </div>
       {rows.map((row) => (
         <div
           key={row.id}
-          className="px-4 py-1.5 flex items-center gap-2.5 border-l-2 border-transparent hover:bg-neutral-800/50"
+          className="px-4 py-1.5 flex items-center gap-2.5 hover:bg-background-primary-hover"
           title={`${row.id} · ${row.type}`}
         >
-          <span className="text-[9px] font-medium text-neutral-600 uppercase w-10 shrink-0">
+          <span className="text-caption-2-medium text-text-tertiary uppercase w-10 shrink-0">
             {row.type}
           </span>
-          <span className="text-xs text-panel-text-1 truncate">{row.label}</span>
+          <span className="text-caption-1-regular text-panel-text-1 truncate">{row.label}</span>
         </div>
       ))}
     </div>

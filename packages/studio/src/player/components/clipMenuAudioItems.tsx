@@ -8,7 +8,7 @@ import { openAudioGainDialog } from "./audioGainDialogStore";
 import { offersDuck, readBedCarve, setDuckUnderVoice, type DuckOutcome } from "./clipMenuDuck";
 
 const ITEM_CLASS =
-  "w-full flex items-center justify-between px-3 py-1.5 text-xs text-left outline-hidden text-neutral-300 hover:bg-neutral-800 focus-visible:bg-neutral-800 cursor-pointer";
+  "w-full flex items-center justify-between px-3 py-1.5 text-xs text-left outline-hidden text-text-primary hover:bg-background-primary-hover focus-visible:bg-background-primary-hover cursor-pointer";
 
 const DUCK_TOAST: Record<DuckOutcome, string> = {
   ducked: "Ducks under the voice. Normalize the voice first for the most even result.",
@@ -75,7 +75,7 @@ export function ClipMenuAudioItems({
         }}
       >
         <span>Audio Gain…</span>
-        <span className="text-neutral-500 text-[10px] ml-3">G</span>
+        <span className="text-text-tertiary text-[10px] ml-3">G</span>
       </button>
     );
   }

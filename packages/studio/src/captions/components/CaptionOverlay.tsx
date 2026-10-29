@@ -407,7 +407,7 @@ export const CaptionOverlay = memo(function CaptionOverlay({ iframeRef }: Captio
     >
       {wordBoxes.length === 0 && model && model.segments.size > 0 && (
         <div className="absolute inset-x-0 top-3 flex justify-center pointer-events-none">
-          <span className="px-2.5 py-1 rounded-full bg-black/60 border border-neutral-700 text-2xs text-neutral-300">
+          <span className="px-2.5 py-1 rounded-full bg-black/60 border border-border-button-default text-2xs text-text-primary">
             No captions visible at this frame. Scrub to a caption, or select one in the track below
           </span>
         </div>

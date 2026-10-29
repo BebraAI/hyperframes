@@ -33,7 +33,7 @@ export function PropertyPanelFlatFooter({
           onAskAgent?.();
         }}
         disabled={!onAskAgent}
-        className="flex items-center gap-[7px] text-[11px] font-medium text-panel-text-2 disabled:cursor-not-allowed"
+        className="flex items-center gap-[7px] text-caption-2-medium text-panel-text-2 disabled:cursor-not-allowed"
       >
         <svg
           width="13"

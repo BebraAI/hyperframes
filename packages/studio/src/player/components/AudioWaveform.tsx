@@ -323,7 +323,7 @@ export const AudioWaveform = memo(function AudioWaveform({
                 background: "var(--timeline-waveform-error)",
               }}
             />
-            <span className="relative rounded-sm bg-black/50 px-1 text-[8px] text-neutral-500">
+            <span className="relative rounded-sm bg-black/50 px-1 text-[8px] text-text-tertiary">
               waveform unavailable
             </span>
           </div>

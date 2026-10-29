@@ -20,12 +20,12 @@ function FlatEmptyState() {
         </svg>
       </span>
       <div className="text-[13px] font-semibold text-panel-text-0">Nothing selected</div>
-      <div className="max-w-[250px] text-[11px] leading-normal text-panel-text-3">
+      <div className="max-w-[250px] text-caption-2-regular leading-normal text-panel-text-3">
         Click any element on the canvas to edit it, or drag to select several.
       </div>
       <div className="mt-2 flex w-full flex-col gap-1.5">
         <span className="flex items-center justify-between rounded-lg border border-panel-border bg-panel-bg px-3 py-2">
-          <span className="flex items-center gap-2 text-[11px] text-panel-text-2">
+          <span className="flex items-center gap-2 text-caption-2-regular text-panel-text-2">
             <span className="text-danger-ink">●</span>
             Record a gesture
           </span>
@@ -37,7 +37,7 @@ function FlatEmptyState() {
           <button
             type="button"
             onClick={askPromptwiseAgent}
-            className="flex items-center gap-2 rounded-lg border border-panel-border bg-panel-bg px-3 py-2 text-[11px] text-panel-text-2 hover:bg-hover"
+            className="flex items-center gap-2 rounded-lg border border-panel-border bg-panel-bg px-3 py-2 text-caption-2-regular text-panel-text-2 hover:bg-hover"
           >
             <span className="text-accent-ink">✦</span>
             Describe a change to the agent
@@ -121,7 +121,7 @@ function FlatMultiSelectState({
               >
                 {glyph}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[11px] text-panel-text-1">
+              <span className="min-w-0 flex-1 truncate text-caption-2-regular text-panel-text-1">
                 {element.label}
               </span>
               <span className="shrink-0 font-mono text-[9px] text-panel-text-4">
@@ -148,7 +148,7 @@ function FlatMultiSelectState({
               onGroupSelection();
               trackInput("button", "group-selection");
             }}
-            className="flex h-[34px] flex-1 items-center justify-center gap-2 rounded-lg bg-panel-hover text-[11px] font-semibold text-panel-text-0"
+            className="flex h-[34px] flex-1 items-center justify-center gap-2 rounded-lg bg-panel-hover text-caption-2-semibold text-panel-text-0"
           >
             <Layers size={13} />
             Group selection
@@ -161,7 +161,7 @@ function FlatMultiSelectState({
               onHideAllSelected();
               trackInput("button", "hide-all");
             }}
-            className="flex h-[34px] items-center gap-1.5 rounded-lg border border-panel-border-input bg-panel-input px-3 text-[11px] font-medium text-panel-text-2"
+            className="flex h-[34px] items-center gap-1.5 rounded-lg border border-panel-border-input bg-panel-input px-3 text-caption-2-medium text-panel-text-2"
           >
             <Eye size={13} />
             Hide all
@@ -205,26 +205,26 @@ export function PropertyPanelEmptyState({
   }
 
   return (
-    <div className="flex h-full flex-col bg-neutral-900">
+    <div className="flex h-full flex-col bg-background-tertiary-default">
       <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
         {multiSelectCount > 1 ? (
           <>
-            <Layers size={18} className="mb-3 text-neutral-600" />
-            <p className="text-sm font-medium text-neutral-200">
+            <Layers size={18} className="mb-3 text-text-tertiary" />
+            <p className="text-sm font-medium text-text-primary">
               {multiSelectCount} elements selected
             </p>
-            <p className="mt-2 max-w-[260px] text-xs leading-5 text-neutral-500">
+            <p className="mt-2 max-w-[260px] text-xs leading-5 text-text-tertiary">
               Select a single element to edit its properties. Click an element in the preview or use
               the timeline layer panel.
             </p>
           </>
         ) : (
           <>
-            <Eye size={18} className="mb-3 text-neutral-600" />
-            <p className="text-sm font-medium text-neutral-200">
+            <Eye size={18} className="mb-3 text-text-tertiary" />
+            <p className="text-sm font-medium text-text-primary">
               Select an element in the preview.
             </p>
-            <p className="mt-2 max-w-[260px] text-xs leading-5 text-neutral-500">
+            <p className="mt-2 max-w-[260px] text-xs leading-5 text-text-tertiary">
               The inspector is tuned for element edits with safer geometry controls, color picking,
               and cleaner grouped layer controls.
             </p>

@@ -96,7 +96,7 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
       >
         <div ref={panelBodyRef} tabIndex={-1} className="min-h-0 overflow-y-auto outline-hidden">
           <div className="px-3 pt-3 pb-2.5">
-            <p className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
+            <p className="text-[9px] font-medium text-text-tertiary uppercase tracking-wider mb-1.5">
               Jump to frame
             </p>
             <form onSubmit={handleJumpSubmit} className="flex items-center gap-1.5">
@@ -108,7 +108,7 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
                 pattern="[0-9]*"
                 aria-label="Jump to frame"
                 placeholder="frame number"
-                className="h-6 flex-1 rounded-sm border border-neutral-700 bg-neutral-900 px-2 text-[10px] font-mono tabular-nums text-neutral-200 outline-hidden transition-colors placeholder:text-neutral-600 focus:border-studio-accent/60"
+                className="h-6 flex-1 rounded-sm border border-border-button-default bg-background-tertiary-default px-2 text-[10px] font-mono tabular-nums text-text-primary outline-hidden transition-colors placeholder:text-text-tertiary focus:border-border-button-active"
                 onKeyDown={handleJumpKeyDown}
                 onBlur={commitJumpFrame}
               />
@@ -116,7 +116,7 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
                 <button
                   type="submit"
                   disabled={disabled}
-                  className="h-6 px-2 rounded-sm border border-neutral-700 text-[10px] text-neutral-300 transition-colors hover:border-neutral-500 hover:bg-neutral-800 disabled:opacity-40"
+                  className="h-6 px-2 rounded-sm border border-border-button-default text-[10px] text-text-primary transition-colors hover:border-border-button-hover hover:bg-background-primary-hover disabled:opacity-40"
                 >
                   Go
                 </button>
@@ -125,28 +125,28 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
           </div>
           <div className="border-t border-border" />
           <div className="px-3 pt-2.5 pb-2">
-            <p className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
+            <p className="text-[9px] font-medium text-text-tertiary uppercase tracking-wider mb-1.5">
               Work area
             </p>
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] rounded-sm border border-neutral-700 px-1.5 py-0.5 text-neutral-300 min-w-[20px] text-center bg-hover">
+                  <span className="font-mono text-[10px] rounded-sm border border-border-button-default px-1.5 py-0.5 text-text-primary min-w-[20px] text-center bg-hover">
                     I
                   </span>
-                  <span className="text-[10px] text-neutral-400">In-point</span>
+                  <span className="text-[10px] text-text-secondary">In-point</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {inPoint !== null ? (
                     <>
-                      <span className="font-mono text-[10px] text-neutral-300">
+                      <span className="font-mono text-[10px] text-text-primary">
                         {formatTime(inPoint)}
                       </span>
                       <Tooltip label="Clear in-point">
                         <button
                           type="button"
                           onClick={() => setInPoint(null)}
-                          className="w-4 h-4 flex items-center justify-center rounded-sm text-neutral-500 hover:text-neutral-200 transition-colors"
+                          className="w-4 h-4 flex items-center justify-center rounded-sm text-text-tertiary hover:text-text-primary transition-colors"
                           aria-label="Clear in-point"
                         >
                           <svg
@@ -163,28 +163,28 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
                       </Tooltip>
                     </>
                   ) : (
-                    <span className="text-[10px] text-neutral-600">Not set</span>
+                    <span className="text-[10px] text-text-tertiary">Not set</span>
                   )}
                 </div>
               </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] rounded-sm border border-neutral-700 px-1.5 py-0.5 text-neutral-300 min-w-[20px] text-center bg-hover">
+                  <span className="font-mono text-[10px] rounded-sm border border-border-button-default px-1.5 py-0.5 text-text-primary min-w-[20px] text-center bg-hover">
                     O
                   </span>
-                  <span className="text-[10px] text-neutral-400">Out-point</span>
+                  <span className="text-[10px] text-text-secondary">Out-point</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {outPoint !== null ? (
                     <>
-                      <span className="font-mono text-[10px] text-neutral-300">
+                      <span className="font-mono text-[10px] text-text-primary">
                         {formatTime(outPoint)}
                       </span>
                       <Tooltip label="Clear out-point">
                         <button
                           type="button"
                           onClick={() => setOutPoint(null)}
-                          className="w-4 h-4 flex items-center justify-center rounded-sm text-neutral-500 hover:text-neutral-200 transition-colors"
+                          className="w-4 h-4 flex items-center justify-center rounded-sm text-text-tertiary hover:text-text-primary transition-colors"
                           aria-label="Clear out-point"
                         >
                           <svg
@@ -201,7 +201,7 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
                       </Tooltip>
                     </>
                   ) : (
-                    <span className="text-[10px] text-neutral-600">Not set</span>
+                    <span className="text-[10px] text-text-tertiary">Not set</span>
                   )}
                 </div>
               </div>
@@ -211,16 +211,16 @@ export const ShortcutsPanel = memo(function ShortcutsPanel({
           <div className="px-3 pt-2.5 pb-3 flex flex-col gap-3">
             {sections.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                <p className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
+                <p className="text-[9px] font-medium text-text-tertiary uppercase tracking-wider mb-1.5">
                   {section.title}
                 </p>
                 <div className="flex flex-col gap-1">
                   {section.hints.map((hint, hintIndex) => (
                     <div key={hintIndex} className="flex items-center gap-3">
-                      <span className="font-mono text-[10px] rounded-sm border border-neutral-700 px-1.5 py-0.5 text-neutral-300 min-w-[36px] text-center bg-hover">
+                      <span className="font-mono text-[10px] rounded-sm border border-border-button-default px-1.5 py-0.5 text-text-primary min-w-[36px] text-center bg-hover">
                         {hint.key}
                       </span>
-                      <span className="text-[10px] text-neutral-400">{hint.label}</span>
+                      <span className="text-[10px] text-text-secondary">{hint.label}</span>
                     </div>
                   ))}
                 </div>

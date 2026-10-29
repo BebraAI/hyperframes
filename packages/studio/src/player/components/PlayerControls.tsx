@@ -78,7 +78,7 @@ const LoopButton = memo(function LoopButton({
         }}
         disabled={disabled}
         className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:opacity-30 ${
-          loopEnabled ? "text-accent-ink" : "text-neutral-500 hover:text-neutral-200"
+          loopEnabled ? "text-accent-ink" : "text-text-tertiary hover:text-text-primary"
         }`}
         aria-label={loopEnabled ? "Disable loop playback" : "Enable loop playback"}
         aria-pressed={loopEnabled}
@@ -120,7 +120,7 @@ const FullscreenButton = memo(function FullscreenButton({
           onToggleFullscreen();
         }}
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
-          isFullscreen ? "text-accent-ink" : "text-neutral-500 hover:text-neutral-200"
+          isFullscreen ? "text-accent-ink" : "text-text-tertiary hover:text-text-primary"
         }`}
         aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
       >
@@ -241,13 +241,13 @@ export const PlayerControls = memo(function PlayerControls({
             type="button"
             onClick={() => setTimeDisplayMode(timeDisplayMode === "time" ? "frame" : "time")}
             disabled={disabled}
-            className="min-w-0 justify-self-start whitespace-nowrap font-mono text-[11px] tabular-nums text-neutral-400 transition-colors hover:text-neutral-200 disabled:pointer-events-none"
+            className="min-w-0 justify-self-start whitespace-nowrap font-mono text-caption-2-regular tabular-nums text-text-secondary transition-colors hover:text-text-primary disabled:pointer-events-none"
           >
             <span ref={timeDisplayRef}>{formatTime(0)}</span>
             {timeDisplayMode === "time" ? (
               <>
                 <span className="mx-0.5 text-text-off">/</span>
-                <span className="text-neutral-600">{formatTime(duration)}</span>
+                <span className="text-text-tertiary">{formatTime(duration)}</span>
               </>
             ) : null}
           </button>
@@ -262,7 +262,7 @@ export const PlayerControls = memo(function PlayerControls({
               onTogglePlay();
             }}
             disabled={controlsDisabled}
-            className="flex h-7 w-8 items-center justify-center justify-self-center rounded-md text-neutral-100 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-7 w-8 items-center justify-center justify-self-center rounded-md text-text-primary transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-30"
           >
             <PlayPauseMorphIcon playing={isPlaying} />
           </button>

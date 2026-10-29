@@ -41,7 +41,7 @@ interface KeyframeDiamondContextMenuProps {
 }
 
 const ITEM_CLS = `${menuClasses.row} ${menuClasses.rowEnabled} flex items-center gap-2`;
-const DESTRUCTIVE_ITEM_CLS = `${menuClasses.row} text-danger-ink hover:bg-neutral-800 focus-visible:bg-neutral-800 cursor-pointer flex items-center gap-2`;
+const DESTRUCTIVE_ITEM_CLS = `${menuClasses.row} text-danger-ink hover:bg-background-primary-hover focus-visible:bg-background-primary-hover cursor-pointer flex items-center gap-2`;
 
 export function KeyframeDiamondContextMenu({
   state,
@@ -126,7 +126,7 @@ export function KeyframeDiamondContextMenu({
           }}
         >
           <span>Edit Ease…</span>
-          <span className="text-[10px] text-neutral-500">{state.currentEase ?? "default"}</span>
+          <span className="text-[10px] text-text-tertiary">{state.currentEase ?? "default"}</span>
         </button>
       )}
 

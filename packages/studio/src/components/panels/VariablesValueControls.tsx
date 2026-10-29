@@ -14,7 +14,7 @@ import type {
 } from "@hyperframes/sdk";
 
 export const VARIABLES_INPUT_CLASS =
-  "w-full bg-neutral-900 border border-neutral-800 rounded-sm px-2 py-1 text-[10px] text-neutral-200 focus:outline-hidden focus:border-neutral-700";
+  "w-full bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-[10px] text-text-primary focus:outline-hidden focus:border-border-button-active";
 
 export function variableDefaultText(decl: CompositionVariable): string {
   if (decl.type === "font" && typeof decl.default === "object") return decl.default.name;
@@ -112,7 +112,7 @@ function ColorControl({
           if (draft !== null && draft !== colorValue) onCommit(draft);
           setDraft(null);
         }}
-        className="h-6 w-6 cursor-pointer rounded-sm border border-neutral-700 bg-transparent"
+        className="h-6 w-6 cursor-pointer rounded-sm border border-border-button-default bg-transparent"
       />
       <DraftTextInput
         value={colorValue}
@@ -171,7 +171,7 @@ function NumberControl({
         step={decl.step}
         className={`${VARIABLES_INPUT_CLASS} ${hasRange ? "w-16" : "flex-1"} tabular-nums`}
       />
-      {decl.unit && <span className="text-[9px] text-neutral-500">{decl.unit}</span>}
+      {decl.unit && <span className="text-[9px] text-text-tertiary">{decl.unit}</span>}
     </div>
   );
 }

@@ -23,12 +23,12 @@ export function SectionHeader({
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-between px-3 py-2 text-[11px] font-medium text-neutral-400 hover:text-neutral-200 active:bg-neutral-800/60 border-b border-neutral-800 transition-colors"
+      className="flex w-full items-center justify-between px-3 py-2 text-caption-2-medium text-text-secondary hover:text-text-primary active:bg-background-primary-active border-b border-border-button-default transition-colors"
       onClick={onToggle}
       aria-expanded={expanded}
     >
       <span>{children}</span>
-      <span className="text-[10px] text-neutral-600">{expanded ? "▲" : "▼"}</span>
+      <span className="text-[10px] text-text-tertiary">{expanded ? "▲" : "▼"}</span>
     </button>
   );
 }
@@ -71,8 +71,10 @@ export function SlideList({
             role="button"
             tabIndex={0}
             aria-pressed={isSelected}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer text-[11px] transition-colors ${
-              isSelected ? "bg-on text-text-0" : "hover:bg-neutral-800/60 text-neutral-300"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer text-caption-2-regular transition-colors ${
+              isSelected
+                ? "bg-on text-text-0"
+                : "hover:bg-background-primary-hover text-text-primary"
             }`}
             onClick={() => onSelect(scene.id)}
             onKeyDown={(e) => {
@@ -98,7 +100,7 @@ export function SlideList({
                   aria-label="Move slide up"
                   title="Move up"
                   disabled={slideIndex <= 0}
-                  className="px-1 py-0.5 text-[10px] text-neutral-400 enabled:hover:text-text-0 enabled:active:scale-[0.95] disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-1 py-0.5 text-[10px] text-text-secondary enabled:hover:text-text-0 enabled:active:scale-[0.95] disabled:opacity-30 disabled:cursor-not-allowed"
                   onClick={(e) => {
                     e.stopPropagation();
                     onReorder(scene.id, "up");
@@ -111,7 +113,7 @@ export function SlideList({
                   aria-label="Move slide down"
                   title="Move down"
                   disabled={slideIndex === slides.length - 1}
-                  className="px-1 py-0.5 text-[10px] text-neutral-400 enabled:hover:text-text-0 enabled:active:scale-[0.95] disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-1 py-0.5 text-[10px] text-text-secondary enabled:hover:text-text-0 enabled:active:scale-[0.95] disabled:opacity-30 disabled:cursor-not-allowed"
                   onClick={(e) => {
                     e.stopPropagation();
                     onReorder(scene.id, "down");
@@ -125,7 +127,9 @@ export function SlideList({
         );
       })}
       {scenes.length === 0 && (
-        <p className="px-3 py-2 text-[11px] text-neutral-500 italic">No scenes found</p>
+        <p className="px-3 py-2 text-caption-2-regular text-text-tertiary italic">
+          No scenes found
+        </p>
       )}
     </div>
   );
@@ -154,13 +158,13 @@ export function SlideInspector({
   const fragments = slide?.fragments ?? [];
   return (
     <div className="flex flex-col gap-3 px-3 py-2">
-      <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wide truncate">
+      <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wide truncate">
         Scene: {sceneId}
       </p>
       <div className="flex flex-col gap-1">
-        <label className="text-[11px] text-neutral-400">Notes</label>
+        <label className="text-caption-2-regular text-text-secondary">Notes</label>
         <textarea
-          className="bg-neutral-800 border border-neutral-700 rounded-sm px-2 py-1.5 text-[11px] text-text-0 resize-none placeholder-neutral-600 focus:border-studio-accent/60 focus:outline-hidden"
+          className="bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1.5 text-caption-2-regular text-text-0 resize-none placeholder:text-text-tertiary focus:border-border-button-active focus:outline-hidden"
           rows={3}
           placeholder="Speaker notes or script..."
           value={slide?.notes ?? ""}
@@ -169,10 +173,10 @@ export function SlideInspector({
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-neutral-400">Fragment hold-points</span>
+          <span className="text-caption-2-regular text-text-secondary">Fragment hold-points</span>
           <button
             type="button"
-            className="text-[10px] px-2 py-0.5 rounded-sm bg-hover hover:bg-press text-neutral-200 transition-colors"
+            className="text-[10px] px-2 py-0.5 rounded-sm bg-hover hover:bg-press text-text-primary transition-colors"
             onClick={onMarkFragment}
             title={`Mark ${currentTime.toFixed(2)}s as hold-point`}
           >
@@ -184,13 +188,13 @@ export function SlideInspector({
             {fragments.map((t, i) => (
               <span
                 key={`frag-${i}`}
-                className="inline-flex items-center gap-1 bg-neutral-700 rounded-sm px-1.5 py-0.5 text-[10px] text-neutral-200"
+                className="inline-flex items-center gap-1 bg-background-tertiary-default rounded-sm px-1.5 py-0.5 text-[10px] text-text-primary"
               >
                 {t.toFixed(2)}s
                 <button
                   type="button"
                   aria-label={`Remove fragment at ${t.toFixed(2)}s`}
-                  className="text-neutral-400 hover:text-danger-ink transition-colors"
+                  className="text-text-secondary hover:text-danger-ink transition-colors"
                   onClick={() => onRemoveFragment(t)}
                 >
                   ×
@@ -199,7 +203,7 @@ export function SlideInspector({
             ))}
           </div>
         ) : (
-          <p className="text-[10px] text-neutral-600 italic">No hold-points yet</p>
+          <p className="text-[10px] text-text-tertiary italic">No hold-points yet</p>
         )}
       </div>
     </div>
@@ -247,7 +251,7 @@ export function BranchTree({
         <input
           id={inputId}
           type="text"
-          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-sm px-2 py-1 text-[11px] text-text-0 placeholder-neutral-600 focus:border-studio-accent/60 focus:outline-hidden"
+          className="flex-1 bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-caption-2-regular text-text-0 placeholder:text-text-tertiary focus:border-border-button-active focus:outline-hidden"
           placeholder="New branch name..."
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
@@ -258,7 +262,7 @@ export function BranchTree({
         />
         <button
           type="button"
-          className="px-2 py-1 rounded-sm bg-hover hover:bg-press text-[11px] text-neutral-200 transition-colors shrink-0"
+          className="px-2 py-1 rounded-sm bg-hover hover:bg-press text-caption-2-regular text-text-primary transition-colors shrink-0"
           onClick={handleCreate}
         >
           Add
@@ -266,7 +270,7 @@ export function BranchTree({
       </div>
 
       {sequences.length === 0 ? (
-        <p className="text-[10px] text-neutral-600 italic">No branches yet</p>
+        <p className="text-[10px] text-text-tertiary italic">No branches yet</p>
       ) : (
         <div className="flex flex-col gap-3">
           {sequences.map((seq) => (
@@ -320,11 +324,11 @@ function BranchItem({
   }, [draft, onRename, seq.id, seq.label]);
 
   return (
-    <div className="border border-neutral-700/60 rounded-sm p-2 flex flex-col gap-2">
+    <div className="border border-border-button-default rounded-sm p-2 flex flex-col gap-2">
       <div className="flex items-center gap-1">
         {editing ? (
           <input
-            className="flex-1 bg-neutral-800 border border-neutral-600 rounded-sm px-1.5 py-0.5 text-[11px] text-text-0 focus:border-studio-accent/60 focus:outline-hidden"
+            className="flex-1 bg-background-tertiary-default border border-border-button-default rounded-sm px-1.5 py-0.5 text-caption-2-regular text-text-0 focus:border-border-button-active focus:outline-hidden"
             value={draft}
             autoFocus
             onChange={(e) => setDraft(e.target.value)}
@@ -339,7 +343,7 @@ function BranchItem({
           <span
             role="button"
             tabIndex={0}
-            className="flex-1 text-[11px] text-text-0 font-medium truncate cursor-pointer hover:text-neutral-300"
+            className="flex-1 text-caption-2-regular text-text-0 font-medium truncate cursor-pointer hover:text-text-primary"
             title="Click to rename"
             onClick={() => setEditing(true)}
             onKeyDown={(e) => {
@@ -355,7 +359,7 @@ function BranchItem({
         <button
           type="button"
           aria-label={`Delete branch ${seq.label}`}
-          className="text-[10px] text-neutral-500 hover:text-danger-ink active:scale-[0.95] transition-colors px-1"
+          className="text-[10px] text-text-tertiary hover:text-danger-ink active:scale-[0.95] transition-colors px-1"
           onClick={() => setConfirmingDelete(true)}
         >
           ✕
@@ -384,7 +388,7 @@ function BranchItem({
             <button
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="px-2 py-0.5 text-[10px] rounded-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-sm text-text-secondary hover:text-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -398,7 +402,7 @@ function BranchItem({
           return (
             <div
               key={scene.id}
-              className="flex items-center gap-1.5 py-0.5 text-[11px] text-neutral-400"
+              className="flex items-center gap-1.5 py-0.5 text-caption-2-regular text-text-secondary"
             >
               <input
                 type="checkbox"
@@ -411,8 +415,8 @@ function BranchItem({
                 <button
                   type="button"
                   aria-pressed={isSelected}
-                  className={`flex-1 text-left truncate transition-colors hover:text-neutral-200 ${
-                    isSelected ? "text-text-0" : "text-neutral-400"
+                  className={`flex-1 text-left truncate transition-colors hover:text-text-primary ${
+                    isSelected ? "text-text-0" : "text-text-secondary"
                   }`}
                   onClick={() => onSelectBranchSlide(seq.id, scene.id)}
                 >
@@ -424,7 +428,7 @@ function BranchItem({
             </div>
           );
         })}
-        {scenes.length === 0 && <p className="text-[10px] text-neutral-600 italic">No scenes</p>}
+        {scenes.length === 0 && <p className="text-[10px] text-text-tertiary italic">No scenes</p>}
       </div>
     </div>
   );
@@ -470,7 +474,9 @@ export function HotspotTool({
   if (!selectedSceneId) {
     return (
       <div className="px-3 py-2">
-        <p className="text-[11px] text-neutral-500 italic">Select a scene in the Slides list</p>
+        <p className="text-caption-2-regular text-text-tertiary italic">
+          Select a scene in the Slides list
+        </p>
       </div>
     );
   }
@@ -478,32 +484,32 @@ export function HotspotTool({
   return (
     <div className="flex flex-col gap-3 px-3 py-2">
       <div className="flex flex-col gap-1.5">
-        <p className="text-[11px] text-neutral-400">
+        <p className="text-caption-2-regular text-text-secondary">
           Selected element:{" "}
-          <span className="text-neutral-200 font-mono">{elementKey ?? "none"}</span>
+          <span className="text-text-primary font-mono">{elementKey ?? "none"}</span>
         </p>
         {!elementKey && (
-          <p className="text-[10px] text-neutral-500 italic">
+          <p className="text-[10px] text-text-tertiary italic">
             Click an element on the canvas to choose the hotspot target.
           </p>
         )}
         {sequences.length === 0 && (
-          <p className="text-[10px] text-neutral-500 italic">
+          <p className="text-[10px] text-text-tertiary italic">
             Create a branch in the Branches section first. Hotspots jump to a branch.
           </p>
         )}
-        <label className="text-[11px] text-neutral-400">Hotspot label</label>
+        <label className="text-caption-2-regular text-text-secondary">Hotspot label</label>
         <input
           type="text"
-          className="bg-neutral-800 border border-neutral-700 rounded-sm px-2 py-1 text-[11px] text-text-0 placeholder-neutral-600 focus:border-studio-accent/60 focus:outline-hidden"
+          className="bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-caption-2-regular text-text-0 placeholder:text-text-tertiary focus:border-border-button-active focus:outline-hidden"
           placeholder="Button label..."
           value={hotspotLabel}
           onChange={(e) => setHotspotLabel(e.target.value)}
           aria-label="Hotspot label"
         />
-        <label className="text-[11px] text-neutral-400">Target branch</label>
+        <label className="text-caption-2-regular text-text-secondary">Target branch</label>
         <select
-          className="bg-neutral-800 border border-neutral-700 rounded-sm px-2 py-1 text-[11px] text-text-0 focus:border-studio-accent/60 focus:outline-hidden"
+          className="bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-caption-2-regular text-text-0 focus:border-border-button-active focus:outline-hidden"
           value={targetSequenceId}
           onChange={(e) => setTargetSequenceId(e.target.value)}
           aria-label="Target branch sequence"
@@ -525,7 +531,7 @@ export function HotspotTool({
                 ? "Choose a target branch first"
                 : undefined
           }
-          className="px-3 py-1.5 rounded-sm bg-accent enabled:hover:bg-accent-hover enabled:active:scale-[0.98] text-on-accent text-[11px] font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 rounded-sm bg-accent enabled:hover:bg-accent-hover enabled:active:scale-[0.98] text-on-accent text-caption-2-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           onClick={handleMakeHotspot}
         >
           Make hotspot
@@ -534,21 +540,23 @@ export function HotspotTool({
 
       {hotspots.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-neutral-400 font-medium">Hotspots on this slide</p>
+          <p className="text-caption-2-regular text-text-secondary font-medium">
+            Hotspots on this slide
+          </p>
           {hotspots.map((h) => {
             const seqLabel = sequences.find((s) => s.id === h.target)?.label ?? h.target;
             return (
               <div
                 key={h.id}
-                className="flex items-center gap-2 bg-neutral-800 rounded-sm px-2 py-1"
+                className="flex items-center gap-2 bg-background-tertiary-default rounded-sm px-2 py-1"
               >
-                <span className="flex-1 text-[11px] text-neutral-200 truncate">
-                  {h.label} → <span className="text-neutral-400">{seqLabel}</span>
+                <span className="flex-1 text-caption-2-regular text-text-primary truncate">
+                  {h.label} → <span className="text-text-secondary">{seqLabel}</span>
                 </span>
                 <button
                   type="button"
                   aria-label={`Remove hotspot ${h.label}`}
-                  className="text-[10px] text-neutral-500 hover:text-danger-ink transition-colors"
+                  className="text-[10px] text-text-tertiary hover:text-danger-ink transition-colors"
                   onClick={() => onRemoveHotspot(selectedSceneId, h.id)}
                 >
                   ✕

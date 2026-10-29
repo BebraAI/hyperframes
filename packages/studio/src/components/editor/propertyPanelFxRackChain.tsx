@@ -155,7 +155,7 @@ export function FxRackChain({
         />
       ))}
       {handBuiltCount === 0 && eqIds.length === 0 ? (
-        <p className="hf-fx-empty py-1 text-[11px] text-panel-text-2">
+        <p className="hf-fx-empty py-1 text-caption-2-regular text-panel-text-2">
           {showCarve
             ? `No other effects on this ${signalPath.subject}.`
             : `No effects on this ${signalPath.subject}.`}

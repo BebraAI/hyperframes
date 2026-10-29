@@ -144,7 +144,7 @@ export function TimelinePane({
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => event.preventDefault()}
         >
-          <span className="rounded-md bg-neutral-900/90 px-2.5 py-1 text-[11px] text-neutral-400">
+          <span className="rounded-md bg-background-tertiary-default px-2.5 py-1 text-caption-2-regular text-text-secondary">
             Loading composition…
           </span>
         </div>

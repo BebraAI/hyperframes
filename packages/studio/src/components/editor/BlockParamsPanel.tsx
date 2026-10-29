@@ -138,13 +138,13 @@ export const BlockParamsPanel = memo(function BlockParamsPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
-        <div className="text-[11px] font-semibold text-neutral-200 truncate">{blockTitle}</div>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border-button-default">
+        <div className="text-caption-2-semibold text-text-primary truncate">{blockTitle}</div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close block parameters"
-          className="p-1.5 -m-1 text-neutral-500 hover:text-neutral-300 active:scale-[0.97] transition-colors"
+          className="p-1.5 -m-1 text-text-tertiary hover:text-text-primary active:scale-[0.97] transition-colors"
         >
           <svg
             width="14"
@@ -163,11 +163,13 @@ export const BlockParamsPanel = memo(function BlockParamsPanel({
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        <div className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider">
+        <div className="text-[9px] font-medium text-text-tertiary uppercase tracking-wider">
           Parameters
         </div>
         {params.length === 0 && (
-          <div className="text-[10px] text-neutral-500">This block has no editable parameters.</div>
+          <div className="text-[10px] text-text-tertiary">
+            This block has no editable parameters.
+          </div>
         )}
         {!fileManager && params.length > 0 && (
           <div className="text-[10px] text-warning-ink">
@@ -184,7 +186,7 @@ export const BlockParamsPanel = memo(function BlockParamsPanel({
           />
         ))}
         {commitState.tone === "saving" && (
-          <div className="text-[10px] text-neutral-500" role="status">
+          <div className="text-[10px] text-text-tertiary" role="status">
             Saving…
           </div>
         )}
@@ -216,7 +218,7 @@ function ParamControl({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[10px] font-medium text-neutral-400">{param.label}</label>
+      <label className="text-[10px] font-medium text-text-secondary">{param.label}</label>
 
       {param.type === "color" && (
         <div className="flex items-center gap-2">
@@ -226,7 +228,7 @@ function ParamControl({
             disabled={disabled}
             aria-label={`${param.label} color`}
             onChange={(e) => onChange(e.target.value)}
-            className="w-7 h-7 rounded-sm border border-neutral-700 bg-transparent cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-7 h-7 rounded-sm border border-border-button-default bg-transparent cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           />
           <input
             type="text"
@@ -234,7 +236,7 @@ function ParamControl({
             disabled={disabled}
             aria-label={`${param.label} value`}
             onChange={(e) => onChange(e.target.value)}
-            className="flex-1 bg-neutral-900 border border-neutral-800 rounded-sm px-2 py-1 text-[10px] text-neutral-200 font-mono focus:outline-hidden focus:border-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-[10px] text-text-primary font-mono focus:outline-hidden focus:border-border-button-active disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
       )}
@@ -252,7 +254,9 @@ function ParamControl({
             onChange={(e) => onChange(e.target.value)}
             className="flex-1 disabled:cursor-not-allowed disabled:opacity-50"
           />
-          <span className="text-[10px] text-neutral-400 w-8 text-right tabular-nums">{value}</span>
+          <span className="text-[10px] text-text-secondary w-8 text-right tabular-nums">
+            {value}
+          </span>
         </div>
       )}
 
@@ -263,7 +267,7 @@ function ParamControl({
           disabled={disabled}
           aria-label={param.label}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-2 py-1 text-[10px] text-neutral-200 focus:outline-hidden focus:border-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-[10px] text-text-primary focus:outline-hidden focus:border-border-button-active disabled:cursor-not-allowed disabled:opacity-50"
         />
       )}
 
@@ -273,7 +277,7 @@ function ParamControl({
           disabled={disabled}
           aria-label={param.label}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-2 py-1 text-[10px] text-neutral-200 focus:outline-hidden focus:border-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full bg-background-tertiary-default border border-border-button-default rounded-sm px-2 py-1 text-[10px] text-text-primary focus:outline-hidden focus:border-border-button-active disabled:cursor-not-allowed disabled:opacity-50"
         >
           {param.options.map((opt) => (
             <option key={opt.value} value={opt.value}>

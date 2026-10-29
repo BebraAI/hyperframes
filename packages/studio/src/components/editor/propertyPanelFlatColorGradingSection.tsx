@@ -380,7 +380,7 @@ export function FlatColorGradingSection({
           onClick={() => setLutOpen((v) => !v)}
           className="flex min-h-[30px] w-full items-center justify-between text-left"
         >
-          <span className="text-[11px] text-panel-text-2">Custom LUT</span>
+          <span className="text-caption-2-regular text-panel-text-2">Custom LUT</span>
           <svg
             width="10"
             height="10"
@@ -492,7 +492,7 @@ export function FlatColorGradingSection({
 
       {onApplyScopeAvailable && (
         <div className="flex items-center justify-between gap-2 border-t border-panel-hairline pt-1.5">
-          <span className="flex items-center gap-1.5 text-[11px] text-panel-text-2">
+          <span className="flex items-center gap-1.5 text-caption-2-regular text-panel-text-2">
             Copy grade to
             <select
               aria-label="Copy grade to"
@@ -502,7 +502,7 @@ export function FlatColorGradingSection({
                 onSetApplyScope(e.target.value as "source-file" | "project");
               }}
               disabled={applyBusy}
-              className="border-b border-panel-border-input/50 bg-transparent font-mono text-[11px] text-panel-text-0 outline-hidden hover:border-panel-border-input disabled:opacity-50"
+              className="border-b border-panel-border-input/50 bg-transparent font-mono text-caption-2-regular text-panel-text-0 outline-hidden hover:border-panel-border-input disabled:opacity-50"
             >
               <option value="source-file">Current file media</option>
               <option value="project">All project media</option>
@@ -516,7 +516,7 @@ export function FlatColorGradingSection({
               track("button", "Apply grade to scope");
               onApplyToScope();
             }}
-            className="text-[11px] font-medium text-accent-ink hover:text-accent-ink/80 disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-caption-2-medium text-accent-ink hover:text-accent-ink/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {applyBusy ? "Applying" : "Apply"}
           </button>

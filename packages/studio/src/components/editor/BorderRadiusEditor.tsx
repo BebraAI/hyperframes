@@ -85,7 +85,7 @@ export function BorderRadiusEditor({
 
         <button
           type="button"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-300"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-background-primary-hover hover:text-text-primary"
           onClick={handleToggleLinked}
           disabled={disabled}
           title={linked ? "Unlink corners" : "Link all corners"}

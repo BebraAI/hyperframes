@@ -86,7 +86,7 @@ export function TimelineGroupLaneLabels({
           >
             <span
               aria-hidden="true"
-              className="shrink-0 text-[11px] text-[var(--timeline-text-dim)]"
+              className="shrink-0 text-caption-2-regular text-[var(--timeline-text-dim)]"
             >
               ▤
             </span>

@@ -527,7 +527,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
                 <button
                   type="button"
                   onClick={handleContinueAnyway}
-                  className="px-3 py-1.5 text-[11px] rounded-md border border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 transition-colors"
+                  className="px-3 py-1.5 text-caption-2-regular rounded-md border border-border-button-default text-text-primary hover:border-border-button-hover hover:bg-background-primary-hover transition-colors"
                 >
                   Continue anyway
                 </button>
@@ -543,7 +543,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
           >
             <div className="max-w-sm">
               <p className="text-sm font-semibold text-white">Preview failed to load</p>
-              <p className="mt-1 text-xs text-neutral-400">{previewError}</p>
+              <p className="mt-1 text-xs text-text-secondary">{previewError}</p>
               <button
                 type="button"
                 className="mt-4 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-neutral-200"

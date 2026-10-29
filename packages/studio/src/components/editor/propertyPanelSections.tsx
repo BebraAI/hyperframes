@@ -147,7 +147,7 @@ export function TextAreaField({
           onFocus={handleFocus}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="field-sizing-content max-h-[40vh] min-h-12 w-full resize-y overflow-x-hidden overflow-y-auto bg-transparent font-mono text-[11px] leading-normal text-panel-text-0 outline-hidden disabled:cursor-not-allowed disabled:text-panel-text-4"
+          className="field-sizing-content max-h-[40vh] min-h-12 w-full resize-y overflow-x-hidden overflow-y-auto bg-transparent font-mono text-caption-2-regular leading-normal text-panel-text-0 outline-hidden disabled:cursor-not-allowed disabled:text-panel-text-4"
         />
       </div>
     );
@@ -165,7 +165,7 @@ export function TextAreaField({
           onFocus={handleFocus}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="field-sizing-content max-h-[40vh] min-h-20 w-full resize-y overflow-x-hidden overflow-y-auto bg-transparent text-[11px] font-medium text-neutral-100 outline-hidden disabled:cursor-not-allowed disabled:text-neutral-600"
+          className="field-sizing-content max-h-[40vh] min-h-20 w-full resize-y overflow-x-hidden overflow-y-auto bg-transparent text-caption-2-medium text-text-primary outline-hidden disabled:cursor-not-allowed disabled:text-text-tertiary"
         />
       </div>
     </label>
@@ -189,7 +189,7 @@ function FontWeightField({
   return (
     <div className={FIELD}>
       <div className="flex min-w-0 items-center gap-3">
-        <span className="shrink-0 text-[11px] font-medium text-neutral-500">Weight</span>
+        <span className="shrink-0 text-caption-2-medium text-text-tertiary">Weight</span>
         <select
           value={value}
           disabled={disabled}
@@ -197,7 +197,7 @@ function FontWeightField({
             track("select", "Weight");
             onCommit(e.target.value);
           }}
-          className="min-w-0 w-full appearance-none bg-transparent text-[11px] font-medium text-neutral-100 outline-hidden disabled:cursor-not-allowed disabled:text-neutral-600"
+          className="min-w-0 w-full appearance-none bg-transparent text-caption-2-medium text-text-primary outline-hidden disabled:cursor-not-allowed disabled:text-text-tertiary"
         >
           {displayOptions.map((o) => (
             <option key={o} value={o}>
@@ -311,10 +311,10 @@ function TextFieldEditor({
     <div className="space-y-3">
       <div className={showRemove ? "flex min-w-0 items-center justify-between gap-2" : "min-w-0"}>
         <div className="min-w-0">
-          <div className="truncate text-[11px] font-medium text-neutral-100">
+          <div className="truncate text-caption-2-medium text-text-primary">
             {formatTextFieldPreview(field.value) || "Text"}
           </div>
-          <div className="text-[10px] text-neutral-500">{field.tagName}</div>
+          <div className="text-[10px] text-text-tertiary">{field.tagName}</div>
         </div>
         {showRemove && (
           <button
@@ -323,7 +323,7 @@ function TextFieldEditor({
               track("button", "Remove text field");
               onRemoveTextField(field.key);
             }}
-            className="inline-flex h-7 shrink-0 items-center rounded-lg border border-neutral-700 bg-neutral-950 px-2.5 text-[11px] font-medium text-neutral-300 transition-colors hover:border-neutral-600 hover:text-text-0"
+            className="inline-flex h-7 shrink-0 items-center rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-caption-2-medium text-text-primary transition-colors hover:border-border-button-hover hover:text-text-0"
           >
             Remove
           </button>
@@ -474,7 +474,7 @@ export function TextSection({
                 if (nextKey) setActiveTextFieldKey(nextKey);
               });
             }}
-            className="inline-flex h-7 max-w-full items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-950 px-2.5 text-[11px] font-medium text-neutral-300 transition-colors hover:border-neutral-600 hover:text-text-0"
+            className="inline-flex h-7 max-w-full items-center gap-1.5 rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-caption-2-medium text-text-primary transition-colors hover:border-border-button-hover hover:text-text-0"
           >
             <Plus size={12} className="shrink-0" />
             <span className="truncate">Add text</span>
@@ -491,20 +491,20 @@ export function TextSection({
                 className={`min-w-0 w-full rounded-xl border px-3 py-2 text-left transition-colors ${
                   active
                     ? "border-studio-accent/50 bg-studio-accent/10"
-                    : "border-neutral-800 bg-neutral-900/80 hover:border-neutral-700 hover:bg-neutral-900"
+                    : "border-border-button-default bg-background-tertiary-default hover:border-border-button-hover hover:bg-background-primary-hover"
                 }`}
               >
                 <div className="flex min-w-0 items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className="h-4 w-4 shrink-0 rounded-sm border border-neutral-700 bg-neutral-950"
+                      className="h-4 w-4 shrink-0 rounded-sm border border-border-button-default bg-background-tertiary-default"
                       style={{ backgroundColor: getTextFieldColor(field, styles) }}
                     />
-                    <span className="min-w-0 truncate text-[11px] font-medium text-neutral-100">
+                    <span className="min-w-0 truncate text-caption-2-medium text-text-primary">
                       {formatTextFieldPreview(field.value) || `Text ${index + 1}`}
                     </span>
                   </div>
-                  <span className="shrink-0 rounded-md border border-neutral-700 bg-neutral-950 px-1.5 py-0.5 text-[10px] text-neutral-500">
+                  <span className="shrink-0 rounded-md border border-border-button-default bg-background-tertiary-default px-1.5 py-0.5 text-[10px] text-text-tertiary">
                     {field.tagName}
                   </span>
                 </div>

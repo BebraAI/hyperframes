@@ -37,7 +37,7 @@ export function LaneToggleButton({
       title={`${isExpanded ? "Hide" : "Show"} lanes`}
       // h-6 w-6 = the 24x24 WCAG 2.2 minimum target. The glyph stays 11px;
       // only the hit box grows.
-      className={`ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded border-0 bg-transparent p-0 text-[11px] leading-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)] ${
+      className={`ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded border-0 bg-transparent p-0 text-caption-2-regular leading-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)] ${
         isExpanded
           ? "text-[var(--timeline-accent)]"
           : "text-[var(--timeline-handle)] hover:text-[var(--timeline-text-solid)]"
@@ -84,7 +84,7 @@ export function LayerDisclosureRow({
 }) {
   return (
     <div
-      className="absolute left-0 top-0 flex items-center gap-1.5 overflow-hidden px-1.5 text-[11px]"
+      className="absolute left-0 top-0 flex items-center gap-1.5 overflow-hidden px-1.5 text-caption-2-regular"
       style={{
         width: columnWidth,
         height: TRACK_H,

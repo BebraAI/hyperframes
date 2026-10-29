@@ -268,8 +268,9 @@ describe("a host's dock", () => {
     expect(dockApi?.getPanel("assets")?.group.id).not.toBe(dockApi?.getPanel("renders")?.group.id);
     const menu = [...host.querySelectorAll("button")].find((b) => b.textContent === "Window");
     act(() => menu?.click());
-    const items = [...host.querySelectorAll('[role="menuitemcheckbox"]')].map((i) => i.textContent);
-    expect(items).toEqual(["✓Preview", "✓Timeline", "✓Assets", "✓Renders"]);
+    const items = [...host.querySelectorAll('[role="menuitemcheckbox"]')];
+    expect(items.map((i) => i.textContent)).toEqual(["Preview", "Timeline", "Assets", "Renders"]);
+    expect(items.every((i) => i.getAttribute("aria-checked") === "true")).toBe(true);
   });
 
   it("keeps its layout alone under its own key, never in Studio's preferences", () => {

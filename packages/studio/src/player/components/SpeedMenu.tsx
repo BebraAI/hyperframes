@@ -32,7 +32,7 @@ export const SpeedMenu = memo(function SpeedMenu({
           aria-haspopup="menu"
           aria-expanded={showSpeedMenu}
           aria-label="Playback speed"
-          className="h-7 w-8 rounded-md font-mono text-[10px] tabular-nums text-neutral-500 transition-colors hover:text-neutral-200 disabled:opacity-30"
+          className="h-7 w-8 rounded-md font-mono text-[10px] tabular-nums text-text-tertiary transition-colors hover:text-text-primary disabled:opacity-30"
         >
           {playbackRate === 1 ? "1x" : `${playbackRate}x`}
         </button>
@@ -57,8 +57,8 @@ export const SpeedMenu = memo(function SpeedMenu({
                   setPlaybackRate(rate);
                   setShowSpeedMenu(false);
                 }}
-                className={`block w-full px-3 py-1.5 text-[11px] text-left font-mono tabular-nums transition-colors outline-hidden focus-visible:bg-white/4 ${
-                  isCurrent ? "text-neutral-50 bg-white/6" : "text-neutral-500 hover:bg-white/4"
+                className={`block w-full px-3 py-1.5 text-caption-2-regular text-left font-mono tabular-nums transition-colors outline-hidden focus-visible:bg-white/4 ${
+                  isCurrent ? "text-text-primary bg-white/6" : "text-text-tertiary hover:bg-white/4"
                 }`}
               >
                 {rate}x

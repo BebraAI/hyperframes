@@ -22,7 +22,7 @@ export function FlatToggle({
     <div className="flex min-h-[30px] items-center justify-between">
       <span
         data-flat-toggle-label="true"
-        className={`text-[11px] ${checked ? "text-panel-text-2" : "text-panel-text-3"}`}
+        className={`text-caption-2-regular ${checked ? "text-panel-text-2" : "text-panel-text-3"}`}
       >
         {label}
       </span>

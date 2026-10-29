@@ -129,7 +129,7 @@ it("no longer renders Undo or Redo in the header", () => {
 
 it("groups Capture and Inspector in one bordered segment, Export outside it", () => {
   const host = mount();
-  const group = query(host, '[aria-label="Capture current frame"]').closest(".divide-x");
+  const group = query(host, '[aria-label="Capture current frame"]').closest('[role="group"]');
 
   expect(group?.contains(query(host, '[aria-label="Inspector"]'))).toBe(true);
   expect(group?.contains(query(host, '[data-testid="header-export"]'))).toBe(false);
@@ -152,16 +152,14 @@ it("shows Inspector pressed and filled only when on", () => {
   const host = mount({ inspectorButtonActive: true });
   const on = query(host, '[aria-label="Inspector"]');
   expect(on.getAttribute("aria-pressed")).toBe("true");
-  expect(hasToken(on.className, "text-accent-ink")).toBe(true);
-  expect(hasToken(on.className, "bg-on")).toBe(true);
+  expect(hasToken(on.className, "bg-background-primary-hover")).toBe(true);
   act(() => mounted?.root.unmount());
   mounted?.host.remove();
   mounted = null;
 
   const off = query(mount(), '[aria-label="Inspector"]');
   expect(off.getAttribute("aria-pressed")).toBe("false");
-  expect(hasToken(off.className, "text-accent-ink")).toBe(false);
-  expect(hasToken(off.className, "bg-on")).toBe(false);
+  expect(hasToken(off.className, "bg-background-primary-hover")).toBe(false);
 });
 
 it("keeps Capture a real download link rather than a button", () => {
@@ -172,8 +170,7 @@ it("keeps Capture a real download link rather than a button", () => {
 
   expect(capture.tagName).toBe("A");
   expect(capture.getAttribute("download")).toBe("frame.png");
-  // h-full replaces the md height: the group's own h-ctl sets the shared control height.
-  expectRecipe(capture, "px-2", "text-body-medium");
+  expectRecipe(capture, "h-[30px]", "px-2", "text-body-medium");
 });
 
 it("classifies the new header controls for the hotkey filters as the old ones were (KTD13)", () => {

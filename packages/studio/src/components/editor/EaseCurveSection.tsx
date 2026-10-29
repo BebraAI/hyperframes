@@ -132,13 +132,13 @@ function EaseTypeDropdown({
         className="flex w-full items-center gap-2 rounded-md border border-border bg-input px-2 py-1.5 text-left transition-colors hover:border-border-strong"
       >
         <MiniCurveSvg ease={ease} active size={16} />
-        <span className="text-[11px] text-neutral-200">{label}</span>
+        <span className="text-caption-2-regular text-text-primary">{label}</span>
         <svg
           width="8"
           height="8"
           viewBox="0 0 10 10"
           fill="currentColor"
-          className={`ml-auto text-neutral-500 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`ml-auto text-text-tertiary transition-transform ${open ? "rotate-180" : ""}`}
         >
           <path d="M2 3l3 4 3-4z" />
         </svg>
@@ -392,10 +392,10 @@ export function EaseCurveSection({
   const label = resolveEditorLabel(displayedEase, springBounce, isWiggle);
 
   return (
-    <div className="rounded-lg bg-neutral-900/50 p-2">
+    <div className="rounded-lg bg-background-tertiary-default p-2">
       <EaseTypeDropdown kind={mode} ease={displayedEase} label={label} onSelect={commitEase} />
       {collidingAnimationTargets && collidingAnimationTargets.length > 1 && (
-        <p className="mb-1 text-[9px] text-neutral-500">
+        <p className="mb-1 text-[9px] text-text-tertiary">
           Applies to {collidingAnimationTargets.length} animations
         </p>
       )}
@@ -540,7 +540,7 @@ export function EaseCurveSection({
           />
         </>
       ) : (
-        <p className="px-0.5 py-1.5 text-[10px] leading-relaxed text-neutral-500">
+        <p className="px-0.5 py-1.5 text-[10px] leading-relaxed text-text-tertiary">
           {label} preset: switch to Curve, Spring, or Wiggle above to shape it by hand.
         </p>
       )}

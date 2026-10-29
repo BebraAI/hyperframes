@@ -80,7 +80,7 @@ function GroupNameDialog({
       <div
         role="dialog"
         aria-label="This track cannot be grouped"
-        className="z-200 w-64 rounded-md border border-[var(--timeline-tick-major)] bg-[var(--timeline-dialog-bg)] p-3 text-[11px] leading-snug text-[var(--timeline-text-soft)] shadow-xl"
+        className="z-200 w-64 rounded-md border border-[var(--timeline-tick-major)] bg-[var(--timeline-dialog-bg)] p-3 text-caption-2-regular leading-snug text-[var(--timeline-text-soft)] shadow-xl"
         style={{ position: "fixed", ...groupDialogPosition(anchorRect) }}
         onPointerDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
@@ -98,7 +98,7 @@ function GroupNameDialog({
     <div
       role="dialog"
       aria-label="Name this group"
-      className="z-200 w-64 rounded-md border border-[var(--timeline-tick-major)] bg-[var(--timeline-dialog-bg)] p-3 text-[11px] text-[var(--timeline-text-soft)] shadow-xl"
+      className="z-200 w-64 rounded-md border border-[var(--timeline-tick-major)] bg-[var(--timeline-dialog-bg)] p-3 text-caption-2-regular text-[var(--timeline-text-soft)] shadow-xl"
       style={{ position: "fixed", ...groupDialogPosition(anchorRect) }}
       onPointerDown={(event) => event.stopPropagation()}
       onKeyDown={(event) => {
@@ -116,7 +116,7 @@ function GroupNameDialog({
         aria-label="Group name"
         value={label}
         onChange={(event) => setLabel(event.currentTarget.value)}
-        className="w-full rounded-sm border border-[var(--timeline-border-strong)] bg-[var(--timeline-input-bg)] px-1.5 py-1 text-[11px] text-[var(--timeline-text-solid)] outline-hidden focus:border-[var(--timeline-accent)]"
+        className="w-full rounded-sm border border-[var(--timeline-border-strong)] bg-[var(--timeline-input-bg)] px-1.5 py-1 text-caption-2-regular text-[var(--timeline-text-solid)] outline-hidden focus:border-[var(--timeline-accent)]"
       />
       {/* The sentence. No jargon, and it names both things a bus does. */}
       <p className="mt-2 leading-snug">

@@ -125,7 +125,7 @@ export const MotionBlurPanel = memo(function MotionBlurPanel({
 
   if (!settings) {
     return (
-      <p className="p-3 text-[10px] leading-relaxed text-neutral-500">
+      <p className="p-3 text-[10px] leading-relaxed text-text-tertiary">
         Open a composition to set up motion blur.
       </p>
     );
@@ -135,8 +135,8 @@ export const MotionBlurPanel = memo(function MotionBlurPanel({
   const current = locked ? null : levelOf(settings);
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto p-3 text-[11px] text-neutral-300">
-      <span className="text-[12px] font-medium text-neutral-100">Motion blur</span>
+    <div className="flex h-full flex-col gap-3 overflow-y-auto p-3 text-caption-2-regular text-text-primary">
+      <span className="text-caption-1-medium text-text-primary">Motion blur</span>
       <div role="radiogroup" aria-label="Motion blur" className="flex gap-1.5">
         {BLUR_LEVELS.map(({ level, label }) => (
           <Button

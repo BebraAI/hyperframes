@@ -150,10 +150,10 @@ export function ImageFillField({
             type="button"
             disabled={disabled || uploading}
             onClick={() => fileInputRef.current?.click()}
-            className={`inline-flex h-7 max-w-full items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-950 px-2.5 text-[11px] font-medium text-neutral-300 transition-colors ${
+            className={`inline-flex h-7 max-w-full items-center gap-1.5 rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-caption-2-medium text-text-primary transition-colors ${
               disabled || uploading
-                ? "cursor-not-allowed text-neutral-600"
-                : "cursor-pointer hover:border-neutral-600 hover:text-text-0"
+                ? "cursor-not-allowed text-text-tertiary"
+                : "cursor-pointer hover:border-border-button-hover hover:text-text-0"
             }`}
           >
             <Plus size={12} className="shrink-0" />
@@ -180,11 +180,11 @@ export function ImageFillField({
         {imageAssets.length > 0 ? (
           <div className="space-y-3">
             {selectedAsset && (
-              <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/80">
+              <div className="overflow-hidden rounded-xl border border-border-button-default bg-background-tertiary-default">
                 <img
                   src={buildProjectApiPath(projectId, `/preview/${encodeUrlPath(selectedAsset)}`)}
                   alt={selectedAsset.split("/").pop() ?? selectedAsset}
-                  className="h-28 w-full object-contain bg-neutral-950/80"
+                  className="h-28 w-full object-contain bg-background-tertiary-default"
                 />
               </div>
             )}
@@ -201,7 +201,7 @@ export function ImageFillField({
                   }
                   commitImage(toProjectRootAssetPath(next), true);
                 }}
-                className="min-w-0 w-full appearance-none bg-transparent text-[11px] font-medium text-neutral-100 outline-hidden disabled:cursor-not-allowed disabled:text-neutral-600"
+                className="min-w-0 w-full appearance-none bg-transparent text-caption-2-medium text-text-primary outline-hidden disabled:cursor-not-allowed disabled:text-text-tertiary"
               >
                 <option value="" disabled={isImage}>
                   None
@@ -215,7 +215,7 @@ export function ImageFillField({
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-900/50 px-3 py-3 text-[11px] leading-5 text-neutral-500">
+          <div className="rounded-xl border border-dashed border-border-button-default bg-background-tertiary-default px-3 py-3 text-caption-2-regular leading-5 text-text-tertiary">
             No image assets yet. Upload one here and Studio will also add it to the Assets tab.
           </div>
         )}
@@ -285,7 +285,7 @@ export function GradientField({
       <div className={`${FIELD} space-y-3 p-3`}>
         <div
           ref={previewRef}
-          className="relative h-11 overflow-hidden rounded-lg border border-neutral-700"
+          className="relative h-11 overflow-hidden rounded-lg border border-border-button-default"
           style={previewStyle}
           onClick={(event) => {
             if (disabled) return;
@@ -355,7 +355,7 @@ export function GradientField({
               { label: "Conic", value: "conic" },
             ]}
           />
-          <label className="flex items-center gap-2 text-[11px] font-medium text-neutral-400">
+          <label className="flex items-center gap-2 text-caption-2-medium text-text-secondary">
             <input
               type="checkbox"
               checked={parsed.repeating}
@@ -364,7 +364,7 @@ export function GradientField({
                 track("toggle", "Repeat gradient");
                 patch({ repeating: e.target.checked });
               }}
-              className="h-4 w-4 rounded-sm border-neutral-700 bg-neutral-950 text-accent-ink focus:ring-panel-accent"
+              className="h-4 w-4 rounded-sm border-border-button-default bg-background-tertiary-default text-accent-ink focus:ring-panel-accent"
             />
             Repeat
           </label>
@@ -381,7 +381,7 @@ export function GradientField({
                 })),
               });
             }}
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-950 px-2.5 text-[11px] font-medium text-neutral-300 transition-colors hover:border-neutral-600 hover:text-text-0 disabled:cursor-not-allowed disabled:text-neutral-600"
+            className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-caption-2-medium text-text-primary transition-colors hover:border-border-button-hover hover:text-text-0 disabled:cursor-not-allowed disabled:text-text-tertiary"
           >
             <ReverseGradientIcon size={16} />
             Reverse
@@ -466,7 +466,7 @@ export function GradientField({
             disabled={disabled || parsed.stops.length >= 6}
             onClick={() => addStop()}
             title={parsed.stops.length >= 6 ? "Maximum 6 stops" : "Add a gradient stop"}
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-950 px-2.5 text-[11px] font-medium text-neutral-300 transition-colors hover:border-neutral-600 hover:text-text-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-neutral-600"
+            className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-caption-2-medium text-text-primary transition-colors hover:border-border-button-hover hover:text-text-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-text-tertiary"
           >
             <Plus size={12} />
             Add stop
@@ -498,7 +498,7 @@ export function GradientField({
                 type="button"
                 disabled={disabled || parsed.stops.length <= 2}
                 onClick={() => removeStop(index)}
-                className="mt-[22px] flex h-10 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-950 text-neutral-400 transition-colors hover:border-neutral-600 hover:text-text-0 disabled:cursor-not-allowed disabled:text-text-off"
+                className="mt-[22px] flex h-10 items-center justify-center rounded-lg border border-border-button-default bg-background-tertiary-default text-text-secondary transition-colors hover:border-border-button-hover hover:text-text-0 disabled:cursor-not-allowed disabled:text-text-off"
                 aria-label={`Remove stop ${index + 1}`}
               >
                 <X size={12} />

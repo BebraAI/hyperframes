@@ -1,6 +1,13 @@
 import { useRef, useState } from "react";
-import { XIcon, WarningIcon, CheckCircleIcon, CaretRightIcon } from "@phosphor-icons/react";
+import {
+  RiArrowRightSLine,
+  RiCheckboxCircleFill,
+  RiErrorWarningFill,
+  RiErrorWarningLine,
+} from "@remixicon/react";
 import { copyTextToClipboard } from "../utils/clipboard";
+import { Button, cn } from "./ui";
+import { DialogHeader, dialogClasses } from "./ui/Dialog";
 import { useDialogBehavior } from "./ui/useDialogBehavior";
 
 export interface LintFinding {
@@ -56,70 +63,47 @@ export function LintModal({
     }
   };
 
+  const summary = hasIssues
+    ? `${errors.length} error${errors.length !== 1 ? "s" : ""}, ${warnings.length} warning${warnings.length !== 1 ? "s" : ""}`
+    : "All checks passed";
+
   return (
-    <div
-      className="hf-backdrop-in fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xs"
-      onClick={requestClose}
-    >
+    <div className={cn(dialogClasses.backdrop, dialogClasses.centered)} onClick={requestClose}>
       <div
         ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="bg-neutral-950 border border-neutral-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[80vh] flex flex-col overflow-hidden outline-hidden"
+        className={cn(dialogClasses.panel, "w-full max-w-xl")}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800">
-          <div className="flex items-center gap-3">
-            {hasIssues ? (
-              <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                <WarningIcon size={18} className="text-danger-ink" weight="fill" />
-              </div>
+        <DialogHeader
+          title={summary}
+          description={title}
+          onClose={onClose}
+          leading={
+            hasIssues ? (
+              <RiErrorWarningFill className="mt-0.5 size-6 shrink-0 text-foreground-icon-error" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-studio-accent/10 flex items-center justify-center">
-                <CheckCircleIcon size={18} className="text-accent-ink" weight="fill" />
-              </div>
-            )}
-            <div>
-              <h2 className="text-sm font-semibold text-neutral-200">
-                {hasIssues
-                  ? `${errors.length} error${errors.length !== 1 ? "s" : ""}, ${warnings.length} warning${warnings.length !== 1 ? "s" : ""}`
-                  : "All checks passed"}
-              </h2>
-              <p className="text-xs text-neutral-500">{title}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors active:scale-[0.98]"
-          >
-            <XIcon size={16} />
-          </button>
-        </div>
-
-        {/* Copy to agent + findings */}
+              <RiCheckboxCircleFill className="mt-0.5 size-6 shrink-0 text-accent-500" />
+            )
+          }
+        />
         {hasIssues && (
-          <div className="flex items-center justify-end px-5 py-2 border-b border-neutral-800/50">
-            <button
+          <div className="flex justify-end px-5 pb-2">
+            <Button
+              variant={copyFailed ? "danger" : "primary"}
+              size="sm"
               onClick={handleCopyToAgent}
-              className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors active:scale-[0.98] ${
-                copied
-                  ? "bg-accent text-on-accent"
-                  : copyFailed
-                    ? "bg-danger text-on-danger"
-                    : "bg-accent hover:bg-accent-hover text-on-accent"
-              }`}
             >
               {copied ? "Copied!" : copyFailed ? "Copy failed. Check permissions" : "Copy to Agent"}
-            </button>
+            </Button>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto px-5 py-3">
+        <div className={cn(dialogClasses.body, "pb-5")}>
           {!hasIssues && (
-            <div className="py-8 text-center text-neutral-500 text-sm">
+            <div className="py-8 text-center text-body-regular text-text-secondary">
               No errors or warnings found. Your composition looks good!
             </div>
           )}
@@ -136,25 +120,28 @@ export function LintModal({
 }
 
 function LintFindingRow({ finding, tone }: { finding: LintFinding; tone: "error" | "warning" }) {
+  const Icon = tone === "error" ? RiErrorWarningFill : RiErrorWarningLine;
   return (
-    <div className="py-3 border-b border-border last:border-0">
+    <div className="border-b border-border-button-default py-3 last:border-0">
       <div className="flex items-start gap-2">
-        <WarningIcon
-          size={14}
-          className={`${tone === "error" ? "text-danger-ink" : "text-warning-ink"} shrink-0 mt-0.5`}
-          weight={tone === "error" ? "fill" : undefined}
+        <Icon
+          className={`mt-0.5 size-4 shrink-0 ${tone === "error" ? "text-foreground-icon-error" : "text-warning-ink"}`}
         />
         <div className="min-w-0">
-          <p className={`text-sm ${tone === "error" ? "text-text-0" : "text-text-2"}`}>
+          <p
+            className={`text-body-regular ${tone === "error" ? "text-text-primary" : "text-text-secondary"}`}
+          >
             {finding.message}
           </p>
           {finding.file && (
-            <p className="text-xs text-text-muted font-mono mt-0.5">{finding.file}</p>
+            <p className="mt-0.5 font-mono text-caption-1-regular text-text-tertiary">
+              {finding.file}
+            </p>
           )}
           {finding.fixHint && (
-            <div className="flex items-start gap-1 mt-1.5">
-              <CaretRightIcon size={10} className="text-accent-ink shrink-0 mt-0.5" />
-              <p className="text-xs text-accent-ink">{finding.fixHint}</p>
+            <div className="mt-1.5 flex items-start gap-1">
+              <RiArrowRightSLine className="mt-0.5 size-3.5 shrink-0 text-accent-500" />
+              <p className="text-caption-1-regular text-text-secondary">{finding.fixHint}</p>
             </div>
           )}
         </div>

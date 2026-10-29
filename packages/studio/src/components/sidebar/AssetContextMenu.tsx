@@ -95,7 +95,7 @@ export function ContextMenu({
     onClose();
   }, [renameDraft, asset, onRename, onClose]);
 
-  const itemCls = `${menuClasses.row} ${menuClasses.rowEnabled} active:bg-neutral-700/70 transition-colors`;
+  const itemCls = `${menuClasses.row} ${menuClasses.rowEnabled} active:bg-background-primary-active transition-colors`;
 
   return (
     <div
@@ -110,7 +110,7 @@ export function ContextMenu({
         ref={menuRef}
         role="menu"
         aria-label={`Actions for ${filename(asset)}`}
-        className={`${menuClasses.panel} absolute min-w-[160px] text-xs`}
+        className={`${menuClasses.panel} absolute min-w-[160px] text-caption-1-regular`}
         style={{ left: pos.x, top: pos.y }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -147,7 +147,7 @@ export function ContextMenu({
               <button
                 role="menuitem"
                 onClick={() => setMode("confirm-delete")}
-                className={`${menuClasses.row} ${menuClasses.rowDanger} active:bg-neutral-700/70 transition-colors`}
+                className={`${menuClasses.row} ${menuClasses.rowDanger} active:bg-background-primary-active transition-colors`}
               >
                 Delete
               </button>
@@ -181,19 +181,21 @@ export function ContextMenu({
                 }
               }}
               aria-label={`Rename ${filename(asset)}`}
-              className="w-full bg-neutral-800 border border-neutral-600 rounded-sm px-1.5 py-1 text-[11px] text-text-0 focus:border-studio-accent/60 focus:outline-hidden"
+              className="w-full bg-background-tertiary-default border border-border-button-default rounded-md px-1.5 py-1 text-caption-1-regular text-text-0 focus:border-border-button-active focus:outline-hidden"
             />
-            {renameError && <span className="text-[10px] text-danger-ink">{renameError}</span>}
+            {renameError && (
+              <span className="text-caption-2-regular text-danger-ink">{renameError}</span>
+            )}
             <div className="flex items-center justify-end gap-1">
               <button
                 onClick={() => setMode("menu")}
-                className="px-2 py-0.5 text-[10px] rounded-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+                className="px-2 py-0.5 text-caption-2-regular rounded-md text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={commitRename}
-                className="px-2 py-0.5 text-[10px] rounded-sm bg-accent hover:bg-accent-hover text-on-accent transition-colors"
+                className="px-2 py-0.5 text-caption-2-regular rounded-md bg-accent hover:bg-accent-hover text-on-accent transition-colors"
               >
                 Rename
               </button>
@@ -216,17 +218,17 @@ function DeleteConfirm({
 }) {
   return (
     <div className="px-2 py-1.5 bg-danger/15 border-l-2 border-red-500 flex items-center justify-between gap-2">
-      <span className="text-[10px] text-danger-ink truncate">Delete {name}?</span>
+      <span className="text-caption-2-regular text-danger-ink truncate">Delete {name}?</span>
       <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onConfirm}
-          className="px-2 py-0.5 text-[10px] rounded-sm bg-danger text-on-danger hover:brightness-95 active:brightness-90 transition-colors"
+          className="px-2 py-0.5 text-caption-2-regular rounded-md bg-danger text-on-danger hover:brightness-95 active:brightness-90 transition-colors"
         >
           Delete
         </button>
         <button
           onClick={onCancel}
-          className="px-2 py-0.5 text-[10px] rounded-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+          className="px-2 py-0.5 text-caption-2-regular rounded-md text-text-secondary hover:text-text-primary transition-colors"
         >
           Cancel
         </button>

@@ -230,8 +230,8 @@ export const CanvasContextMenu = memo(function CanvasContextMenu({
               type="button"
               className={`w-full flex items-center px-3 py-1.5 text-xs text-left ${
                 enabled
-                  ? "text-neutral-300 hover:bg-neutral-800 cursor-pointer"
-                  : "text-neutral-600 cursor-not-allowed"
+                  ? "text-text-primary hover:bg-background-primary-hover cursor-pointer"
+                  : "text-text-tertiary cursor-not-allowed"
               }`}
               disabled={!enabled}
               // Act on pointerDown, not click: a pointerDown that reaches the
@@ -258,7 +258,7 @@ export const CanvasContextMenu = memo(function CanvasContextMenu({
       {hasDelete && (
         <button
           type="button"
-          className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-danger-ink hover:bg-neutral-800 cursor-pointer text-left"
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-danger-ink hover:bg-background-primary-hover cursor-pointer text-left"
           onPointerDown={(e) => {
             if (e.button !== 0) return;
             e.preventDefault();
@@ -267,7 +267,7 @@ export const CanvasContextMenu = memo(function CanvasContextMenu({
           }}
         >
           <span>Delete</span>
-          <span className="text-neutral-500 text-[10px] ml-3">⌫</span>
+          <span className="text-text-tertiary text-[10px] ml-3">⌫</span>
         </button>
       )}
     </div>,

@@ -198,13 +198,13 @@ export function VariablesBindElement({
     : undefined;
 
   return (
-    <div className="space-y-1.5 rounded-lg border border-studio-accent/30 bg-neutral-900/40 p-2">
-      <p className="text-[9px] font-medium uppercase tracking-wider text-neutral-500">
-        Bind selected: <span className="normal-case text-neutral-300">{selection.label}</span>
+    <div className="space-y-1.5 rounded-lg border border-studio-accent/30 bg-background-tertiary-default p-2">
+      <p className="text-[9px] font-medium uppercase tracking-wider text-text-tertiary">
+        Bind selected: <span className="normal-case text-text-primary">{selection.label}</span>
       </p>
       {active ? (
         <div className="space-y-1.5">
-          <label className="text-[9px] font-medium text-neutral-500">
+          <label className="text-[9px] font-medium text-text-tertiary">
             Variable id for {active.label.toLowerCase()}
           </label>
           <input
@@ -227,7 +227,7 @@ export function VariablesBindElement({
             <button
               type="button"
               onClick={() => setActiveKey(null)}
-              className="h-6 rounded-sm px-2 text-[10px] text-neutral-500 hover:text-neutral-300"
+              className="h-6 rounded-sm px-2 text-[10px] text-text-tertiary hover:text-text-primary"
             >
               Cancel
             </button>
@@ -238,7 +238,7 @@ export function VariablesBindElement({
                 setActiveKey(null);
                 onBind(active, trimmedId);
               }}
-              className="h-6 rounded-sm bg-neutral-800 px-2 text-[10px] font-medium text-neutral-200 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-6 rounded-sm bg-background-tertiary-default px-2 text-[10px] font-medium text-text-primary hover:bg-background-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               {existingDecl ? "Bind anyway" : "Bind"}
             </button>
@@ -254,7 +254,7 @@ export function VariablesBindElement({
                 setActiveKey(action.key);
                 setIdDraft(action.suggestedId);
               }}
-              className="h-6 rounded-md border border-neutral-800 px-2 text-[10px] font-medium text-neutral-400 transition-colors hover:border-neutral-700 hover:text-neutral-200"
+              className="h-6 rounded-md border border-border-button-default px-2 text-[10px] font-medium text-text-secondary transition-colors hover:border-border-button-hover hover:text-text-primary"
             >
               {action.label} →&nbsp;variable
             </button>

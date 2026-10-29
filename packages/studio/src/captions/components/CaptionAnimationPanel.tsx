@@ -171,7 +171,7 @@ function AnimationPhase({
               }}
               className="flex-1 accent-studio-accent disabled:opacity-40"
             />
-            <span className="text-2xs text-neutral-400 font-mono w-8 text-right shrink-0">
+            <span className="text-2xs text-text-secondary font-mono w-8 text-right shrink-0">
               {intensity.toFixed(2)}
             </span>
           </div>
@@ -239,7 +239,7 @@ export const CaptionAnimationPanel = memo(function CaptionAnimationPanel() {
   if (!group || !resolvedGroupId || !animation) {
     return (
       <div className="flex items-center justify-center h-full px-4 text-center">
-        <p className="text-xs text-neutral-500">Select a caption word to edit animations</p>
+        <p className="text-xs text-text-tertiary">Select a caption word to edit animations</p>
       </div>
     );
   }
@@ -286,13 +286,13 @@ export const CaptionAnimationPanel = memo(function CaptionAnimationPanel() {
       </div>
 
       {/* Footer */}
-      <div className="shrink-0 px-3 py-2 border-t border-neutral-800">
+      <div className="shrink-0 px-3 py-2 border-t border-border-button-default">
         <button
           type="button"
           onClick={handleApplyToAll}
           disabled={gated}
           title={gated ? "Disabled until animation editing is applied to playback" : undefined}
-          className="w-full py-1.5 rounded-sm border border-neutral-700 text-2xs text-neutral-300 hover:border-studio-accent/50 hover:text-accent-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-neutral-700 disabled:hover:text-neutral-300"
+          className="w-full py-1.5 rounded-sm border border-border-button-default text-2xs text-text-primary hover:border-studio-accent/50 hover:text-accent-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border-button-hover disabled:hover:text-text-primary"
         >
           Apply to all groups
         </button>

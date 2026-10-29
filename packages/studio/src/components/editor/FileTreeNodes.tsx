@@ -24,7 +24,7 @@ export type { ContextMenuState, InlineInputState };
 export { buildTree, sortChildren, isActiveInSubtree } from "./FileTreeIcons";
 
 const SZ_ICON = 14;
-const ROW = `${menuClasses.row} ${menuClasses.rowEnabled} flex items-center gap-2 active:bg-neutral-700`;
+const ROW = `${menuClasses.row} ${menuClasses.rowEnabled} flex items-center gap-2 active:bg-background-primary-active`;
 const DANGER_ROW = `${menuClasses.row} ${menuClasses.rowDanger} flex items-center gap-2 active:bg-danger/25`;
 
 // ── Context Menu Component ──
@@ -117,7 +117,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <FilePlus size={12} weight="duotone" className="text-neutral-500" />
+            <FilePlus size={12} weight="duotone" className="text-text-tertiary" />
             New File
           </button>
           <button
@@ -128,7 +128,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <FolderSimplePlus size={12} weight="duotone" className="text-neutral-500" />
+            <FolderSimplePlus size={12} weight="duotone" className="text-text-tertiary" />
             New Folder
           </button>
           <div className={menuClasses.divider} />
@@ -144,7 +144,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <FilePlus size={12} weight="duotone" className="text-neutral-500" />
+            <FilePlus size={12} weight="duotone" className="text-text-tertiary" />
             New File
           </button>
           <div className={menuClasses.divider} />
@@ -158,7 +158,7 @@ export function ContextMenu({
           onClose();
         }}
       >
-        <PencilSimple size={12} weight="duotone" className="text-neutral-500" />
+        <PencilSimple size={12} weight="duotone" className="text-text-tertiary" />
         Rename
       </button>
       {!state.targetIsFolder && (
@@ -170,7 +170,7 @@ export function ContextMenu({
             onClose();
           }}
         >
-          <Copy size={12} weight="duotone" className="text-neutral-500" />
+          <Copy size={12} weight="duotone" className="text-text-tertiary" />
           Duplicate
         </button>
       )}
@@ -282,8 +282,8 @@ export function InlineInput({
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           aria-invalid={error ? true : undefined}
-          className={`w-full min-w-0 bg-neutral-800 text-neutral-200 text-xs px-1.5 py-0.5 rounded border outline-hidden ${
-            error ? "border-danger-ink" : "border-neutral-600 focus:border-accent-ink"
+          className={`w-full min-w-0 bg-background-tertiary-default text-text-primary text-xs px-1.5 py-0.5 rounded border outline-hidden ${
+            error ? "border-danger-ink" : "border-border-button-default focus:border-accent-ink"
           }`}
           spellCheck={false}
         />
@@ -331,24 +331,24 @@ export function DeleteConfirm({
   return (
     <div
       ref={ref}
-      className="mx-1 my-0.5 p-2 bg-neutral-800 border border-neutral-700 rounded-md text-xs"
+      className="mx-1 my-0.5 p-2 bg-background-tertiary-default border border-border-button-default rounded-md text-xs"
     >
-      <p className="text-neutral-300 mb-2">
+      <p className="text-text-primary mb-2">
         {isFolder ? (
           <>
-            Delete folder <span className="font-medium text-neutral-100">{name}</span> and
+            Delete folder <span className="font-medium text-text-primary">{name}</span> and
             everything inside it?
           </>
         ) : (
           <>
-            Delete <span className="font-medium text-neutral-100">{name}</span>?
+            Delete <span className="font-medium text-text-primary">{name}</span>?
           </>
         )}
       </p>
       <div className="flex gap-1.5">
         <button
           onClick={onCancel}
-          className="flex-1 px-2 py-1 rounded-sm bg-hover text-neutral-300 hover:bg-press transition-colors"
+          className="flex-1 px-2 py-1 rounded-sm bg-hover text-text-primary hover:bg-press transition-colors"
         >
           Cancel
         </button>
@@ -414,8 +414,8 @@ export const TreeFile = memo(function TreeFile({
       }}
       className={`w-full flex items-center gap-2 py-1 min-h-7 text-left transition-all text-xs ${
         isActive
-          ? "bg-neutral-800/60 text-neutral-200"
-          : "text-neutral-500 hover:bg-neutral-800/30 hover:text-neutral-300"
+          ? "bg-background-tertiary-default text-text-primary"
+          : "text-text-tertiary hover:bg-background-primary-hover hover:text-text-primary"
       }`}
       style={{ paddingLeft: `${8 + depth * 12 + 14}px` }}
     >
@@ -508,14 +508,14 @@ export const TreeFolder = memo(function TreeFolder({
           onDrop(e, node.fullPath);
         }}
         onDragLeave={onDragLeave}
-        className={`w-full flex items-center gap-1.5 px-2.5 py-1 min-h-7 text-left text-xs text-neutral-400 hover:bg-neutral-800/30 hover:text-neutral-300 transition-colors ${
+        className={`w-full flex items-center gap-1.5 px-2.5 py-1 min-h-7 text-left text-xs text-text-secondary hover:bg-background-primary-hover hover:text-text-primary transition-colors ${
           isDragOver
             ? "bg-accent/10 outline-solid outline-1 outline-accent-ink -outline-offset-1"
             : ""
         }`}
         style={{ paddingLeft: `${8 + depth * 12}px` }}
       >
-        <Chevron size={10} className="shrink-0 text-neutral-600" />
+        <Chevron size={10} className="shrink-0 text-text-tertiary" />
         <span className="truncate font-medium">{node.name}</span>
       </button>
       {isOpen && (

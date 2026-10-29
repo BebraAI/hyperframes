@@ -55,7 +55,7 @@ export const VolumeControl = memo(function VolumeControl({
     <div className="group flex shrink-0 items-center">
       <div className="w-0 overflow-hidden opacity-0 transition-[width,opacity] duration-150 ease-out group-hover:w-14 group-hover:opacity-100 group-focus-within:w-14 group-focus-within:opacity-100">
         <div className="relative mx-1 flex h-6 w-12 items-center">
-          <div className="absolute inset-x-0 h-0.5 overflow-hidden rounded-full bg-neutral-700">
+          <div className="absolute inset-x-0 h-0.5 overflow-hidden rounded-full bg-background-tertiary-default">
             <div
               className="h-full rounded-full bg-neutral-300"
               style={{ width: `${percentage}%` }}
@@ -93,7 +93,7 @@ export const VolumeControl = memo(function VolumeControl({
           aria-label={muteLabel}
           aria-pressed={silent}
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:pointer-events-none disabled:opacity-30 ${
-            silent ? "text-accent-ink" : "text-neutral-500 hover:text-neutral-200"
+            silent ? "text-accent-ink" : "text-text-tertiary hover:text-text-primary"
           }`}
         >
           <VolumeIcon muted={audioMuted} volume={audioVolume} />

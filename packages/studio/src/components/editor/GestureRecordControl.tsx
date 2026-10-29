@@ -41,7 +41,7 @@ export function GestureRecordPanelButton({
           track("button", "Gesture recording");
           onToggleRecording();
         }}
-        className={`w-full flex items-center justify-center gap-2 rounded-lg py-2 text-[11px] font-medium transition-colors ${
+        className={`w-full flex items-center justify-center gap-2 rounded-lg py-2 text-caption-2-medium transition-colors ${
           recording
             ? "bg-red-500/15 text-danger-ink border border-red-500/30 animate-pulse"
             : "bg-panel-input text-panel-text-2 hover:bg-panel-hover border border-panel-border"
@@ -78,7 +78,7 @@ export function GestureRecordBadge({
       className={`pointer-events-auto absolute z-20 flex h-7 w-7 items-center justify-center rounded-full border shadow-lg transition-colors ${
         recording
           ? "border-danger/60 bg-danger text-on-danger animate-pulse"
-          : "border-studio-accent/60 bg-neutral-950 text-accent-ink hover:bg-neutral-900"
+          : "border-studio-accent/60 bg-background-tertiary-default text-accent-ink hover:bg-background-primary-hover"
       }`}
       style={{
         left: Math.max(0, rect.left + rect.width + 8),

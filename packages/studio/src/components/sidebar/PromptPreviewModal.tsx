@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { Button, cn } from "../ui";
+import { DialogHeader, dialogClasses } from "../ui/Dialog";
 import { useDialogBehavior } from "../ui/useDialogBehavior";
 
 export function PromptPreviewModal({
@@ -46,9 +48,12 @@ export function PromptPreviewModal({
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xs transition-opacity duration-150 ease-out ${
-        entered ? "opacity-100" : "opacity-0"
-      }`}
+      className={cn(
+        dialogClasses.backdrop,
+        dialogClasses.centered,
+        "transition-opacity duration-150 ease-out",
+        entered ? "opacity-100" : "opacity-0",
+      )}
       onClick={requestClose}
     >
       <div
@@ -57,36 +62,12 @@ export function PromptPreviewModal({
         aria-modal="true"
         aria-label={`Ask agent: ${title}`}
         tabIndex={-1}
-        className="w-[560px] max-h-[80vh] flex flex-col rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl outline-hidden"
+        className={cn(dialogClasses.panel, "w-[560px]")}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/60">
-          <div>
-            <h3 className="text-sm font-medium text-neutral-200">Ask agent</h3>
-            <p className="text-xs text-neutral-500 mt-0.5">{title}</p>
-          </div>
-          <button
-            aria-label="Close"
-            className="p-1 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 active:scale-[0.95]"
-            onClick={onClose}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          <p className="text-[11px] text-neutral-500 mb-2">
+        <DialogHeader title="Ask agent" description={title} onClose={onClose} />
+        <div className={dialogClasses.body}>
+          <p className={cn(dialogClasses.hint, "mb-2")}>
             Edit the prompt below, then copy and paste into your AI agent
           </p>
           <textarea
@@ -97,29 +78,23 @@ export function PromptPreviewModal({
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void handleCopy();
             }}
-            className="w-full min-h-[240px] text-[11px] text-neutral-200 leading-relaxed font-mono bg-neutral-900/60 rounded-lg p-3 border border-neutral-800 resize-y focus:outline-hidden focus:border-studio-accent/60 focus:ring-1 focus:ring-studio-accent/30"
+            className={cn(
+              dialogClasses.field,
+              "min-h-[240px] resize-y font-mono text-caption-1-regular",
+            )}
           />
         </div>
-        <div className="flex items-center justify-between px-5 py-3 border-t border-neutral-800/60">
-          <span className="text-[11px] text-neutral-600">
+        <div className={dialogClasses.footer}>
+          <span className={dialogClasses.hint}>
             {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+Enter to copy
           </span>
-          <button
-            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors active:scale-[0.97] ${
-              copyState === "copied"
-                ? "bg-accent text-on-accent"
-                : copyState === "failed"
-                  ? "bg-danger text-on-danger"
-                  : "bg-accent text-on-accent hover:bg-accent-hover"
-            }`}
-            onClick={handleCopy}
-          >
+          <Button variant={copyState === "failed" ? "danger" : "primary"} onClick={handleCopy}>
             {copyState === "copied"
               ? "Copied!"
               : copyState === "failed"
                 ? "Copy failed"
                 : "Copy prompt"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

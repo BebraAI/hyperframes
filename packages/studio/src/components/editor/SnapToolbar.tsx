@@ -214,7 +214,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
                     updatePrefs({ gridSpacing: val });
                   }
                 }}
-                className="w-16 rounded-sm bg-neutral-900 border border-neutral-600 px-1.5 py-0.5 text-xs text-white text-right tabular-nums outline-hidden focus:border-studio-accent"
+                className="w-16 rounded-sm bg-background-tertiary-default border border-border-button-default px-1.5 py-0.5 text-xs text-white text-right tabular-nums outline-hidden focus:border-border-button-active"
               />
             </label>
             <label className="flex items-center gap-2 text-xs text-white/80 cursor-pointer">

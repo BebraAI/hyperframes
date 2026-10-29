@@ -81,7 +81,7 @@ export function FlatTimingRow({
   const cell = (label: string, value: string, onCommit: (next: string) => void) => (
     <div className="grid gap-px">
       <span className="text-[9px] text-panel-text-4">{label}</span>
-      <span className="border-b border-panel-border-input/50 font-mono text-[11px] text-panel-text-0 hover:border-panel-border-input">
+      <span className="border-b border-panel-border-input/50 font-mono text-caption-2-regular text-panel-text-0 hover:border-panel-border-input">
         <CommitField
           value={value}
           onCommit={(next) => {
@@ -148,13 +148,13 @@ export function FlatMotionSection({
       {showEffects && (
         <>
           {multipleTimelines && (
-            <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-warning-ink">
+            <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-caption-2-regular leading-relaxed text-warning-ink">
               This file has multiple GSAP timelines. Animation editing is disabled to prevent data
               loss. Consolidate into a single timeline to enable editing.
             </p>
           )}
           {unsupportedTimelinePattern && (
-            <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-warning-ink">
+            <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-caption-2-regular leading-relaxed text-warning-ink">
               This timeline uses a computed key the editor can&apos;t resolve statically.
             </p>
           )}

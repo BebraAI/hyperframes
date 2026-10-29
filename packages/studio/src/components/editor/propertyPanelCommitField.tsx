@@ -213,7 +213,7 @@ export function CommitField({
       }}
       onKeyDown={handleKeyDown}
       title={parseNumericToken(value) ? "Scroll or use Arrow keys to adjust" : undefined}
-      className={`min-w-0 w-full bg-transparent text-[11px] font-medium text-neutral-100 outline-hidden disabled:cursor-not-allowed disabled:text-neutral-600 ${
+      className={`min-w-0 w-full bg-transparent text-caption-2-medium text-text-primary outline-hidden disabled:cursor-not-allowed disabled:text-text-tertiary ${
         align === "right" ? "text-right" : "text-left"
       }`}
     />

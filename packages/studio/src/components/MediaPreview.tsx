@@ -5,7 +5,7 @@ import { encodeUrlPath } from "@hyperframes/parsers";
 
 function MediaErrorPanel({ name, filePath }: { name: string; filePath: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 bg-neutral-950 gap-2">
+    <div className="flex flex-col items-center justify-center h-full p-4 bg-background-tertiary-default gap-2">
       <svg
         width="40"
         height="40"
@@ -13,16 +13,16 @@ function MediaErrorPanel({ name, filePath }: { name: string; filePath: string })
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
-        className="text-neutral-600"
+        className="text-text-tertiary"
         aria-hidden="true"
       >
         <circle cx="12" cy="12" r="10" />
         <line x1="12" y1="8" x2="12" y2="12" strokeLinecap="round" />
         <line x1="12" y1="16" x2="12.01" y2="16" strokeLinecap="round" />
       </svg>
-      <span className="text-sm text-neutral-400 font-medium">{name}</span>
-      <span className="text-[11px] text-neutral-600 font-mono">{filePath}</span>
-      <span className="text-[10px] text-neutral-500">
+      <span className="text-sm text-text-secondary font-medium">{name}</span>
+      <span className="text-caption-2-regular text-text-tertiary font-mono">{filePath}</span>
+      <span className="text-[10px] text-text-tertiary">
         Couldn't load this file. It may be missing or corrupt
       </span>
     </div>
@@ -46,35 +46,35 @@ export function MediaPreview({ projectId, filePath }: { projectId: string; fileP
 
   if (IMAGE_EXT.test(filePath)) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4 bg-neutral-950">
+      <div className="flex flex-col items-center justify-center h-full p-4 bg-background-tertiary-default">
         <img
           src={serveUrl}
           alt={name}
           onError={setFailed}
-          className="max-w-full max-h-[70%] object-contain rounded-sm border border-neutral-800"
+          className="max-w-full max-h-[70%] object-contain rounded-sm border border-border-button-default"
         />
-        <span className="mt-3 text-[11px] text-neutral-500 font-mono">{filePath}</span>
+        <span className="mt-3 text-caption-2-regular text-text-tertiary font-mono">{filePath}</span>
       </div>
     );
   }
 
   if (VIDEO_EXT.test(filePath)) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4 bg-neutral-950">
+      <div className="flex flex-col items-center justify-center h-full p-4 bg-background-tertiary-default">
         <video
           src={serveUrl}
           controls
           onError={setFailed}
-          className="max-w-full max-h-[70%] rounded-sm border border-neutral-800"
+          className="max-w-full max-h-[70%] rounded-sm border border-border-button-default"
         />
-        <span className="mt-3 text-[11px] text-neutral-500 font-mono">{filePath}</span>
+        <span className="mt-3 text-caption-2-regular text-text-tertiary font-mono">{filePath}</span>
       </div>
     );
   }
 
   if (AUDIO_EXT.test(filePath)) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4 bg-neutral-950 gap-3">
+      <div className="flex flex-col items-center justify-center h-full p-4 bg-background-tertiary-default gap-3">
         <svg
           width="48"
           height="48"
@@ -82,21 +82,21 @@ export function MediaPreview({ projectId, filePath }: { projectId: string; fileP
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
-          className="text-neutral-600"
+          className="text-text-tertiary"
         >
           <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="6" cy="18" r="3" />
           <circle cx="18" cy="16" r="3" />
         </svg>
         <audio src={serveUrl} controls onError={setFailed} className="w-full max-w-[280px]" />
-        <span className="text-[11px] text-neutral-500 font-mono">{filePath}</span>
+        <span className="text-caption-2-regular text-text-tertiary font-mono">{filePath}</span>
       </div>
     );
   }
 
   // Fonts and other binary — show info instead of binary dump
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 bg-neutral-950 gap-2">
+    <div className="flex flex-col items-center justify-center h-full p-4 bg-background-tertiary-default gap-2">
       <svg
         width="40"
         height="40"
@@ -104,7 +104,7 @@ export function MediaPreview({ projectId, filePath }: { projectId: string; fileP
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
-        className="text-neutral-600"
+        className="text-text-tertiary"
       >
         <path
           d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
@@ -113,9 +113,9 @@ export function MediaPreview({ projectId, filePath }: { projectId: string; fileP
         />
         <polyline points="14 2 14 8 20 8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span className="text-sm text-neutral-400 font-medium">{name}</span>
-      <span className="text-[11px] text-neutral-600 font-mono">{filePath}</span>
-      <span className="text-[10px] text-neutral-600">Binary file: preview not available</span>
+      <span className="text-sm text-text-secondary font-medium">{name}</span>
+      <span className="text-caption-2-regular text-text-tertiary font-mono">{filePath}</span>
+      <span className="text-[10px] text-text-tertiary">Binary file: preview not available</span>
     </div>
   );
 }
