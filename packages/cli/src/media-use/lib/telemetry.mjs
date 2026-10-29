@@ -9,7 +9,8 @@ import { dirname, join } from "node:path";
 import { withFileLock } from "./config-lock.mjs";
 import { globalMediaDir } from "./media-home.mjs";
 
-const POSTHOG_API_KEY = "phc_zjjbX0PnWxERXrMHhkEJWj9A9BhGVLRReICgsfTMmpx";
+// promptwise fork: no key, so these scripts never send HeyGen telemetry.
+const POSTHOG_API_KEY = "";
 const POSTHOG_HOST = "https://us.i.posthog.com";
 const TIMEOUT_MS = 1500;
 let identifiedAccount = false;
@@ -40,6 +41,7 @@ export function optedOut() {
   return (
     // `hyperframes telemetry disable` writes telemetryEnabled: false to the
     // shared config; one opt-out must cover the CLI and the media-use scripts.
+    !POSTHOG_API_KEY ||
     readSharedConfig().telemetryEnabled === false ||
     process.env.HYPERFRAMES_NO_TELEMETRY === "1" ||
     process.env.DO_NOT_TRACK === "1" ||

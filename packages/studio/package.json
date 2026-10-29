@@ -108,6 +108,7 @@
     "@lezer/highlight": "^1.2.3",
     "@mcp-b/global": "^5.0.1",
     "@phosphor-icons/react": "^2.1.10",
+    "@remixicon/react": "4.9.0",
     "@tanstack/react-virtual": "^3.14.13",
     "acorn": "^8.17.0",
     "cn": "0.2.4",

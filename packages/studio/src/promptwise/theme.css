@@ -1,0 +1,35 @@
+/* promptwise: BoardUI's look over Studio's tokens (src/styles/theme.css), unlayered so it wins over
+ * Tailwind's theme layer. Values are BoardUI's neutral and accent scales, light first, then dark. */
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+
+  /* Surfaces: page, panels, inputs, menus. */
+  --color-bg-0: light-dark(#f7f7f7, #121212);
+  --color-surface: light-dark(#ffffff, #262626);
+  --color-input: light-dark(#ffffff, #171717);
+  --color-raised: light-dark(#ffffff, #2e2e2e);
+
+  /* Text: primary, secondary, muted, disabled. */
+  --color-text-0: light-dark(#0a0a0a, #fafafa);
+  --color-text-2: light-dark(#525252, #d4d4d4);
+  --color-text-muted: light-dark(#737373, #a3a3a3);
+  --color-text-off: light-dark(#a3a3a3, #737373);
+
+  /* The promptwise orange. */
+  --color-accent: light-dark(#ec5f2c, #ff7948);
+  --color-accent-hover: light-dark(#c4471a, #ff946c);
+  --color-on-accent: #ffffff;
+  --color-accent-ink: light-dark(#c4471a, #ff946c);
+  --color-danger: #ef4444;
+  --color-danger-ink: light-dark(#b91c1c, #f87171);
+
+  --timeline-row-bg: light-dark(#ffffff, #1c1c1c);
+  --timeline-gutter-bg: light-dark(#f7f7f7, #171717);
+  --timeline-clip-label-active: light-dark(#441608, #fff5f1);
+  --timeline-clip-selection: light-dark(#c4471a, rgba(255, 255, 255, 0.85));
+}

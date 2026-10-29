@@ -4,11 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>HyperFrames Studio</title>
+    <title>promptwise Timeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
     <script>
-      // Before the first paint: the theme the toggle saved, else light (owner: src/utils/studioTheme.ts).
+      // Before the first paint: promptwise passes its theme as ?theme=light|dark; else the theme the toggle saved, else light (owner: src/utils/studioTheme.ts).
       try {
-        if (JSON.parse(localStorage.getItem("hf-studio-ui-preferences") || "{}").theme !== "dark")
+        var asked = new URLSearchParams(location.search).get("theme");
+        if (asked ? asked !== "dark" : JSON.parse(localStorage.getItem("hf-studio-ui-preferences") || "{}").theme !== "dark")
           document.documentElement.dataset.theme = "paper";
       } catch (e) {
         document.documentElement.dataset.theme = "paper";
