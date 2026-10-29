@@ -181,7 +181,7 @@ function ChoiceSubmenu({
         }}
       >
         <span>{label}</span>
-        <span className="text-neutral-500 text-[10px] ml-3">▸</span>
+        <span className="text-text-tertiary text-[10px] ml-3">▸</span>
       </button>
       {open && (
         <div
@@ -198,7 +198,7 @@ function ChoiceSubmenu({
               {section.heading && (
                 <>
                   <div className={menuClasses.divider} />
-                  <div className="px-3 py-1 text-[9px] uppercase tracking-wide text-neutral-500">
+                  <div className="px-3 py-1 text-[9px] uppercase tracking-wide text-text-tertiary">
                     {section.heading}
                   </div>
                 </>

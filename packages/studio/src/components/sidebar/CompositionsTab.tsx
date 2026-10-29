@@ -313,18 +313,18 @@ function CompCard({
       }}
       onPointerEnter={handleEnter}
       onPointerLeave={handleLeave}
-      className={`group/card w-full select-none text-left px-2 py-1.5 flex items-center gap-2.5 transition-colors cursor-grab active:cursor-grabbing outline-hidden focus-visible:bg-neutral-800/60 ${
+      className={`group/card flex w-full cursor-grab select-none items-center gap-2.5 rounded-2lg p-1.5 text-left outline-hidden transition-colors focus-visible:bg-background-primary-hover active:cursor-grabbing ${
         isActive
-          ? "bg-studio-accent/10 border-l-2 border-studio-accent"
-          : "border-l-2 border-transparent hover:bg-neutral-800/50"
+          ? "bg-background-primary-hover ring-1 ring-inset ring-border-button-default"
+          : "hover:bg-background-primary-hover"
       }`}
     >
       <div
         ref={thumbnailBox}
-        className="w-20 h-[45px] rounded-sm overflow-hidden bg-neutral-900 shrink-0 relative"
+        className="relative h-[45px] w-20 shrink-0 overflow-hidden rounded-lg bg-background-tertiary-default"
       >
         {thumbnailFailed ? (
-          <div className="absolute inset-0 flex items-center justify-center px-1 text-center text-[8px] leading-tight text-neutral-600">
+          <div className="absolute inset-0 flex items-center justify-center px-1 text-center text-caption-2-regular text-text-tertiary">
             Preview unavailable
           </div>
         ) : !frameUrl ? null : (
@@ -377,12 +377,12 @@ function CompCard({
         title={lintInfo && lintInfo.count > 0 ? lintInfo.messages.join("\n") : undefined}
       >
         <div className="flex items-center gap-1">
-          <span className="text-[11px] font-medium text-neutral-300 truncate">{name}</span>
+          <span className="truncate text-caption-1-medium text-text-primary">{name}</span>
           {isRoot && (
             <span
               aria-label="Root composition: opens automatically on load"
               title="Root composition: opens automatically on load"
-              className="flex-shrink-0 rounded-full bg-neutral-700/60 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-neutral-300"
+              className="shrink-0 rounded-full bg-background-tertiary-default px-1.5 text-caption-2-medium text-text-secondary"
             >
               Root
             </span>
@@ -390,13 +390,13 @@ function CompCard({
           {lintInfo && lintInfo.count > 0 && (
             <span
               aria-label={`${lintInfo.count} lint finding${lintInfo.count === 1 ? "" : "s"}`}
-              className="shrink-0 min-w-[16px] text-center rounded-full bg-amber-500/20 px-1 text-[8px] font-bold text-warning-ink"
+              className="min-w-4 shrink-0 rounded-full bg-background-tertiary-default px-1 text-center text-caption-2-medium text-warning-ink"
             >
               {lintInfo.count}
             </span>
           )}
         </div>
-        <span className="text-[9px] text-neutral-600 truncate block">{comp}</span>
+        <span className="block truncate text-caption-1-regular text-text-secondary">{comp}</span>
       </div>
       {onAddToTimeline && (
         <button
@@ -407,7 +407,7 @@ function CompCard({
             event.stopPropagation();
             onAddToTimeline();
           }}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-neutral-600 opacity-0 transition-[color,background-color,opacity] hover:bg-neutral-800 hover:text-accent-ink group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100"
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground-icon-secondary opacity-0 transition-[color,background-color,opacity] hover:bg-background-primary-hover hover:text-text-primary group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100"
         >
           <span aria-hidden="true">+</span>
         </button>
@@ -425,10 +425,10 @@ function CompCard({
             // h-6 w-6 = the 24x24 WCAG 2.2 (2.5.8) minimum target; the 14px glyph
             // is unchanged, only the box grows. The sibling "+" button is h-8 w-8,
             // so the card row already has the room.
-            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors ${
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-foreground-icon-secondary transition-colors ${
               isRendering
-                ? "text-neutral-600 cursor-not-allowed"
-                : "text-neutral-600 hover:text-accent-ink hover:bg-neutral-800"
+                ? "cursor-not-allowed text-text-disabled"
+                : "hover:bg-background-primary-hover hover:text-text-primary"
             }`}
           >
             <svg
@@ -469,13 +469,13 @@ export const CompositionsTab = memo(function CompositionsTab({
   if (compositions.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center px-4">
-        <p className="text-xs text-neutral-600 text-center">No compositions found</p>
+        <p className="text-center text-body-regular text-text-tertiary">No compositions found</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto" data-composition-list>
+    <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-1.5" data-composition-list>
       {compositions.map((comp) => (
         <CompCard
           key={`${projectId}:${comp}`}

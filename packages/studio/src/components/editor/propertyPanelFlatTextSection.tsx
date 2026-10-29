@@ -122,7 +122,7 @@ function FlatTextFieldEditor({
               track("select", "Weight");
               onSetTextFieldStyle(field.key, "font-weight", e.target.value);
             }}
-            className={`appearance-none bg-transparent text-right font-mono text-[11px] outline-hidden ${
+            className={`appearance-none bg-transparent text-right font-mono text-caption-2-regular outline-hidden ${
               VALUE_TIER_VALUE_CLASS[resolveValueTier(field.inlineStyles["font-weight"], "400")]
             }`}
           >
@@ -393,7 +393,7 @@ export function FlatTextLayerList({
                 className="h-3 w-3 shrink-0 rounded-xs"
                 style={{ backgroundColor: getTextFieldColor(field, styles) }}
               />
-              <span className="min-w-0 flex-1 truncate text-[11px] text-panel-text-1">
+              <span className="min-w-0 flex-1 truncate text-caption-2-regular text-panel-text-1">
                 {formatTextFieldPreview(field.value) || `Text ${index + 1}`}
               </span>
               <span className="shrink-0 font-mono text-[9px] text-panel-text-4">

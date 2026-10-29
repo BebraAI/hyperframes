@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { Button } from "./ui";
+import { Banner } from "./ui/Dialog";
 
 interface ServedProject {
   id: string;
@@ -59,10 +61,7 @@ export function ProjectUnreachableBanner({ projectId }: ProjectUnreachableBanner
   const servedLabel = soleProject?.title ?? soleProject?.id;
 
   return (
-    <div
-      role="alert"
-      className="hf-backdrop-in absolute left-1/2 top-14 z-92 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md border border-amber-500/30 bg-amber-950/85 px-4 py-2 text-[12px] font-medium text-amber-100 shadow-lg shadow-black/30"
-    >
+    <Banner tone="warning">
       {soleProject ? (
         <>
           <span>
@@ -73,17 +72,13 @@ export function ProjectUnreachableBanner({ projectId }: ProjectUnreachableBanner
               to the project this server actually serves. That is the same
               fallback a fresh load performs, so the button promises nothing
               beyond what a reload already does. */}
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="shrink-0 rounded-sm border border-amber-300/20 px-2 py-1 text-[11px] text-amber-100 transition-colors hover:bg-amber-400/10 active:scale-[0.98]"
-          >
+          <Button size="sm" className="shrink-0" onClick={() => window.location.reload()}>
             Open {servedLabel}
-          </button>
+          </Button>
         </>
       ) : (
         <span>Couldn&apos;t open this project. It may have been renamed, moved, or deleted.</span>
       )}
-    </div>
+    </Banner>
   );
 }

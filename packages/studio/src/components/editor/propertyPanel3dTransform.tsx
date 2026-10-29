@@ -178,7 +178,7 @@ function Cube3dControl({
           onKeyframe={onKeyframe}
           keyframed={keyframed}
         />
-        <p className="mt-1 text-center text-[9px] leading-snug text-neutral-600">
+        <p className="mt-1 text-center text-[9px] leading-snug text-text-tertiary">
           Drag to tilt · Shift-drag to roll · Scroll for depth
         </p>
       </div>
@@ -318,12 +318,12 @@ export function PropertyPanel3dTransform({
   };
 
   return (
-    <div className="mt-3 border-t border-neutral-800/40 pt-3">
+    <div className="mt-3 border-t border-border-button-default pt-3">
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
         aria-expanded={!collapsed}
-        className="mb-2 flex w-full items-center justify-between text-[10px] font-medium uppercase tracking-wider text-neutral-600 hover:text-neutral-400 active:scale-[0.99]"
+        className="mb-2 flex w-full items-center justify-between text-[10px] font-medium uppercase tracking-wider text-text-tertiary hover:text-text-secondary active:scale-[0.99]"
       >
         <span>3D Transform</span>
         <svg

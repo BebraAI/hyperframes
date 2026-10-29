@@ -90,7 +90,7 @@ export const TrackGapContextMenu = memo(function TrackGapContextMenu({
       >
         <span>Close gap</span>
         {gapWidth != null && (
-          <span className="text-neutral-500 text-[10px] ml-3">{gapWidth.toFixed(2)}s</span>
+          <span className="text-text-tertiary text-[10px] ml-3">{gapWidth.toFixed(2)}s</span>
         )}
       </button>
       <button

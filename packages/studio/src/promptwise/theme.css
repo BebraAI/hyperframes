@@ -8,23 +8,29 @@
   --radius-md: 0.625rem;
   --radius-lg: 0.75rem;
 
-  /* Surfaces: page, panels, inputs, menus. */
-  --color-bg-0: light-dark(#f7f7f7, #121212);
-  --color-surface: light-dark(#ffffff, #262626);
-  --color-input: light-dark(#ffffff, #171717);
-  --color-raised: light-dark(#ffffff, #2e2e2e);
+  /* Studio's roles on BoardUI's semantic colours (src/boardui/styles/theme.css), which follow data-theme. */
+  --color-bg-0: var(--color-background-secondary-default);
+  --color-surface: var(--color-background-primary-default);
+  --color-input: var(--color-background-tertiary-default);
+  --color-raised: var(--color-background-primary-default);
+  --color-hover: var(--color-background-primary-hover);
+  --color-border: var(--color-border-button-default);
+  --color-border-strong: var(--color-border-button-default);
+  --color-border-input: var(--color-border-button-hover);
 
-  /* Text: primary, secondary, muted, disabled. */
-  --color-text-0: light-dark(#0a0a0a, #fafafa);
-  --color-text-2: light-dark(#525252, #d4d4d4);
-  --color-text-muted: light-dark(#737373, #a3a3a3);
-  --color-text-off: light-dark(#a3a3a3, #737373);
+  --color-text-0: var(--color-text-primary);
+  --color-text-2: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-secondary);
+  --color-text-off: var(--color-text-tertiary);
+
+  --panel-shell-bg: var(--color-background-secondary-default);
+  --panel-strip-bg: var(--color-background-secondary-default);
 
   /* The promptwise orange. */
-  --color-accent: light-dark(#ec5f2c, #ff7948);
-  --color-accent-hover: light-dark(#c4471a, #ff946c);
-  --color-on-accent: #ffffff;
-  --color-accent-ink: light-dark(#c4471a, #ff946c);
+  --color-accent: light-dark(var(--color-accent-600), var(--color-accent-500));
+  --color-accent-hover: light-dark(var(--color-accent-700), var(--color-accent-400));
+  --color-on-accent: var(--color-white);
+  --color-accent-ink: light-dark(var(--color-accent-700), var(--color-accent-400));
   --color-danger: #ef4444;
   --color-danger-ink: light-dark(#b91c1c, #f87171);
 
@@ -38,4 +44,14 @@
  * the left group's four at its default width (scripts/studio-runtime-smoke.mjs checks it). */
 .hf-dock .dv-tab.dv-tab {
   padding: 0 4px;
+}
+
+/* BoardUI's card radius on the dock's panels and their tabs. */
+.hf-dock .dv-groupview {
+  border-radius: 16px;
+}
+
+.hf-dock .dv-tab,
+.hf-dock-tab-fill {
+  border-radius: 10px 10px 0 0;
 }

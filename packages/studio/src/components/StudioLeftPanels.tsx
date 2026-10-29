@@ -125,7 +125,7 @@ export const StudioLeftPanels = memo(function StudioLeftPanels({
         <PanelColumn footer={lintButton}>
           <div className="flex min-h-0 flex-1">
             {fileTree.length > 0 && (
-              <div className="w-[160px] shrink-0 border-r border-neutral-800 overflow-y-auto">
+              <div className="w-[160px] shrink-0 border-r border-border-button-default overflow-y-auto">
                 <FileTree
                   files={fileTree}
                   activeFile={editingFile?.path ?? null}
@@ -174,7 +174,7 @@ function CodeBody({
 }) {
   if (!editingFile) {
     return (
-      <div className="flex items-center justify-center h-full text-neutral-600 text-sm">
+      <div className="flex items-center justify-center h-full text-text-tertiary text-sm">
         Select a file to edit
       </div>
     );
@@ -186,7 +186,7 @@ function CodeBody({
   // empty document over the real file.
   if (editingFile.content == null) {
     return (
-      <div className="flex h-full items-center justify-center text-[11px] text-neutral-600">
+      <div className="flex h-full items-center justify-center text-caption-2-regular text-text-tertiary">
         Loading {editingFile.path}…
       </div>
     );

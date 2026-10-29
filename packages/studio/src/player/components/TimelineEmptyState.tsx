@@ -19,7 +19,7 @@ export function TimelineEmptyState({
   return (
     <div
       className={`h-full border-t bg-[var(--timeline-shell-bg)] flex flex-col select-none transition-colors duration-150 ${
-        isDragOver ? "border-studio-accent/50 bg-studio-accent/3" : "border-neutral-800/50"
+        isDragOver ? "border-studio-accent/50 bg-studio-accent/3" : "border-border-button-default"
       }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -27,7 +27,7 @@ export function TimelineEmptyState({
     >
       {/* Ruler */}
       <div
-        className="shrink-0 border-b border-neutral-800/40 flex items-end relative"
+        className="shrink-0 border-b border-border-button-default flex items-end relative"
         style={{ height: RULER_H, paddingLeft: GUTTER }}
       >
         {[0, 10, 20, 30, 40, 50].map((s) => (
@@ -36,12 +36,12 @@ export function TimelineEmptyState({
             className="flex flex-col items-center"
             style={{ position: "absolute", left: GUTTER + s * 14 }}
           >
-            <span className="text-[9px] text-neutral-600 font-mono tabular-nums leading-none mb-0.5">
+            <span className="text-[9px] text-text-tertiary font-mono tabular-nums leading-none mb-0.5">
               {`${Math.floor(s / 60)
                 .toString()
                 .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`}
             </span>
-            <div className="w-px h-[5px] bg-neutral-700/40" />
+            <div className="w-px h-[5px] bg-background-tertiary-default" />
           </div>
         ))}
       </div>
@@ -49,7 +49,9 @@ export function TimelineEmptyState({
       <div className="flex-1 flex items-center justify-center">
         <div
           className={`flex items-center gap-3 px-6 py-3 border border-dashed rounded-lg transition-colors duration-150 ${
-            isDragOver ? "border-studio-accent/60 bg-studio-accent/6" : "border-neutral-700/50"
+            isDragOver
+              ? "border-studio-accent/60 bg-studio-accent/6"
+              : "border-border-button-default"
           }`}
         >
           {isDragOver ? (
@@ -82,7 +84,7 @@ export function TimelineEmptyState({
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-neutral-600 shrink-0"
+                className="text-text-tertiary shrink-0"
               >
                 <rect x="2" y="2" width="20" height="20" rx="2" />
                 <path d="M7 2v20" />
@@ -90,7 +92,7 @@ export function TimelineEmptyState({
                 <path d="M2 7h20" />
                 <path d="M2 17h20" />
               </svg>
-              <span className="text-[13px] text-neutral-500">
+              <span className="text-[13px] text-text-tertiary">
                 {onFileDrop
                   ? "Drop media here or describe your video to start"
                   : "Describe your video to start creating"}

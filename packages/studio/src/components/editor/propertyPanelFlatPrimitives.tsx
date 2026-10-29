@@ -45,11 +45,11 @@ export function FlatRow({
   const track = useTrackDesignInput();
   return (
     <div className="group flex min-h-[30px] items-center justify-between gap-3" title={tooltip}>
-      <span className={`text-[11px] ${VALUE_TIER_LABEL_CLASS[tier]}`}>{label}</span>
+      <span className={`text-caption-2-regular ${VALUE_TIER_LABEL_CLASS[tier]}`}>{label}</span>
       <span className="flex min-w-0 shrink-0 items-center gap-1.5">
         <span
           data-flat-row-value="true"
-          className={`min-w-0 border-b pb-px font-mono text-[11px] ${VALUE_TIER_VALUE_CLASS[tier]} ${
+          className={`min-w-0 border-b pb-px font-mono text-caption-2-regular ${VALUE_TIER_VALUE_CLASS[tier]} ${
             tier === "explicitCustom"
               ? "border-panel-accent/30 group-hover:border-panel-accent/70"
               : "border-panel-border-input/50 group-hover:border-panel-border-input"
@@ -130,7 +130,7 @@ export function FlatSegmentedRow({
   const track = useTrackDesignInput();
   return (
     <div className="flex min-h-[32px] items-center justify-between">
-      <span className="text-[11px] text-panel-text-3">{label}</span>
+      <span className="text-caption-2-regular text-panel-text-3">{label}</span>
       <span className="flex items-center gap-0.5">
         {options.map((option, index) => (
           <span key={option.key} className="flex items-center">
@@ -144,7 +144,7 @@ export function FlatSegmentedRow({
                 if (!option.active) track("segmented", label);
                 onChange(option.key);
               }}
-              className={`px-1.5 py-1 text-[11px] transition-colors disabled:cursor-not-allowed ${
+              className={`px-1.5 py-1 text-caption-2-regular transition-colors disabled:cursor-not-allowed ${
                 option.active
                   ? "border-b-2 border-panel-accent text-panel-text-0"
                   : "border-b-2 border-transparent text-panel-text-4 hover:text-panel-text-2"
@@ -203,7 +203,7 @@ export function FlatGroupHeader({
         className={`${animateEntrance ? "hf-flat-group-enter " : ""}flex min-h-10 w-full shrink-0 items-center justify-between gap-2 border-b border-panel-hairline bg-panel-bg px-4 text-left`}
       >
         <span className="flex min-w-0 items-center gap-2">
-          <span className="text-[12px] font-medium text-panel-text-2">{title}</span>
+          <span className="text-caption-1-medium text-panel-text-2">{title}</span>
           {summary && (
             <span className="min-w-0 truncate font-mono text-[9px] text-panel-text-4">
               {summary}
@@ -227,7 +227,7 @@ export function FlatGroupHeader({
     <div
       className={`${animateEntrance ? "hf-flat-group-enter " : ""}flex min-h-10 shrink-0 items-center justify-between bg-panel-bg px-4`}
     >
-      <span className="text-[12px] font-semibold text-panel-text-0">{title}</span>
+      <span className="text-caption-1-semibold text-panel-text-0">{title}</span>
       <span className="flex items-center gap-2.5 text-panel-text-5">
         {accessory}
         <button type="button" onClick={onToggleOpen} title="Collapse" className="text-panel-text-3">
@@ -422,7 +422,7 @@ export function FlatSlider({
 
   return (
     <div className="flex min-h-[28px] items-center gap-2.5">
-      <span className="w-[86px] shrink-0 text-[11px] text-panel-text-3">{label}</span>
+      <span className="w-[86px] shrink-0 text-caption-2-regular text-panel-text-3">{label}</span>
       <div
         data-flat-slider-track="true"
         role="slider"

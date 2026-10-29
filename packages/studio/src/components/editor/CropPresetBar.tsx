@@ -37,7 +37,7 @@ export function CropPresetBar({
       role="toolbar"
       aria-label="Crop presets"
       data-dom-edit-crop-bar="true"
-      className="pointer-events-auto absolute z-20 flex gap-1 rounded-md border border-white/15 bg-neutral-900/95 p-1 shadow-lg"
+      className="pointer-events-auto absolute z-20 flex gap-1 rounded-md border border-white/15 bg-background-tertiary-default p-1 shadow-lg"
       style={{ left, top: Math.max(4, top - 34), transform: "translateX(-50%)" }}
       onPointerDown={(event) => event.stopPropagation()}
     >

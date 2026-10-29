@@ -184,7 +184,7 @@ function FxNodeHeader({
       ) : null}
       <button
         type="button"
-        className={`hf-fx-node-name flex-1 truncate text-left text-[11px] text-panel-text-1 hover:text-panel-text-0 ${family}`}
+        className={`hf-fx-node-name flex-1 truncate text-left text-caption-2-regular text-panel-text-1 hover:text-panel-text-0 ${family}`}
         // Truncated in the same narrow column as the param labels below, so it
         // needs the same fallback to the full text on hover.
         title={label}
@@ -217,7 +217,7 @@ function FxNodeHeader({
       />
       <button
         type="button"
-        className="hf-fx-remove px-1 font-mono text-[11px] text-panel-text-2 hover:text-danger-ink disabled:opacity-40"
+        className="hf-fx-remove px-1 font-mono text-caption-2-regular text-panel-text-2 hover:text-danger-ink disabled:opacity-40"
         title="Remove"
         disabled={disabled}
         onClick={onRemove}

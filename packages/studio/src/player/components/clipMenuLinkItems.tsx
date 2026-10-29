@@ -147,8 +147,8 @@ export function ClipMenuLinkItems({
           title={item.disabledReason}
           className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left outline-hidden ${
             item.disabledReason !== undefined
-              ? "text-neutral-600 cursor-not-allowed"
-              : `cursor-pointer hover:bg-neutral-800 focus-visible:bg-neutral-800 ${item.destructive ? "text-red-400" : "text-neutral-300"}`
+              ? "text-text-tertiary cursor-not-allowed"
+              : `cursor-pointer hover:bg-background-primary-hover focus-visible:bg-background-primary-hover ${item.destructive ? "text-red-400" : "text-text-primary"}`
           }`}
           onClick={() => {
             item.run();
@@ -157,7 +157,7 @@ export function ClipMenuLinkItems({
         >
           <span>{item.label}</span>
           {item.shortcut && (
-            <span className="text-neutral-500 text-[10px] ml-3">{item.shortcut}</span>
+            <span className="text-text-tertiary text-[10px] ml-3">{item.shortcut}</span>
           )}
         </button>
       ))}

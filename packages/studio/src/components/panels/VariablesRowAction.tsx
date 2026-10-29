@@ -15,8 +15,8 @@ export function RowAction({
       type="button"
       onClick={onClick}
       title={title}
-      className={`h-5 rounded px-1.5 text-[9px] text-neutral-500 hover:bg-neutral-800 ${
-        danger ? "hover:text-danger-ink" : "hover:text-neutral-200"
+      className={`h-5 rounded px-1.5 text-[9px] text-text-tertiary hover:bg-background-primary-hover ${
+        danger ? "hover:text-danger-ink" : "hover:text-text-primary"
       }`}
     >
       {label}

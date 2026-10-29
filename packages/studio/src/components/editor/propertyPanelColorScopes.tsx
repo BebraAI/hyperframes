@@ -207,7 +207,7 @@ export function PropertyPanelColorScopes({
           onClick={() => setOpen((value) => !value)}
           className="flex min-h-7 flex-1 items-center justify-between text-left"
         >
-          <span className="text-[11px] text-panel-text-2">Scopes</span>
+          <span className="text-caption-2-regular text-panel-text-2">Scopes</span>
           <span className="text-[9px] text-panel-text-5">{open ? status : "Off"}</span>
         </button>
         <span className="flex items-center gap-2">

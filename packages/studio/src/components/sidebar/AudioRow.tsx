@@ -227,7 +227,7 @@ export function AudioRow({
           e.preventDefault();
           setContextMenu({ x: e.clientX, y: e.clientY });
         }}
-        className={`group w-full text-left px-4 py-1.5 flex items-center gap-2.5 transition-colors cursor-pointer outline-hidden focus-visible:bg-neutral-800/60 ${
+        className={`group w-full text-left px-4 py-1.5 flex items-center gap-2.5 transition-colors cursor-pointer outline-hidden focus-visible:bg-background-primary-hover ${
           playing
             ? "bg-panel-accent/6"
             : isCopied
@@ -238,7 +238,7 @@ export function AudioRow({
         <button
           aria-label={playing ? `Pause preview of ${name}` : `Play preview of ${name}`}
           aria-pressed={playing}
-          className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center transition-colors active:scale-[0.95] ${
+          className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center transition-colors active:scale-[0.95] ${
             playing
               ? "bg-panel-accent/15 text-accent-ink"
               : "text-panel-text-5 group-hover:text-panel-text-3"
@@ -262,25 +262,25 @@ export function AudioRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span
-              className={`text-[12px] font-medium truncate ${used ? "text-panel-text-1" : "text-panel-text-3"}`}
+              className={`text-caption-1-medium truncate ${used ? "text-panel-text-1" : "text-panel-text-3"}`}
             >
               {name}
             </span>
             {!playing && (
-              <span className="text-[11px] text-panel-text-5 shrink-0">
+              <span className="text-caption-1-regular text-panel-text-5 shrink-0">
                 {meta?.duration ? `${meta.duration}s · ` : ""}
                 {subtype}
               </span>
             )}
             {used && (
-              <span className="text-[9px] font-medium text-accent-ink bg-panel-accent/10 px-1.5 py-px rounded-sm shrink-0">
+              <span className="text-caption-2-medium text-accent-ink bg-panel-accent/10 px-1.5 py-px rounded-md shrink-0">
                 in use
               </span>
             )}
             {(isCopied || copyFailed) && (
               <span
                 role="status"
-                className={`shrink-0 text-[9px] font-medium px-1.5 py-px rounded ${
+                className={`shrink-0 text-caption-2-medium px-1.5 py-px rounded ${
                   copyFailed
                     ? "text-danger-ink bg-red-500/10"
                     : "text-accent-ink bg-panel-accent/10"

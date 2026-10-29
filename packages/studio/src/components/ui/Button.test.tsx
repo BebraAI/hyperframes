@@ -98,14 +98,20 @@ describe("Button classes", () => {
     expect(classes).not.toContain("text-step-12");
   });
 
-  it("wears BoardUI's button for every variant", () => {
-    for (const variant of VARIANTS) {
+  it("wears BoardUI's button for every variant but ghost", () => {
+    for (const variant of VARIANTS.filter((v) => v !== "ghost")) {
       const classes = classesOf(mountHost(<Button variant={variant}>Export</Button>));
       cleanupMounted();
       for (const cls of buttonStyles.variant[variant].split(" ").filter(Boolean)) {
         expect(classes, `${variant} ${cls}`).toContain(cls);
       }
     }
+  });
+
+  it("keeps ghost a bare button rather than BoardUI's accent tint", () => {
+    const classes = classesOf(mountHost(<Button variant="ghost">Undo</Button>));
+    expect(classes).toContain("bg-transparent");
+    expect(classes).not.toContain("bg-button-ghost-background");
   });
 
   it("uses BoardUI's press motion, which stills itself under reduced motion", () => {

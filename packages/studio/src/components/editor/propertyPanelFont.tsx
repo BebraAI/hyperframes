@@ -409,8 +409,8 @@ export function FontFamilyField({
   };
 
   const dropdown = open && (
-    <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-950 shadow-2xl">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2 border-b border-neutral-800 p-2">
+    <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-border-button-default bg-background-tertiary-default shadow-2xl">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2 border-b border-border-button-default p-2">
         <input
           ref={inputRef}
           type="text"
@@ -450,14 +450,14 @@ export function FontFamilyField({
           role="combobox"
           aria-expanded={open}
           aria-autocomplete="list"
-          className="min-w-0 rounded-lg border border-neutral-800 bg-neutral-900 px-2.5 py-2 text-[11px] font-medium text-neutral-100 outline-hidden placeholder:text-neutral-600 focus:border-neutral-600"
+          className="min-w-0 rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 py-2 text-caption-2-medium text-text-primary outline-hidden placeholder:text-text-tertiary focus:border-border-button-active"
         />
         {canQueryLocalFonts && (
           <button
             type="button"
             disabled={disabled || loadingLocalFonts}
             onClick={loadBrowserLocalFonts}
-            className="rounded-lg border border-neutral-700 bg-neutral-900 px-2.5 text-[10px] font-medium text-neutral-400 transition-colors hover:border-neutral-600 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-text-off"
+            className="rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-[10px] font-medium text-text-secondary transition-colors hover:border-border-button-hover hover:text-text-primary disabled:cursor-not-allowed disabled:text-text-off"
           >
             {loadingLocalFonts ? "..." : "Local"}
           </button>
@@ -466,7 +466,7 @@ export function FontFamilyField({
           type="button"
           disabled={disabled || importingFonts || !onImportFonts}
           onClick={() => fontInputRef.current?.click()}
-          className="rounded-lg border border-neutral-700 bg-neutral-900 px-2.5 text-[10px] font-medium text-neutral-400 transition-colors hover:border-neutral-600 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-text-off"
+          className="rounded-lg border border-border-button-default bg-background-tertiary-default px-2.5 text-[10px] font-medium text-text-secondary transition-colors hover:border-border-button-hover hover:text-text-primary disabled:cursor-not-allowed disabled:text-text-off"
         >
           {importingFonts ? "..." : "Import"}
         </button>
@@ -485,13 +485,13 @@ export function FontFamilyField({
         />
       </div>
       {fontNotice && (
-        <div className="border-b border-neutral-800 px-3 py-2 text-[10px] leading-4 text-neutral-500">
+        <div className="border-b border-border-button-default px-3 py-2 text-[10px] leading-4 text-text-tertiary">
           {fontNotice}
         </div>
       )}
       <div className="max-h-64 overflow-y-auto p-1">
         {filteredOptions.length === 0 ? (
-          <div className="px-2 py-3 text-[11px] text-neutral-500">No fonts found.</div>
+          <div className="px-2 py-3 text-caption-2-regular text-text-tertiary">No fonts found.</div>
         ) : (
           filteredOptions.map((option, index) => (
             <button
@@ -499,12 +499,12 @@ export function FontFamilyField({
               type="button"
               data-font-option-index={index}
               onClick={() => commitFamily(option)}
-              className={`flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-[11px] transition-colors ${
+              className={`flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-caption-2-regular transition-colors ${
                 index === activeIndex
-                  ? "bg-neutral-800 text-neutral-50"
+                  ? "bg-background-tertiary-default text-text-primary"
                   : option.family === currentFamily
-                    ? "bg-studio-accent/15 text-neutral-50"
-                    : "text-neutral-300 hover:bg-neutral-900 hover:text-neutral-100"
+                    ? "bg-studio-accent/15 text-text-primary"
+                    : "text-text-primary hover:bg-background-primary-hover hover:text-text-primary"
               }`}
             >
               <span className="flex min-w-0 items-center gap-1.5">
@@ -512,12 +512,12 @@ export function FontFamilyField({
                   {option.family}
                 </span>
                 {renderAliasFor(option.family) && (
-                  <span className="shrink-0 text-[9px] text-neutral-500">
+                  <span className="shrink-0 text-[9px] text-text-tertiary">
                     → {renderAliasFor(option.family)}
                   </span>
                 )}
               </span>
-              <span className="shrink-0 text-[9px] uppercase tracking-[0.14em] text-neutral-600">
+              <span className="shrink-0 text-[9px] uppercase tracking-[0.14em] text-text-tertiary">
                 {option.source}
               </span>
             </button>
@@ -530,7 +530,7 @@ export function FontFamilyField({
   if (flat) {
     return (
       <div ref={containerRef} className="relative flex min-h-[30px] items-center justify-between">
-        <span className="text-[11px] text-panel-text-2">Font</span>
+        <span className="text-caption-2-regular text-panel-text-2">Font</span>
         <button
           type="button"
           data-flat-font-trigger="true"
@@ -539,7 +539,7 @@ export function FontFamilyField({
           className="flex items-center gap-1.5 disabled:cursor-not-allowed"
         >
           <span
-            className="max-w-[200px] truncate font-mono text-[11px] text-panel-text-0"
+            className="max-w-[200px] truncate font-mono text-caption-2-regular text-panel-text-0"
             style={{ fontFamily: value }}
           >
             {currentFamily}
@@ -566,15 +566,15 @@ export function FontFamilyField({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((next) => !next)}
-        className={`${FIELD} flex h-10 items-center justify-between gap-3 text-left hover:border-neutral-700 disabled:cursor-not-allowed`}
+        className={`${FIELD} flex h-10 items-center justify-between gap-3 text-left hover:border-border-button-hover disabled:cursor-not-allowed`}
       >
         <span
-          className="min-w-0 flex-1 truncate text-[11px] font-medium text-neutral-100"
+          className="min-w-0 flex-1 truncate text-caption-2-medium text-text-primary"
           style={{ fontFamily: value }}
         >
           {currentFamily}
         </span>
-        <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-neutral-600">
+        <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
           Font
         </span>
       </button>

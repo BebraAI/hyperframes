@@ -180,7 +180,7 @@ export function declarationFromDraft(draft: DeclarationDraft): CompositionVariab
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <label className="text-[9px] font-medium text-neutral-500">{label}</label>
+      <label className="text-[9px] font-medium text-text-tertiary">{label}</label>
       {children}
     </div>
   );
@@ -242,7 +242,7 @@ export function DeclarationForm({
   };
 
   return (
-    <div className="space-y-2 rounded-lg border border-neutral-800 bg-neutral-900/60 p-2">
+    <div className="space-y-2 rounded-lg border border-border-button-default bg-background-tertiary-default p-2">
       <div className="grid grid-cols-2 gap-2">
         <Field label="ID">
           <input
@@ -322,14 +322,14 @@ export function DeclarationForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-6 rounded-sm px-2 text-[10px] text-neutral-500 hover:text-neutral-300"
+          className="h-6 rounded-sm px-2 text-[10px] text-text-tertiary hover:text-text-primary"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={submit}
-          className="h-6 rounded-sm bg-neutral-800 px-2 text-[10px] font-medium text-neutral-200 hover:bg-neutral-700"
+          className="h-6 rounded-sm bg-background-tertiary-default px-2 text-[10px] font-medium text-text-primary hover:bg-background-primary-hover"
         >
           {submitLabel}
         </button>

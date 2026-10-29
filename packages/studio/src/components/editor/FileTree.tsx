@@ -235,14 +235,14 @@ export const FileTree = memo(function FileTree({
     <div className="flex flex-col h-full min-h-0">
       {/* FILES header with action buttons */}
       {hasFileOps && (
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-neutral-800/50 shrink-0">
-          <span className="text-[10px] font-semibold tracking-wider text-neutral-600 uppercase">
+        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border-button-default shrink-0">
+          <span className="text-[10px] font-semibold tracking-wider text-text-tertiary uppercase">
             Files
           </span>
           <div className="flex items-center gap-0.5">
             <button
               onClick={() => handleNewFile("")}
-              className="p-1.5 rounded-sm hover:bg-neutral-800 text-neutral-600 hover:text-neutral-400 active:scale-[0.97] transition-colors"
+              className="p-1.5 rounded-sm hover:bg-background-primary-hover text-text-tertiary hover:text-text-secondary active:scale-[0.97] transition-colors"
               title="New File"
               aria-label="New File"
             >
@@ -250,7 +250,7 @@ export const FileTree = memo(function FileTree({
             </button>
             <button
               onClick={() => handleNewFolder("")}
-              className="p-1.5 rounded-sm hover:bg-neutral-800 text-neutral-600 hover:text-neutral-400 active:scale-[0.97] transition-colors"
+              className="p-1.5 rounded-sm hover:bg-background-primary-hover text-text-tertiary hover:text-text-secondary active:scale-[0.97] transition-colors"
               title="New Folder"
               aria-label="New Folder"
             >
@@ -292,7 +292,7 @@ export const FileTree = memo(function FileTree({
             />
           )}
         {children.length === 0 && !inlineInput && (
-          <div className="px-3 py-4 text-center text-[11px] text-neutral-600">
+          <div className="px-3 py-4 text-center text-caption-2-regular text-text-tertiary">
             No files yet{hasFileOps ? ". Use + above to create one" : ""}.
           </div>
         )}

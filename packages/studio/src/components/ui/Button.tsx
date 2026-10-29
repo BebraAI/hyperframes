@@ -23,10 +23,13 @@ interface ButtonProps extends ButtonBaseProps {
   icon?: ReactNode;
 }
 
-export const boardSize = { sm: "xs", md: "small", lg: "medium" } as const;
-
 export const buttonBase = buttonStyles.base;
-export const buttonVariants: Record<ButtonVariant, string> = buttonStyles.variant;
+/** BoardUI's ghost is an accent tint; Studio's ghost is a bare toolbar button, so it stays quiet on BoardUI's neutrals. */
+export const buttonVariants: Record<ButtonVariant, string> = {
+  ...buttonStyles.variant,
+  ghost:
+    "bg-transparent text-foreground-icon-secondary hover:bg-background-primary-hover hover:text-text-primary active:bg-background-primary-active disabled:bg-transparent disabled:text-text-disabled aria-disabled:text-text-disabled",
+};
 export const buttonSizes: Record<ButtonSize, string> = {
   sm: cn(buttonStyles.size.xs, "gap-1 [&_svg]:size-3.5"),
   md: cn(buttonStyles.size.small, "gap-1.5 [&_svg]:size-4"),

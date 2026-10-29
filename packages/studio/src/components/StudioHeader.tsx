@@ -1,11 +1,11 @@
 import { memo, useContext, type MouseEvent } from "react";
-import { Camera } from "../icons/SystemIcons";
+import { RiCameraLine, RiLayoutRightLine, RiLoader4Line } from "@remixicon/react";
 import { useStudioShellContext } from "../contexts/StudioContext";
 import { usePanelLayoutContext } from "../contexts/PanelLayoutContext";
 import { trackStudioEvent } from "../utils/studioTelemetry";
-import { Button, buttonBase, buttonSizes, buttonVariants, cn, Tooltip } from "./ui";
+import { Button, cn, Tooltip } from "./ui";
+import { ButtonGroup, ButtonGroupItem } from "../boardui/components/base/buttons/button-group";
 import { Dock } from "./dock/Dock";
-import { InspectorIcon } from "./icons/InspectorIcon";
 import { PromptwiseMark } from "../promptwise/PromptwiseMark";
 import { ShowThemeToggle, ThemeToggle } from "./ThemeToggle";
 
@@ -34,6 +34,10 @@ export function shouldOpenInspector(
   return rightCollapsed || !inspectorPanelActive;
 }
 
+/** BoardUI's small button-group item, for the one item that has to be a link. */
+const groupLink =
+  "inline-flex h-[30px] items-center justify-center gap-1 whitespace-nowrap px-2 text-body-medium text-text-primary bg-background-primary-default select-none transition-[background-color,color] duration-150 outline-none focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring";
+
 // fallow-ignore-next-line complexity
 export const StudioHeader = memo(function StudioHeader({
   captureFrameHref,
@@ -52,23 +56,17 @@ export const StudioHeader = memo(function StudioHeader({
   const ffmpegMissing = renderQueue.ffmpegMissing;
 
   return (
-    <div className="flex items-center justify-between h-10 px-3 bg-surface border-b border-border-strong shrink-0">
-      {/* Left: logo + project name */}
+    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-button-default bg-background-primary-default px-3">
       <div className="flex items-center gap-3">
         <PromptwiseMark />
-        <span className="text-text-5 select-none" aria-hidden="true">
-          |
-        </span>
-        <span className="text-step-11 font-medium text-text-1">{projectId}</span>
+        <span className="h-4 w-px bg-border-button-default" aria-hidden="true" />
+        <span className="text-body-medium text-text-primary">{projectId}</span>
       </div>
-      {/* Right: toolbar buttons */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-ctl items-center divide-x divide-border-strong overflow-hidden rounded-md border border-border-strong bg-bg-2">
+      <div className="flex items-center gap-2">
+        <ButtonGroup size="small">
           <Tooltip label={capturing ? "Capturing frame…" : "Capture current frame"} side="bottom">
-            {/* A real download link, so it wears Button's recipe rather than being
-              one: `download` on an <a> is what saves the frame, and no <button>
-              can do that. `enabled:` never matches a link, so the ghost
-              variant's hover look is repeated unprefixed here. */}
+            {/* A real download link, so it wears the group item's look rather than being one:
+              `download` on an <a> is what saves the frame, and no <button> can do that. */}
             <a
               href={captureFrameHref}
               download={captureFrameFilename}
@@ -84,54 +82,28 @@ export const StudioHeader = memo(function StudioHeader({
               onPointerDown={refreshCaptureFrameTime}
               aria-disabled={capturing || undefined}
               className={cn(
-                buttonBase,
-                buttonVariants.ghost,
-                buttonSizes.md,
-                "h-full rounded-none max-[1000px]:px-2",
+                groupLink,
                 capturing
-                  ? "text-text-4 cursor-default"
-                  : "hover:bg-hover hover:text-text-0 active:scale-[0.98]",
+                  ? "cursor-default text-text-tertiary"
+                  : "hover:bg-background-primary-hover active:bg-background-primary-active",
               )}
               aria-label={capturing ? "Capturing frame" : "Capture current frame"}
             >
               {capturing ? (
-                <svg
-                  className="animate-spin motion-reduce:animate-none h-3.5 w-3.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
+                <RiLoader4Line className="size-[18px] animate-spin motion-reduce:animate-none" />
               ) : (
-                <Camera size={14} />
+                <RiCameraLine className="size-[18px]" />
               )}
               <span className="max-[1000px]:hidden">{capturing ? "Capturing…" : "Capture"}</span>
             </a>
           </Tooltip>
           <Tooltip label="Inspector" side="bottom">
-            <Button
-              variant="ghost"
+            <ButtonGroupItem
+              size="small"
               aria-label="Inspector"
               aria-pressed={inspectorButtonActive}
-              className={cn(
-                "h-full rounded-none",
-                inspectorButtonActive &&
-                  "bg-on text-accent-ink enabled:hover:bg-on-hover enabled:hover:text-accent-ink",
-              )}
-              icon={<InspectorIcon size={16} />}
+              selected={inspectorButtonActive}
+              leadingIcon={RiLayoutRightLine}
               onClick={() => {
                 if (shouldOpenInspector(rightCollapsed, inspectorPanelActive)) {
                   trackStudioEvent("panel_toggle", { panel: "inspector", collapsed: false });
@@ -146,9 +118,9 @@ export const StudioHeader = memo(function StudioHeader({
               }}
             >
               Inspector
-            </Button>
+            </ButtonGroupItem>
           </Tooltip>
-        </div>
+        </ButtonGroup>
         {showThemeToggle && <ThemeToggle />}
         <Dock.WindowMenu />
         <Tooltip

@@ -93,7 +93,10 @@ export function PlainTrackHeader({
             count sits against it rather than being pushed out to meet the
             controls. The slack goes to the `ml-auto` group below instead. */}
         {showTrackLabel && (
-          <span title={trackLabel} className="min-w-0 truncate text-[11px] leading-tight">
+          <span
+            title={trackLabel}
+            className="min-w-0 truncate text-caption-2-regular leading-tight"
+          >
             {trackLabel}
           </span>
         )}

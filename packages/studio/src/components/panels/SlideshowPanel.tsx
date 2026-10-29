@@ -435,7 +435,7 @@ export function SlideshowPanel({ scenes, onPersist, onPersistNotes }: SlideshowP
           role="alert"
           className="flex items-center justify-between gap-2 px-3 py-2 bg-danger/15 border-b border-red-500/40"
         >
-          <span className="text-[11px] text-danger-ink">Changes not saved</span>
+          <span className="text-caption-2-regular text-danger-ink">Changes not saved</span>
           <button
             type="button"
             disabled={retrying}
@@ -447,12 +447,12 @@ export function SlideshowPanel({ scenes, onPersist, onPersistNotes }: SlideshowP
         </div>
       )}
       {undoDepth > 0 && (
-        <div className="flex items-center justify-end px-3 py-1 border-b border-neutral-800/60">
+        <div className="flex items-center justify-end px-3 py-1 border-b border-border-button-default">
           <button
             type="button"
             onClick={handleUndo}
             title="Undo last slideshow edit (⌘Z)"
-            className="px-2 py-0.5 text-[10px] rounded-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 active:scale-[0.97] transition-colors"
+            className="px-2 py-0.5 text-[10px] rounded-sm text-text-secondary hover:text-text-primary hover:bg-background-primary-hover active:scale-[0.97] transition-colors"
           >
             Undo ({undoDepth})
           </button>
@@ -498,7 +498,7 @@ export function SlideshowPanel({ scenes, onPersist, onPersistNotes }: SlideshowP
               onRemoveFragment={handleRemoveFragment}
             />
           ) : (
-            <p className="px-3 py-2 text-[11px] text-neutral-500 italic">
+            <p className="px-3 py-2 text-caption-2-regular text-text-tertiary italic">
               Select a scene above to inspect
             </p>
           )}

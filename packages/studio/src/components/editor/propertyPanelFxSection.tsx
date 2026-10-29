@@ -560,7 +560,7 @@ export function FxSection({
       <div className="flex flex-col gap-1">
         <button
           type="button"
-          className="hf-fx-preset w-full rounded-[4px] border border-panel-text-0 py-1.5 text-[11px] font-semibold text-panel-text-0 disabled:opacity-40"
+          className="hf-fx-preset w-full rounded-[4px] border border-panel-text-0 py-1.5 text-caption-2-semibold text-panel-text-0 disabled:opacity-40"
           aria-expanded={picking}
           disabled={disabled}
           onClick={() => {

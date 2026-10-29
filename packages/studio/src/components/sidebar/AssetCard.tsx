@@ -30,7 +30,7 @@ function CopyChip({ feedback, asset }: { feedback: CopyFeedback; asset: string }
   return (
     <span
       role="status"
-      className={`shrink-0 text-[9px] font-medium px-1.5 py-px rounded ${
+      className={`shrink-0 text-caption-2-medium px-1.5 py-px rounded ${
         feedback.ok ? "text-accent-ink bg-panel-accent/10" : "text-danger-ink bg-red-500/10"
       }`}
     >
@@ -223,12 +223,14 @@ export function AssetCard({
         onContextMenu={(e) => openAssetContextMenu(e, setContextMenu)}
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => setHovered(false)}
-        className={`flex flex-col gap-1 cursor-pointer rounded-md p-1 transition-colors outline-hidden focus-visible:bg-neutral-800/60 ${
-          isCopied ? "bg-studio-accent/10" : "hover:bg-neutral-800/40"
+        className={`flex flex-col gap-1 cursor-pointer rounded-lg p-1 transition-colors outline-hidden focus-visible:bg-background-primary-hover ${
+          isCopied
+            ? "bg-background-primary-hover ring-1 ring-inset ring-border-button-default"
+            : "hover:bg-background-primary-hover"
         }`}
       >
         {/* Thumbnail */}
-        <div className="w-full aspect-video rounded-sm overflow-hidden bg-neutral-900 relative">
+        <div className="w-full aspect-video rounded-md overflow-hidden bg-background-tertiary-default relative">
           {isImage && !imgError && (
             <img
               src={serveUrl}
@@ -255,20 +257,20 @@ export function AssetCard({
           )}
           {((!isImage && !isVideo) || (isImage && imgError)) && (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-[10px] font-medium text-neutral-600">{extension}</span>
+              <span className="text-caption-2-medium text-text-tertiary">{extension}</span>
             </div>
           )}
 
           {/* "Added" badge — top-left */}
           {used && (
-            <span className="absolute top-1 left-1 text-[9px] font-semibold leading-none px-1.5 py-[3px] rounded-sm bg-neutral-950/80 text-panel-text-1">
+            <span className="absolute top-1 left-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-panel-text-1">
               Added
             </span>
           )}
 
           {/* Duration badge — top-right, media only */}
           {durationLabel && (
-            <span className="absolute top-1 right-1 text-[9px] font-medium leading-none px-1.5 py-[3px] rounded-sm bg-neutral-950/80 text-panel-text-2 tabular-nums">
+            <span className="absolute top-1 right-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-panel-text-2 tabular-nums">
               {durationLabel}
             </span>
           )}
@@ -277,7 +279,7 @@ export function AssetCard({
         {/* Filename caption */}
         <div className="flex items-center justify-center gap-1">
           <span
-            className={`text-[10px] leading-tight text-center ${
+            className={`text-caption-2-regular leading-tight text-center ${
               used ? "text-panel-text-2" : "text-panel-text-4"
             }`}
             title={fullName}
@@ -348,25 +350,25 @@ export function FontRow({
         }}
         onDragStart={(e) => writeAssetDragData(e, asset)}
         onContextMenu={(e) => openAssetContextMenu(e, setContextMenu)}
-        className={`px-2.5 py-1.5 flex items-center gap-2.5 cursor-pointer transition-colors outline-hidden focus-visible:bg-neutral-800/60 ${
+        className={`px-2.5 py-1.5 flex items-center gap-2.5 cursor-pointer transition-colors outline-hidden focus-visible:bg-background-primary-hover ${
           isCopied
-            ? "bg-studio-accent/10 border-l-2 border-studio-accent"
-            : "border-l-2 border-transparent hover:bg-neutral-800/50"
+            ? "bg-background-primary-hover ring-1 ring-inset ring-border-button-default"
+            : "hover:bg-background-primary-hover"
         }`}
       >
-        <div className="w-[50px] h-[32px] rounded-sm overflow-hidden bg-neutral-900 shrink-0 flex items-center justify-center">
-          <span className="text-[9px] font-medium text-text-muted">{extension}</span>
+        <div className="w-[50px] h-[32px] rounded-md overflow-hidden bg-background-tertiary-default shrink-0 flex items-center justify-center">
+          <span className="text-caption-2-medium text-text-muted">{extension}</span>
         </div>
         <div className="min-w-0 flex-1">
           <span
-            className={`text-xs font-medium truncate block ${used ? "text-panel-text-1" : "text-panel-text-3"}`}
+            className={`text-caption-1-regular font-medium truncate block ${used ? "text-panel-text-1" : "text-panel-text-3"}`}
           >
             {name}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-neutral-600 truncate">{extension}</span>
+            <span className="text-caption-2-regular text-text-tertiary truncate">{extension}</span>
             {used && (
-              <span className="text-[9px] font-medium text-accent-ink bg-panel-accent/10 px-1.5 py-px rounded-sm">
+              <span className="text-caption-2-medium text-accent-ink bg-panel-accent/10 px-1.5 py-px rounded-md">
                 in use
               </span>
             )}

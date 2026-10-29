@@ -151,7 +151,7 @@ export function FxEqModule({
       <div className="hf-fx-node-head flex items-center gap-1.5 px-1.5 py-1">
         <button
           type="button"
-          className={`hf-fx-node-name flex-1 text-left text-[11px] text-panel-text-0 ${FX_FAMILY_TYPE.smart}`}
+          className={`hf-fx-node-name flex-1 text-left text-caption-2-regular text-panel-text-0 ${FX_FAMILY_TYPE.smart}`}
           aria-expanded={open}
           onClick={onToggleOpen}
         >
@@ -160,7 +160,7 @@ export function FxEqModule({
         <span className="font-mono text-[9px] text-panel-text-2">{bands.length}-band</span>
         <button
           type="button"
-          className="hf-fx-remove px-1 text-[11px] text-panel-text-2 hover:text-danger-ink"
+          className="hf-fx-remove px-1 text-caption-2-regular text-panel-text-2 hover:text-danger-ink"
           aria-label="Remove Tone"
           disabled={disabled}
           onClick={onRemove}
@@ -190,7 +190,7 @@ export function FxEqModule({
       ) : (
         // Closed, it reads like every other module: a sentence about the sound
         // rather than a list of values.
-        <p className="hf-fx-eq-summary px-2 pb-1.5 text-[11px] text-panel-text-2">
+        <p className="hf-fx-eq-summary px-2 pb-1.5 text-caption-2-regular text-panel-text-2">
           {audioEqSummary(bands)}
         </p>
       )}

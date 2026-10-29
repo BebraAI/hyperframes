@@ -129,27 +129,27 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
 
   return createPortal(
     <div ref={popoverRef} style={style}>
-      <div className="w-80 bg-neutral-900 border border-neutral-700/60 rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+      <div className="w-80 bg-background-tertiary-default border border-border-button-default rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-800/60">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-button-default">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-studio-accent" />
-            <span className="text-[11px] font-medium text-neutral-300">
+            <span className="text-caption-2-medium text-text-primary">
               {formatTime(start)} to {formatTime(end)}
             </span>
           </div>
-          <span className="text-[10px] text-neutral-600">
+          <span className="text-[10px] text-text-tertiary">
             {elementsInRange.length} element{elementsInRange.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         {/* Elements */}
         {elementsInRange.length > 0 && (
-          <div className="px-4 py-2 border-b border-neutral-800/40 max-h-24 overflow-y-auto">
+          <div className="px-4 py-2 border-b border-border-button-default max-h-24 overflow-y-auto">
             {elementsInRange.map((el) => (
               <div key={el.id} className="flex items-center justify-between py-0.5">
                 <span className="text-[10px] font-mono text-accent-ink/80">#{el.id}</span>
-                <span className="text-[10px] text-neutral-600">{el.tag}</span>
+                <span className="text-[10px] text-text-tertiary">{el.tag}</span>
               </div>
             ))}
           </div>
@@ -169,7 +169,7 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
             }}
             placeholder="What should change?"
             rows={2}
-            className="w-full px-3 py-2 text-xs bg-neutral-800/60 border border-neutral-700/40 rounded-lg text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-hidden focus:border-studio-accent/40 transition-colors"
+            className="w-full px-3 py-2 text-xs bg-background-tertiary-default border border-border-button-default rounded-lg text-text-primary placeholder:text-text-tertiary resize-none focus:outline-hidden focus:border-border-button-active transition-colors"
           />
         </div>
 
@@ -183,17 +183,17 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
           <button
             onClick={handleCopyPrompt}
             disabled={!buildPromptCopyText(prompt)}
-            className={`py-1.5 text-[11px] font-medium rounded-lg transition-all border ${
+            className={`py-1.5 text-caption-2-medium rounded-lg transition-all border ${
               copiedPromptOnly
                 ? "bg-accent/15 text-accent-ink border-accent/30"
-                : "bg-neutral-800/70 text-neutral-200 border-neutral-700/50 hover:bg-neutral-800"
+                : "bg-background-tertiary-default text-text-primary border-border-button-default hover:bg-background-primary-hover"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {copiedPromptOnly ? "Prompt Copied!" : "Copy Prompt"}
           </button>
           <button
             onClick={handleCopy}
-            className={`py-1.5 text-[11px] font-medium rounded-lg transition-all ${
+            className={`py-1.5 text-caption-2-medium rounded-lg transition-all ${
               copiedAgentPrompt
                 ? "bg-accent/15 text-accent-ink border border-accent/30"
                 : "bg-studio-accent/15 text-accent-ink border border-studio-accent/25 hover:bg-studio-accent/25"

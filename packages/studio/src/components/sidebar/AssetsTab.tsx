@@ -108,7 +108,7 @@ function ImportButton({ importing, onClick }: { importing: boolean; onClick: () 
       onClick={onClick}
       disabled={importing}
       aria-busy={importing}
-      className="w-full flex items-center justify-center gap-1.5 rounded-md bg-panel-input px-3 py-[7px] text-[11px] font-medium text-panel-text-3 enabled:hover:text-panel-text-1 enabled:active:scale-[0.98] disabled:opacity-60 transition-colors mb-2.5"
+      className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-panel-input px-3 py-[7px] text-caption-1-medium text-panel-text-3 enabled:hover:text-panel-text-1 enabled:active:scale-[0.98] disabled:opacity-60 transition-colors mb-2.5"
     >
       {importing ? (
         <svg className="animate-spin" width="11" height="11" viewBox="0 0 24 24" fill="none">
@@ -156,13 +156,13 @@ function EmptyState({
   if (searchQuery) {
     return (
       <div className="flex flex-col items-center justify-center h-full px-4 gap-2">
-        <p className="text-[11px] text-neutral-500 text-center">
+        <p className="text-caption-1-regular text-text-tertiary text-center">
           No assets match &ldquo;{searchQuery}&rdquo;
         </p>
         <button
           type="button"
           onClick={onClearSearch}
-          className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-panel-input text-panel-text-3 hover:text-panel-text-1 active:scale-[0.98] transition-colors"
+          className="px-2.5 py-1 text-caption-1-medium rounded-lg bg-panel-input text-panel-text-3 hover:text-panel-text-1 active:scale-[0.98] transition-colors"
         >
           Clear search
         </button>
@@ -188,7 +188,7 @@ function EmptyState({
         <polyline points="17 8 12 3 7 8" strokeLinecap="round" strokeLinejoin="round" />
         <line x1="12" y1="3" x2="12" y2="15" strokeLinecap="round" />
       </svg>
-      <p className="text-[10px] text-neutral-600 text-center">Drop media files here</p>
+      <p className="text-caption-2-regular text-text-tertiary text-center">Drop media files here</p>
     </div>
   );
 }
@@ -332,7 +332,7 @@ export const AssetsTab = memo(function AssetsTab({
       : [activeFilter as MediaCategory].filter((c) => categorized[c].length > 0);
   return (
     <div
-      className={`flex-1 flex flex-col min-h-0 transition-colors ${dragOver ? "bg-studio-accent/5" : ""}`}
+      className={`flex-1 flex flex-col min-h-0 transition-colors ${dragOver ? "bg-background-primary-hover" : ""}`}
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
@@ -343,12 +343,12 @@ export const AssetsTab = memo(function AssetsTab({
       {/* Header — matches design panel Section pattern */}
       <div className="px-4 pt-2.5 pb-1.5 shrink-0">
         {/* Scope toggle */}
-        <div className="flex gap-1 mb-2.5 p-0.5 rounded-md bg-panel-input">
+        <div className="flex gap-1 mb-2.5 p-0.5 rounded-lg bg-panel-input">
           {(["local", "global"] as const).map((m) => (
             <button
               key={m}
               onClick={() => setViewMode(m)}
-              className={`flex-1 px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+              className={`flex-1 px-2 py-1 text-caption-1-medium rounded transition-colors ${
                 viewMode === m
                   ? "bg-panel-accent/15 text-accent-ink"
                   : "text-panel-text-3 hover:text-panel-text-1"
@@ -395,7 +395,7 @@ export const AssetsTab = memo(function AssetsTab({
             <button
               onClick={() => setActiveFilter("all")}
               aria-pressed={activeFilter === "all"}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors active:scale-[0.98] ${
+              className={`px-2.5 py-1 text-caption-1-medium rounded-lg transition-colors active:scale-[0.98] ${
                 activeFilter === "all"
                   ? "bg-panel-accent/15 text-accent-ink"
                   : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
@@ -409,7 +409,7 @@ export const AssetsTab = memo(function AssetsTab({
                   key={cat}
                   onClick={() => setActiveFilter(activeFilter === cat ? "all" : cat)}
                   aria-pressed={activeFilter === cat}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors active:scale-[0.98] ${
+                  className={`px-2.5 py-1 text-caption-1-medium rounded-lg transition-colors active:scale-[0.98] ${
                     activeFilter === cat
                       ? "bg-panel-accent/15 text-accent-ink"
                       : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
@@ -424,7 +424,7 @@ export const AssetsTab = memo(function AssetsTab({
                 <span className="w-px self-stretch bg-panel-input mx-0.5" aria-hidden="true" />
                 <button
                   onClick={() => setUsageFilter(usageFilter === "used" ? "all" : "used")}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                  className={`px-2.5 py-1 text-caption-1-medium rounded-lg transition-colors ${
                     usageFilter === "used"
                       ? "bg-panel-accent/15 text-accent-ink"
                       : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
@@ -434,7 +434,7 @@ export const AssetsTab = memo(function AssetsTab({
                 </button>
                 <button
                   onClick={() => setUsageFilter(usageFilter === "unused" ? "all" : "unused")}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                  className={`px-2.5 py-1 text-caption-1-medium rounded-lg transition-colors ${
                     usageFilter === "unused"
                       ? "bg-panel-accent/15 text-accent-ink"
                       : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
@@ -458,10 +458,12 @@ export const AssetsTab = memo(function AssetsTab({
             <div key={cat} className="mb-1">
               {activeFilter === "all" && (
                 <div className="flex items-center gap-2 px-4 py-2 border-t border-panel-border">
-                  <h3 className="text-[12px] font-semibold text-panel-text-1">
+                  <h3 className="text-caption-1-semibold text-panel-text-1">
                     {CATEGORY_LABELS[cat]}
                   </h3>
-                  <span className="text-[11px] text-panel-text-5">{categorized[cat].length}</span>
+                  <span className="text-caption-1-regular text-panel-text-5">
+                    {categorized[cat].length}
+                  </span>
                 </div>
               )}
               {cat === "audio" &&

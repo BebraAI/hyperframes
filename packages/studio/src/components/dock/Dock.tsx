@@ -31,7 +31,9 @@ import {
   type PanelId,
 } from "./panelRegistry";
 import "./dock.css";
+import { RiArrowDownSLine, RiCheckLine } from "@remixicon/react";
 import { menuClasses } from "../ui/menuStyle";
+import { buttonBase, buttonSizes, buttonVariants, cn } from "../ui";
 
 const PERSIST_DEBOUNCE_MS = 250;
 
@@ -284,12 +286,13 @@ function WindowMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="h-7 px-2.5 rounded-md text-[11px] font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+        className={cn(buttonBase, buttonVariants.ghost, buttonSizes.md)}
       >
         Window
+        <RiArrowDownSLine aria-hidden />
       </button>
       {open && (
-        <div role="menu" className={`${menuClasses.panel} absolute right-0 top-8 z-50 w-44`}>
+        <div role="menu" className={`${menuClasses.panel} absolute right-0 top-9 z-50 w-48`}>
           {panels.map((id) => (
             <button
               key={id}
@@ -299,7 +302,9 @@ function WindowMenu() {
               onClick={() => togglePanel(id)}
               className={`${menuClasses.row} ${menuClasses.rowEnabled} flex items-center gap-2`}
             >
-              <span className="w-3 text-accent-ink">{openPanels.has(id) ? "✓" : ""}</span>
+              <span className="flex size-4 text-text-primary">
+                {openPanels.has(id) && <RiCheckLine className="size-4" aria-hidden />}
+              </span>
               {PANEL_DEFINITIONS[id].title}
             </button>
           ))}

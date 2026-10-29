@@ -68,7 +68,7 @@ function ColorSlider({
     <div className="grid gap-1.5">
       <div className="flex items-center justify-between">
         <span className={LABEL}>{label}</span>
-        <span className="text-[10px] font-medium text-neutral-400">{displayValue}</span>
+        <span className="text-[10px] font-medium text-text-secondary">{displayValue}</span>
       </div>
       <div
         ref={trackRef}
@@ -79,7 +79,7 @@ function ColorSlider({
         aria-valuemax={max}
         aria-valuenow={value}
         aria-disabled={disabled}
-        className={`relative h-4 rounded-full border border-neutral-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.55)] outline-hidden focus:border-panel-accent focus:ring-2 focus:ring-panel-accent/40 ${
+        className={`relative h-4 rounded-full border border-border-button-default shadow-[inset_0_1px_2px_rgba(0,0,0,0.55)] outline-hidden focus:border-panel-accent focus:ring-2 focus:ring-panel-accent/40 ${
           disabled ? "cursor-not-allowed opacity-50" : "cursor-ew-resize"
         }`}
         style={{ background }}
@@ -328,16 +328,16 @@ export function ColorField({
           role="dialog"
           aria-label={`${label} color picker`}
           tabIndex={-1}
-          className="fixed z-9999 w-[292px] overflow-hidden rounded-2xl border border-neutral-700 bg-neutral-950 shadow-2xl shadow-black/50 outline-hidden"
+          className="fixed z-9999 w-[292px] overflow-hidden rounded-2xl border border-border-button-default bg-background-tertiary-default shadow-2xl shadow-black/50 outline-hidden"
           style={{
             left: panelPosition?.left ?? -9999,
             top: panelPosition?.top ?? -9999,
           }}
         >
-          <div className="flex items-center justify-between border-b border-neutral-800 px-3 py-2">
+          <div className="flex items-center justify-between border-b border-border-button-default px-3 py-2">
             <div className="min-w-0">
-              <div className="truncate text-[11px] font-medium text-neutral-100">{label}</div>
-              <div className="text-[9px] uppercase tracking-[0.16em] text-neutral-600">Color</div>
+              <div className="truncate text-caption-2-medium text-text-primary">{label}</div>
+              <div className="text-[9px] uppercase tracking-[0.16em] text-text-tertiary">Color</div>
             </div>
             <button
               type="button"
@@ -345,7 +345,7 @@ export function ColorField({
                 settleColorGesture();
                 setOpen(false);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-900 hover:text-neutral-200"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-background-primary-hover hover:text-text-primary"
               aria-label="Close color picker"
             >
               <X size={13} />
@@ -353,7 +353,7 @@ export function ColorField({
           </div>
           <div className="space-y-3 p-3">
             <div
-              className="relative h-36 cursor-crosshair overflow-hidden rounded-xl border border-neutral-700 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
+              className="relative h-36 cursor-crosshair overflow-hidden rounded-xl border border-border-button-default shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
               style={{ backgroundColor: hueColor }}
               onPointerDown={(event) => {
                 beginColorGesture();
@@ -389,14 +389,14 @@ export function ColorField({
 
             <div className="flex min-w-0 items-center gap-3">
               <div
-                className="h-9 w-9 shrink-0 rounded-xl border border-neutral-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                className="h-9 w-9 shrink-0 rounded-xl border border-border-button-default shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                 style={{ backgroundColor: currentColor }}
               />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[11px] font-medium text-neutral-100">
+                <div className="truncate text-caption-2-medium text-text-primary">
                   {currentColor}
                 </div>
-                <div className="mt-0.5 text-[9px] text-neutral-600">
+                <div className="mt-0.5 text-[9px] text-text-tertiary">
                   S {saturationPercent}% · B {brightnessPercent}% · A {alphaPercent}%
                 </div>
               </div>
@@ -442,7 +442,7 @@ export function ColorField({
                 value={hexDraft}
                 onChange={(event) => handleHexChange(event.target.value)}
                 onBlur={settleColorGesture}
-                className={`${FIELD} h-10 w-full text-[11px] font-medium outline-hidden`}
+                className={`${FIELD} h-10 w-full text-caption-2-medium outline-hidden`}
                 spellCheck={false}
               />
             </label>
@@ -464,7 +464,7 @@ export function ColorField({
   if (flat) {
     return (
       <div className="flex min-h-[30px] items-center justify-between">
-        <span className="text-[11px] text-panel-text-2">{label}</span>
+        <span className="text-caption-2-regular text-panel-text-2">{label}</span>
         <button
           type="button"
           data-flat-color-trigger="true"
@@ -478,7 +478,7 @@ export function ColorField({
             className="h-4 w-4 shrink-0 rounded-[4px]"
             style={{ backgroundColor: open ? currentColor : value || "transparent" }}
           />
-          <span className="font-mono text-[11px] text-panel-text-0">
+          <span className="font-mono text-caption-2-regular text-panel-text-0">
             {open ? currentColor : value}
           </span>
           {mixed && (
@@ -516,13 +516,13 @@ export function ColorField({
         aria-label={`Pick ${label.toLowerCase()} color`}
         ref={buttonRef}
         onClick={openPicker}
-        className={`${FIELD} flex items-center gap-3 text-left hover:border-neutral-700 disabled:cursor-not-allowed ${open ? "border-neutral-600" : ""}`}
+        className={`${FIELD} flex items-center gap-3 text-left hover:border-border-button-hover disabled:cursor-not-allowed ${open ? "border-border-button-default" : ""}`}
       >
         <div
-          className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+          className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-border-button-default bg-background-tertiary-default shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
           style={{ backgroundColor: value || "transparent" }}
         />
-        <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-neutral-100">
+        <span className="min-w-0 flex-1 truncate text-caption-2-medium text-text-primary">
           {value}
         </span>
         {mixed && (

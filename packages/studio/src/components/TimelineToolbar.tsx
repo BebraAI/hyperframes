@@ -225,13 +225,13 @@ export const TimelineToolbar = memo(function TimelineToolbar({
   }, []);
 
   return (
-    <div className="border-b border-neutral-800/60">
+    <div className="border-b border-border-button-default">
       <div className="flex items-center justify-between px-2 py-0.5">
         <div className="flex items-center gap-0.5">
           {showHistory && <TimelineHistoryButtons {...history} />}
           <TimelineToolPicker showSelectAroundPlayhead={showSelectAroundPlayhead} />
           {/* Divider: tool-mode | editing-actions */}
-          <div aria-hidden="true" className="mx-1 h-4 w-px bg-neutral-800" />
+          <div aria-hidden="true" className="mx-1 h-4 w-px bg-background-tertiary-default" />
           <LinkedSelectionToggle />
           <Tooltip label={timelineSnapEnabled ? "Snapping on (N)" : "Snapping off (N)"}>
             <button
@@ -323,8 +323,8 @@ export const TimelineToolbar = memo(function TimelineToolbar({
                           keyframeState === "active"
                             ? "text-accent-ink"
                             : keyframeState === "inactive"
-                              ? "text-neutral-400 hover:text-accent-ink"
-                              : "text-neutral-600 hover:text-neutral-400"
+                              ? "text-text-secondary hover:text-accent-ink"
+                              : "text-text-tertiary hover:text-text-secondary"
                         }`
                   }
                 >
@@ -357,7 +357,7 @@ export const TimelineToolbar = memo(function TimelineToolbar({
                   className={`${flatBtn} active:scale-[0.98] hover:bg-hover ${
                     autoKeyframeEnabled
                       ? "text-danger-ink"
-                      : "text-neutral-600 hover:text-neutral-400"
+                      : "text-text-tertiary hover:text-text-secondary"
                   }`}
                 >
                   <svg width="16" height="16" viewBox="0 0 10 10" fill="none">
@@ -490,10 +490,10 @@ export const TimelineToolbar = memo(function TimelineToolbar({
               }
               aria-pressed={thumbnailsVisible}
               onClick={() => setThumbnailMode(thumbnailsVisible ? "hidden" : "adaptive")}
-              className={`h-7 px-2 rounded-md text-[11px] font-medium transition-colors ${
+              className={`h-7 px-2 rounded-md text-caption-2-medium transition-colors ${
                 thumbnailsVisible
                   ? "bg-studio-accent/10 text-accent-ink"
-                  : "text-neutral-400 hover:bg-hover hover:text-neutral-200"
+                  : "text-text-secondary hover:bg-hover hover:text-text-primary"
               }`}
             >
               <Image size={16} aria-hidden="true" />
@@ -524,10 +524,10 @@ export const TimelineToolbar = memo(function TimelineToolbar({
               onClick={() => setZoomMode("fit")}
               aria-label="Fit timeline to width"
               aria-pressed={zoomMode === "fit"}
-              className={`h-7 px-2 rounded-md text-[11px] font-medium transition-colors ${
+              className={`h-7 px-2 rounded-md text-caption-2-medium transition-colors ${
                 zoomMode === "fit"
                   ? "bg-studio-accent/10 text-accent-ink"
-                  : "text-neutral-400 hover:bg-hover hover:text-neutral-200"
+                  : "text-text-secondary hover:bg-hover hover:text-text-primary"
               }`}
             >
               <ArrowsOutLineHorizontal size={16} aria-hidden="true" />
@@ -571,7 +571,7 @@ export const TimelineToolbar = memo(function TimelineToolbar({
           </Tooltip>
           {/* Numeric zoom readout (main-parity): "Fit" in fit mode, N% in manual. */}
           <span
-            className="ml-1 w-[38px] text-right font-mono text-[11px] tabular-nums text-neutral-500 select-none"
+            className="ml-1 w-[38px] text-right font-mono text-caption-2-regular tabular-nums text-text-tertiary select-none"
             aria-label="Timeline zoom level"
           >
             {showsFit ? "Fit" : `${displayedTimelineZoomPercent}%`}

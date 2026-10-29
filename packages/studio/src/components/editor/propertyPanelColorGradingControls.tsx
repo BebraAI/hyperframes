@@ -328,7 +328,7 @@ export function ColorGradingControls({
         <select
           value={String(grading.preset ?? "neutral")}
           onChange={(event) => applyPreset(event.target.value)}
-          className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-[11px] font-medium text-panel-text-1 outline-hidden"
+          className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-caption-2-medium text-panel-text-1 outline-hidden"
         >
           {HF_COLOR_GRADING_PRESETS.map((preset) => (
             <option key={preset.id} value={preset.id}>
@@ -353,7 +353,7 @@ export function ColorGradingControls({
       <div className="min-w-0 rounded-md border border-panel-border/70 bg-panel-input/15">
         <button
           type="button"
-          className="flex h-8 w-full min-w-0 items-center gap-1.5 px-2 text-left text-[11px] font-medium text-panel-text-3 transition-colors hover:bg-panel-hover/60 hover:text-panel-text-1"
+          className="flex h-8 w-full min-w-0 items-center gap-1.5 px-2 text-left text-caption-2-medium text-panel-text-3 transition-colors hover:bg-panel-hover/60 hover:text-panel-text-1"
           onClick={() => setLutOpen((value) => !value)}
           aria-expanded={lutOpen}
         >
@@ -378,7 +378,7 @@ export function ColorGradingControls({
                     nextSrc && grading.lut?.src === nextSrc ? grading.lut.intensity : 1,
                   );
                 }}
-                className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-[11px] font-medium text-panel-text-1 outline-hidden"
+                className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-caption-2-medium text-panel-text-1 outline-hidden"
                 title="Uploaded .cube LUT"
               >
                 <option value="">None</option>

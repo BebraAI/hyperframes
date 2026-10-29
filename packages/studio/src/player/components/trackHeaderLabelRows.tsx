@@ -154,7 +154,7 @@ export function PropertyGroupHeaderRow({
           aria-label={`${navigation.currentKeyframe ? "Remove" : "Add"} ${label} keyframe`}
           title={`${navigation.currentKeyframe ? "Remove" : "Add"} ${label} keyframe`}
           // h-6 w-6 = the 24x24 WCAG 2.2 minimum target; the ◆ glyph stays 11px.
-          className="flex h-6 w-6 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[11px] text-accent-ink focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-ring"
+          className="flex h-6 w-6 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-caption-2-regular text-accent-ink focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-ring"
           onClick={(event) => {
             // Same as the disclosure caret and the eye: a control in the label
             // column owns its click, it does not also hit the track row behind it.
@@ -311,7 +311,7 @@ export function AutomationLaneHeaderRow({
           aria-label={`Remove ${label} automation`}
           title={`Remove ${label} automation`}
           // h-6 w-6 is the 24x24 WCAG 2.2 target; the glyph stays small.
-          className="flex h-6 w-6 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[11px] text-text-muted hover:text-text-0 focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-ring"
+          className="flex h-6 w-6 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-caption-2-regular text-text-muted hover:text-text-0 focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-ring"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             // A control in the label column owns its click; it does not also hit

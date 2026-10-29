@@ -44,7 +44,7 @@ function HdrMediaWarning({ metadata }: { metadata: MediaMetadata | null }) {
     .join(" · ");
 
   return (
-    <div className="mb-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] leading-4 text-warning-ink">
+    <div className="mb-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-caption-2-regular leading-4 text-warning-ink">
       <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
         <span className="font-semibold">{metadata.color.label} source</span>
         <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning-ink">
@@ -218,7 +218,7 @@ export function ColorGradingSection({
               setApplyScope(event.currentTarget.value as typeof applyScope);
             }}
             disabled={applyBusy}
-            className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-[11px] font-medium text-panel-text-1 outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full min-w-0 rounded-md bg-panel-input px-3 py-2 text-caption-2-medium text-panel-text-1 outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
             title="Choose where to copy these color grading settings"
           >
             <option value="source-file">Current file media</option>
@@ -232,7 +232,7 @@ export function ColorGradingSection({
               track("button", "Apply color grading scope");
               void applyToScope();
             }}
-            className="h-8 rounded-md bg-panel-input px-3 text-[11px] font-medium text-panel-text-2 transition-colors hover:bg-panel-hover hover:text-panel-text-1 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-8 rounded-md bg-panel-input px-3 text-caption-2-medium text-panel-text-2 transition-colors hover:bg-panel-hover hover:text-panel-text-1 disabled:cursor-not-allowed disabled:opacity-50"
             title="Copy these color grading settings to the selected scope"
           >
             {applyBusy ? "Applying" : "Apply"}

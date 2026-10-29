@@ -140,7 +140,7 @@ export function AudioGainDialog({
         aria-label={`${ROWS.find((row) => row.mode === rowMode)?.label ?? ""} dB`}
         value={values[rowMode]}
         disabled={mode !== rowMode}
-        className="w-16 rounded border border-neutral-700 bg-neutral-950 px-1 text-right disabled:opacity-50"
+        className="w-16 rounded border border-border-button-default bg-background-tertiary-default px-1 text-right disabled:opacity-50"
         onChange={(event) =>
           setValues((prev) => ({ ...prev, [rowMode]: Number(event.target.value) || 0 }))
         }
@@ -158,7 +158,7 @@ export function AudioGainDialog({
         role="dialog"
         aria-modal="true"
         aria-label={AUDIO_GAIN_LABEL}
-        className="w-[340px] rounded-md border border-neutral-700 bg-neutral-900 p-4 text-xs text-neutral-200 shadow-xl"
+        className="w-[340px] rounded-md border border-border-button-default bg-background-tertiary-default p-4 text-xs text-text-primary shadow-xl"
         onKeyDown={(event) => {
           event.stopPropagation();
           if (event.key === "Escape") onClose();
@@ -184,7 +184,7 @@ export function AudioGainDialog({
           checked={mode === "loudness"}
           onSelect={() => setMode("loudness")}
         />
-        <div className="mt-3 text-neutral-400" data-testid="audio-gain-peak">
+        <div className="mt-3 text-text-secondary" data-testid="audio-gain-peak">
           Peak Amplitude:{" "}
           {peaks === null ? "measuring…" : peakDb === null ? "Unavailable" : dbText(peakDb)}
         </div>
@@ -192,7 +192,7 @@ export function AudioGainDialog({
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
-            className="rounded px-3 py-1 text-neutral-300 hover:bg-neutral-800"
+            className="rounded px-3 py-1 text-text-primary hover:bg-background-primary-hover"
             onClick={onClose}
           >
             Cancel

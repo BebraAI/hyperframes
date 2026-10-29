@@ -12,12 +12,12 @@ export function SidebarLintButton({
   hasError?: boolean;
 }) {
   return (
-    <div className="border-t border-neutral-800 p-2 shrink-0">
+    <div className="border-t border-border-button-default p-2 shrink-0">
       <button
         type="button"
         onClick={onLint}
         disabled={linting}
-        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-medium text-neutral-500 enabled:hover:text-warning-ink enabled:hover:bg-neutral-800 enabled:active:scale-[0.98] transition-colors disabled:opacity-40"
+        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-caption-1-medium text-text-tertiary enabled:hover:text-warning-ink enabled:hover:bg-background-primary-hover enabled:active:scale-[0.98] transition-colors disabled:opacity-40"
       >
         <svg
           width="12"
@@ -38,8 +38,8 @@ export function SidebarLintButton({
             style={hasError ? { animationIterationCount: ERROR_PULSES_BEFORE_IDLE } : undefined}
             className={
               hasError
-                ? "ml-1 min-w-[16px] rounded-full bg-danger px-1 text-[9px] font-bold text-on-danger animate-pulse motion-reduce:animate-none"
-                : "ml-1 min-w-[16px] rounded-full bg-amber-500/20 px-1 text-[9px] font-bold text-warning-ink"
+                ? "ml-1 min-w-[16px] rounded-full bg-danger px-1 text-caption-2-medium text-on-danger animate-pulse motion-reduce:animate-none"
+                : "ml-1 min-w-[16px] rounded-full bg-amber-500/20 px-1 text-caption-2-medium text-warning-ink"
             }
           >
             {findingCount}

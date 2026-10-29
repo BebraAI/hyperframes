@@ -418,7 +418,9 @@ export const LayersPanel = memo(function LayersPanel({ host }: { host?: LayersPa
       <div className="flex h-full flex-col items-center justify-center bg-panel-bg px-6 text-center">
         <Layers size={18} className="mb-3 text-panel-text-5" />
         <p className="text-sm font-medium text-panel-text-1">No layers</p>
-        <p className="mt-1 text-xs text-neutral-500">Load a composition to see its element tree</p>
+        <p className="mt-1 text-xs text-text-tertiary">
+          Load a composition to see its element tree
+        </p>
       </div>
     );
   }
@@ -428,7 +430,7 @@ export const LayersPanel = memo(function LayersPanel({ host }: { host?: LayersPa
       className="flex h-full min-h-0 flex-col overflow-hidden bg-panel-bg"
       onPointerLeave={() => handleLayerHover(null)}
     >
-      <div className="border-b border-panel-border px-3 py-2 text-[11px] text-panel-text-3">
+      <div className="border-b border-panel-border px-3 py-2 text-caption-2-regular text-panel-text-3">
         {layers.length} layer{layers.length === 1 ? "" : "s"}
       </div>
       <div
@@ -442,7 +444,7 @@ export const LayersPanel = memo(function LayersPanel({ host }: { host?: LayersPa
           <button
             type="button"
             onClick={() => setActiveGroupElement(null)}
-            className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-1.5 rounded-md px-2 py-1 text-left text-[11px] text-panel-text-3 hover:bg-panel-hover/40 hover:text-panel-text-1"
+            className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-1.5 rounded-md px-2 py-1 text-left text-caption-2-regular text-panel-text-3 hover:bg-panel-hover/40 hover:text-panel-text-1"
           >
             <span aria-hidden="true">←</span>
             <span className="truncate">
@@ -498,7 +500,7 @@ export const LayersPanel = memo(function LayersPanel({ host }: { host?: LayersPa
                   onClick={(e) => toggleCollapse(layer.key, e)}
                   aria-expanded={!isCollapsed}
                   aria-label={isCollapsed ? "Expand children" : "Collapse children"}
-                  className="relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-neutral-500 hover:text-neutral-300 before:absolute before:-inset-1.5 before:content-['']"
+                  className="relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-text-tertiary hover:text-text-primary before:absolute before:-inset-1.5 before:content-['']"
                 >
                   <svg
                     width="8"
@@ -524,7 +526,7 @@ export const LayersPanel = memo(function LayersPanel({ host }: { host?: LayersPa
               >
                 <KindIcon size={12} />
               </span>
-              <span className="min-w-0 flex-1 truncate text-[11px]">{layer.label}</span>
+              <span className="min-w-0 flex-1 truncate text-caption-2-regular">{layer.label}</span>
               {hasChildren && (
                 <span className="text-[9px] tabular-nums text-panel-text-5">
                   {layer.childCount}

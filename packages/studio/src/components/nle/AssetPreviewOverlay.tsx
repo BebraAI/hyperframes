@@ -70,7 +70,7 @@ function AssetPreviewMedia({
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
-        className="text-neutral-500"
+        className="text-text-tertiary"
       >
         <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
         <circle cx="6" cy="18" r="3" />
@@ -137,7 +137,7 @@ export function AssetPreviewOverlay() {
     >
       {/* Floating preview card — compact, canvas stays visible around it */}
       <div
-        className="relative flex flex-col items-center gap-2 max-w-[58%] rounded-lg border border-neutral-800 bg-neutral-950/95 p-2 pt-8 shadow-2xl"
+        className="relative flex flex-col items-center gap-2 max-w-[58%] rounded-lg border border-border-button-default bg-background-tertiary-default p-2 pt-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -166,7 +166,7 @@ export function AssetPreviewOverlay() {
         <AssetPreviewMedia kind={resolveAssetKind(previewAsset)} serveUrl={serveUrl} name={name} />
 
         {/* Filename label */}
-        <span className="text-[12px] text-neutral-400 truncate max-w-full px-2 text-center">
+        <span className="text-caption-1-regular text-text-secondary truncate max-w-full px-2 text-center">
           {name}
         </span>
       </div>

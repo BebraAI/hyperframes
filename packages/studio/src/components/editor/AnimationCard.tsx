@@ -174,16 +174,16 @@ export const AnimationCard = memo(function AnimationCard({
     setKeys.every((k) => k === "x" || k === "y" || k === "immediateRender")
   )
     return (
-      <div className="border-b border-neutral-800 pb-2">
+      <div className="border-b border-border-button-default pb-2">
         <div className="flex items-center gap-2 py-1.5">
-          <span className="rounded-sm bg-neutral-800 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+          <span className="rounded-sm bg-background-tertiary-default px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
             Position
           </span>
-          <span className="text-[11px] text-neutral-500">
+          <span className="text-caption-2-regular text-text-tertiary">
             x: {Math.round(Number(animation.properties.x ?? 0))}, y:{" "}
             {Math.round(Number(animation.properties.y ?? 0))}
           </span>
-          <span className="ml-auto text-[9px] text-neutral-600">drag to move</span>
+          <span className="ml-auto text-[9px] text-text-tertiary">drag to move</span>
         </div>
       </div>
     );
@@ -195,7 +195,7 @@ export const AnimationCard = memo(function AnimationCard({
       className={
         flat
           ? "border-b border-l-2 border-panel-accent/40 border-b-panel-hairline pb-3 pl-2"
-          : "border-b border-neutral-800 pb-3"
+          : "border-b border-border-button-default pb-3"
       }
     >
       <button
@@ -211,7 +211,7 @@ export const AnimationCard = memo(function AnimationCard({
           {methodLabel}
         </span>
         <span
-          className={`text-[11px] font-medium ${flat ? "text-panel-text-3" : "text-neutral-400"}`}
+          className={`text-caption-2-medium ${flat ? "text-panel-text-3" : "text-text-secondary"}`}
           title="When this effect plays"
         >
           {typeof animation.position === "number"
@@ -220,7 +220,7 @@ export const AnimationCard = memo(function AnimationCard({
           to {typeof endTime === "number" ? `${parseFloat(endTime.toFixed(3))}s` : endTime}
         </span>
         <span
-          className={`ml-auto text-[10px] ${flat ? "text-panel-text-3" : "text-neutral-500"}`}
+          className={`ml-auto text-[10px] ${flat ? "text-panel-text-3" : "text-text-tertiary"}`}
           title={headerEase ?? "Mixed"}
           data-card-ease
         >
@@ -231,7 +231,7 @@ export const AnimationCard = memo(function AnimationCard({
           height="10"
           viewBox="0 0 10 10"
           fill="currentColor"
-          className={`shrink-0 transition-transform ${flat ? "text-panel-text-5" : "text-neutral-500"} ${expanded ? "" : "-rotate-90"}`}
+          className={`shrink-0 transition-transform ${flat ? "text-panel-text-5" : "text-text-tertiary"} ${expanded ? "" : "-rotate-90"}`}
         >
           <path d="M2 3l3 4 3-4z" />
         </svg>
@@ -246,9 +246,9 @@ export const AnimationCard = memo(function AnimationCard({
             />
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                <p className="text-[10px] leading-relaxed text-neutral-400 italic">{summary}</p>
+                <p className="text-[10px] leading-relaxed text-text-secondary italic">{summary}</p>
                 {animation.keyframes && (
-                  <p className="mt-1 text-[9px] text-neutral-500">
+                  <p className="mt-1 text-[9px] text-text-tertiary">
                     <span
                       className="inline-block w-2 h-2 mr-1 align-middle"
                       style={{
@@ -260,7 +260,7 @@ export const AnimationCard = memo(function AnimationCard({
                   </p>
                 )}
                 {runEase && runEase !== "none" && (
-                  <p className="mt-1 text-[9px] text-neutral-500" data-card-run-ease>
+                  <p className="mt-1 text-[9px] text-text-tertiary" data-card-run-ease>
                     Run ease: {easeDisplayName(runEase)}
                   </p>
                 )}
@@ -272,7 +272,7 @@ export const AnimationCard = memo(function AnimationCard({
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 }}
-                className="shrink-0 rounded-sm px-1.5 py-0.5 text-[9px] font-medium text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-300"
+                className="shrink-0 rounded-sm px-1.5 py-0.5 text-[9px] font-medium text-text-tertiary transition-colors hover:bg-background-primary-hover hover:text-text-primary"
                 title="Copy description for agent prompts"
               >
                 {copied ? "Copied" : "Copy"}
@@ -388,7 +388,7 @@ export const AnimationCard = memo(function AnimationCard({
                     onAdd={(prop) => onAddFromProperty?.(animation.id, prop)}
                     onOpen={() => setAddingFromProp(true)}
                     onClose={() => setAddingFromProp(false)}
-                    buttonClassName="text-[11px] font-medium text-warning-ink transition-colors hover:text-text-0"
+                    buttonClassName="text-caption-2-medium text-warning-ink transition-colors hover:text-text-0"
                   />
                 </div>
               </div>
@@ -422,7 +422,7 @@ export const AnimationCard = memo(function AnimationCard({
               (animation.properties.x != null ||
                 animation.properties.y != null ||
                 animation.keyframes) && (
-                <div className="border-t border-neutral-800 pt-3">
+                <div className="border-t border-border-button-default pt-3">
                   <ArcPathControls
                     arcPath={
                       animation.arcPath ?? { enabled: false, autoRotate: false, segments: [] }
@@ -460,12 +460,12 @@ export const AnimationCard = memo(function AnimationCard({
                 onAdd={(prop) => onAddProperty(animation.id, prop)}
                 onOpen={() => setAddingProp(true)}
                 onClose={() => setAddingProp(false)}
-                buttonClassName="text-[11px] font-medium text-neutral-400 transition-colors hover:text-neutral-200"
+                buttonClassName="text-caption-2-medium text-text-secondary transition-colors hover:text-text-primary"
               />
               <button
                 type="button"
                 onClick={() => onDeleteAnimation(animation.id)}
-                className="ml-auto text-[11px] font-medium rounded-sm text-danger-ink transition-colors hover:bg-danger/15"
+                className="ml-auto text-caption-2-medium rounded-sm text-danger-ink transition-colors hover:bg-danger/15"
                 title="Remove this animation"
               >
                 Remove

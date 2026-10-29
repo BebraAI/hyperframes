@@ -144,7 +144,7 @@ export function MediaSection({
         {srcAttr && (
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] font-medium text-neutral-500">Source</div>
+              <div className="text-caption-2-medium text-text-tertiary">Source</div>
               <button
                 type="button"
                 onClick={() => {
@@ -153,14 +153,14 @@ export function MediaSection({
                     setTimeout(() => setCopied(false), 1500);
                   });
                 }}
-                className="flex h-6 items-center gap-1 rounded-lg border border-neutral-700 bg-neutral-950 px-2 text-[10px] font-medium text-neutral-400 transition-colors hover:border-neutral-600 hover:text-neutral-200"
+                className="flex h-6 items-center gap-1 rounded-lg border border-border-button-default bg-background-tertiary-default px-2 text-[10px] font-medium text-text-secondary transition-colors hover:border-border-button-hover hover:text-text-primary"
               >
                 {copied ? <Check size={11} /> : <ClipboardList size={11} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
             </div>
             <div
-              className="mt-1 truncate text-[11px] font-medium text-neutral-300"
+              className="mt-1 truncate text-caption-2-medium text-text-primary"
               title={absoluteSrc}
             >
               {absoluteSrc}
@@ -184,7 +184,7 @@ export function MediaSection({
                   event.stopPropagation();
                   void runBackgroundRemoval();
                 }}
-                className="flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-panel-input px-2.5 text-[11px] font-medium text-panel-text-2 transition-colors hover:bg-panel-hover hover:text-panel-text-1 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-panel-input px-2.5 text-caption-2-medium text-panel-text-2 transition-colors hover:bg-panel-hover hover:text-panel-text-1 disabled:cursor-not-allowed disabled:opacity-50"
                 title={
                   canRemoveBackground
                     ? "Remove background and save a transparent asset"

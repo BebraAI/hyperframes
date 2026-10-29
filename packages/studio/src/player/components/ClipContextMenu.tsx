@@ -74,7 +74,7 @@ function HostItems({
             {item.label}
           </span>
           {item.shortcut && (
-            <span className="text-neutral-500 text-[10px] ml-3">{item.shortcut}</span>
+            <span className="text-text-tertiary text-[10px] ml-3">{item.shortcut}</span>
           )}
         </button>
       ))}
@@ -146,10 +146,10 @@ export const ClipContextMenu = memo(function ClipContextMenu({
           <button
             type="button"
             role="menuitem"
-            className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left outline-hidden focus-visible:bg-neutral-800 ${
+            className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left outline-hidden focus-visible:bg-background-primary-hover ${
               canSplit
-                ? "text-neutral-300 hover:bg-neutral-800 cursor-pointer"
-                : "text-neutral-600 cursor-not-allowed"
+                ? "text-text-primary hover:bg-background-primary-hover cursor-pointer"
+                : "text-text-tertiary cursor-not-allowed"
             }`}
             disabled={!canSplit}
             onClick={() => {
@@ -160,7 +160,7 @@ export const ClipContextMenu = memo(function ClipContextMenu({
             }}
           >
             <span>{splitLabel}</span>
-            <span className="text-neutral-500 text-[10px] ml-3">{splitShortcut}</span>
+            <span className="text-text-tertiary text-[10px] ml-3">{splitShortcut}</span>
           </button>
         )}
         {tools && splitLabel && (
@@ -212,7 +212,7 @@ export const ClipContextMenu = memo(function ClipContextMenu({
             }}
           >
             <span>{selectionSize > 1 ? `Copy ${selectionSize} clips` : "Copy"}</span>
-            <span className="text-neutral-500 text-[10px] ml-3">⌘C</span>
+            <span className="text-text-tertiary text-[10px] ml-3">⌘C</span>
           </button>
         )}
         {onPaste && (
@@ -228,7 +228,7 @@ export const ClipContextMenu = memo(function ClipContextMenu({
             }}
           >
             <span>Paste</span>
-            <span className="text-neutral-500 text-[10px] ml-3">⌘V</span>
+            <span className="text-text-tertiary text-[10px] ml-3">⌘V</span>
           </button>
         )}
         {onDuplicate && (
@@ -242,7 +242,7 @@ export const ClipContextMenu = memo(function ClipContextMenu({
             }}
           >
             <span>{selectionSize > 1 ? `Duplicate ${selectionSize} clips` : "Duplicate"}</span>
-            <span className="text-neutral-500 text-[10px] ml-3">⌘D</span>
+            <span className="text-text-tertiary text-[10px] ml-3">⌘D</span>
           </button>
         )}
       </div>
@@ -251,14 +251,14 @@ export const ClipContextMenu = memo(function ClipContextMenu({
         <button
           type="button"
           role="menuitem"
-          className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-danger-ink hover:bg-neutral-800 focus-visible:bg-neutral-800 outline-hidden cursor-pointer text-left"
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-danger-ink hover:bg-background-primary-hover focus-visible:bg-background-primary-hover outline-hidden cursor-pointer text-left"
           onClick={() => {
             onDelete(element);
             onClose();
           }}
         >
           <span>Delete</span>
-          <span className="text-neutral-500 text-[10px] ml-3">⌫</span>
+          <span className="text-text-tertiary text-[10px] ml-3">⌫</span>
         </button>
         {tools && <ClipMenuLinkItems part="delete" element={element} onClose={onClose} />}
       </div>

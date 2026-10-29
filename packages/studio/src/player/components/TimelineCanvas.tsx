@@ -83,10 +83,10 @@ export const TimelineCanvas = memo(function TimelineCanvas() {
           aria-hidden="true"
           data-testid="timeline-ghost-lane"
           data-active={ghostLaneActive || undefined}
-          className={`pointer-events-none absolute flex items-center justify-center rounded-lg border border-dashed text-[11px] transition-colors duration-150 ${
+          className={`pointer-events-none absolute flex items-center justify-center rounded-lg border border-dashed text-caption-2-regular transition-colors duration-150 ${
             ghostLaneActive
               ? "border-studio-accent/60 bg-studio-accent/6 text-accent-ink"
-              : "border-neutral-700/50 text-neutral-500"
+              : "border-border-button-default text-text-tertiary"
           }`}
           style={{
             top: props.rowGeometry.getRowTop(ghostLaneRow) + CLIP_Y,

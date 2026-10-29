@@ -83,7 +83,7 @@ export function TimingSection({
         />
       </div>
       {derived && (
-        <p className="mt-2 text-[10px] leading-snug text-neutral-500">
+        <p className="mt-2 text-[10px] leading-snug text-text-tertiary">
           Inferred from this element’s animation. Edit to pin an explicit clip range.
         </p>
       )}

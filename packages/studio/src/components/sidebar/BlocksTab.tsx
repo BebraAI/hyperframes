@@ -32,7 +32,7 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center text-neutral-600 text-xs">
+      <div className="flex flex-1 items-center justify-center text-text-tertiary text-caption-1-regular">
         Loading blocks…
       </div>
     );
@@ -40,7 +40,7 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
 
   if (error) {
     return (
-      <div className="flex flex-1 items-center justify-center text-danger-ink text-xs px-4 text-center">
+      <div className="flex flex-1 items-center justify-center text-danger-ink text-caption-1-regular px-4 text-center">
         {error}
       </div>
     );
@@ -77,14 +77,14 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
       {/* Block grid */}
       <div className="flex-1 overflow-y-auto min-h-0 px-2 pb-2">
         {category === "vfx" && (
-          <div className="mb-2 px-2 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-[9px] text-text-2 leading-relaxed">
+          <div className="mb-2 px-2 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-caption-2-regular text-text-2 leading-relaxed">
             VFX blocks use WebGL via HTML-in-Canvas. Enable{" "}
             <span className="font-mono text-text-0">chrome://flags/#html-in-canvas</span> for
             preview.
           </div>
         )}
         {filteredBlocks.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-neutral-600 text-xs">
+          <div className="flex items-center justify-center h-32 text-text-tertiary text-caption-1-regular">
             No blocks match your search
           </div>
         ) : (
@@ -151,12 +151,12 @@ function CategoryPill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-medium transition-colors active:scale-[0.98] ${
+      className={`shrink-0 px-2 py-1 rounded-full text-caption-2-medium transition-colors active:scale-[0.98] ${
         active
           ? colors
             ? `${colors.bg} ${colors.text}`
-            : "bg-neutral-700 text-neutral-200"
-          : "bg-neutral-900 text-neutral-500 hover:text-neutral-300"
+            : "bg-background-tertiary-default text-text-primary"
+          : "bg-background-tertiary-default text-text-tertiary hover:text-text-primary"
       }`}
     >
       {label}
@@ -375,7 +375,7 @@ function BlockCard({
 
   return (
     <div
-      className="group/card rounded-md overflow-hidden cursor-pointer transition-colors bg-neutral-900 hover:bg-neutral-800"
+      className="group/card rounded-lg overflow-hidden cursor-pointer transition-colors bg-background-tertiary-default hover:bg-background-primary-hover"
       draggable
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "copy";
@@ -408,9 +408,7 @@ function BlockCard({
           />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${colors.bg}`}>
-            <span className={`text-[9px] font-medium ${colors.text}`}>
-              {category.toUpperCase()}
-            </span>
+            <span className={`text-caption-2-medium ${colors.text}`}>{category.toUpperCase()}</span>
           </div>
         )}
 
@@ -421,7 +419,7 @@ function BlockCard({
               type="button"
               onClick={handleAdd}
               title="Add to composition at current time"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-semibold transition-colors active:scale-[0.97] ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-caption-2-medium transition-colors active:scale-[0.97] ${
                 addState === "failed"
                   ? "bg-danger text-on-danger"
                   : "bg-white text-black hover:bg-white/85"
@@ -450,10 +448,10 @@ function BlockCard({
             type="button"
             onClick={handleShowPrompt}
             title="Generate a prompt to paste into your AI agent"
-            className={`flex items-center gap-1.5 px-3 ${onAdd ? "py-1" : "py-1.5"} rounded-md transition-colors active:scale-[0.97] ${
+            className={`flex items-center gap-1.5 px-3 ${onAdd ? "py-1" : "py-1.5"} rounded-lg transition-colors active:scale-[0.97] ${
               onAdd
-                ? "bg-white/15 text-white/90 hover:bg-white/25 text-[9px]"
-                : "bg-text-0 text-bg-0 hover:bg-text-2 text-[10px] font-semibold"
+                ? "bg-white/15 text-white/90 hover:bg-white/25 text-caption-2-regular"
+                : "bg-text-0 text-bg-0 hover:bg-text-2 text-caption-2-medium"
             }`}
           >
             <svg
@@ -474,12 +472,12 @@ function BlockCard({
         {/* Badges */}
         <div className="absolute top-1 right-1 flex items-center gap-0.5 pointer-events-none">
           {needsWebGL && (
-            <span className="px-1 py-px rounded-sm text-[7px] font-semibold text-purple-300 bg-purple-900/70">
+            <span className="px-1 py-px rounded-md text-caption-2-medium text-purple-300 bg-purple-900/70">
               WebGL
             </span>
           )}
           {duration != null && (
-            <span className="px-1 py-px rounded-sm text-[8px] font-medium text-white/80 bg-black/50">
+            <span className="px-1 py-px rounded-md text-caption-2-medium text-white/80 bg-black/50">
               {duration}s
             </span>
           )}
@@ -488,12 +486,12 @@ function BlockCard({
 
       {/* Info */}
       <div className="px-1.5 py-1.5">
-        <div className="text-[10px] font-medium text-neutral-200 truncate leading-tight">
+        <div className="text-caption-2-medium text-text-primary truncate leading-tight">
           {title}
         </div>
         <div className="flex items-center gap-1 mt-0.5">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${colors.dot}`} />
-          <span className={`text-[8px] ${colors.text}`}>
+          <span className={`text-caption-2-regular ${colors.text}`}>
             {BLOCK_CATEGORIES.find((c) => c.id === category)?.label}
           </span>
         </div>

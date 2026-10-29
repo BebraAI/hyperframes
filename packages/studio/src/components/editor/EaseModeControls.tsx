@@ -52,14 +52,16 @@ export const EasePresetGrid = function EasePresetGrid({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onSelect(preset.ease)}
             className={`flex flex-col items-center gap-0.5 rounded-md p-1 transition-colors ${
-              isActive ? "bg-panel-accent/10 ring-1 ring-panel-accent/30" : "hover:bg-neutral-800"
+              isActive
+                ? "bg-panel-accent/10 ring-1 ring-panel-accent/30"
+                : "hover:bg-background-primary-hover"
             }`}
             title={preset.label}
           >
             <MiniCurveSvg ease={preset.ease} active={isActive} />
             <span
               className={`text-center text-[8px] leading-none ${
-                isActive ? "text-accent-ink" : "text-neutral-500"
+                isActive ? "text-accent-ink" : "text-text-tertiary"
               }`}
             >
               {preset.label}
@@ -98,7 +100,9 @@ export function EaseModeToggle({
               onCommit(DEFAULT_EASE_BY_MODE[candidateMode]);
             }}
             className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              active ? "bg-neutral-700 text-neutral-100" : "text-neutral-500 hover:text-neutral-300"
+              active
+                ? "bg-background-tertiary-default text-text-primary"
+                : "text-text-tertiary hover:text-text-primary"
             }`}
           >
             {MODE_LABELS[candidateMode]}

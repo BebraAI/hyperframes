@@ -217,7 +217,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
       >
         <div className="flex items-start gap-3">
           <p
-            className={`min-w-0 flex-1 text-[12px] leading-5 ${failed ? "text-danger-ink" : "text-text-0"}`}
+            className={`min-w-0 flex-1 text-caption-1-regular leading-5 ${failed ? "text-danger-ink" : "text-text-0"}`}
           >
             {step === "thanks" ? "Thanks, that helps." : title}
           </p>
@@ -231,7 +231,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                 if (req) trackStudioFeedbackInterviewClick({ reason: req.reason });
                 close("sent");
               }}
-              className="h-6 shrink-0 whitespace-nowrap rounded-full border border-border-strong bg-hover px-2.5 text-[11px] leading-6 text-neutral-100 transition-[background-color,border-color,transform] duration-150 ease-out hover:border-text-muted hover:bg-press active:scale-[0.97] motion-reduce:transition-none"
+              className="h-6 shrink-0 whitespace-nowrap rounded-full border border-border-strong bg-hover px-2.5 text-caption-2-regular leading-6 text-text-primary transition-[background-color,border-color,transform] duration-150 ease-out hover:border-text-muted hover:bg-press active:scale-[0.97] motion-reduce:transition-none"
             >
               Talk to us, 30 min
             </a>
@@ -239,7 +239,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
           <button
             type="button"
             onClick={() => close("close")}
-            className="-mr-1 -mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-neutral-500 transition-colors duration-150 hover:bg-press hover:text-neutral-200"
+            className="-mr-1 -mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors duration-150 hover:bg-press hover:text-text-primary"
             aria-label="Dismiss"
           >
             <svg
@@ -258,7 +258,9 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
         {/* The failure text the user already saw, quoted back so the report
             carries it without asking them to retype the error. */}
         {failed && request.detail && step !== "thanks" && (
-          <p className="line-clamp-2 text-[11px] leading-4 text-danger-ink">{request.detail}</p>
+          <p className="line-clamp-2 text-caption-2-regular leading-4 text-danger-ink">
+            {request.detail}
+          </p>
         )}
 
         {step === "rating" && (
@@ -271,7 +273,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                   key={n}
                   // A resting fill, so the row reads as eleven controls rather
                   // than as a line of text that happens to be clickable.
-                  className="flex h-7 cursor-pointer items-center justify-center rounded-md bg-hover text-[11px] tabular-nums text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-press hover:text-neutral-100 active:scale-[0.97] has-checked:bg-text-0 has-checked:text-bg-0 has-focus-visible:ring-1 has-focus-visible:ring-ring motion-reduce:transition-none"
+                  className="flex h-7 cursor-pointer items-center justify-center rounded-md bg-hover text-caption-2-regular tabular-nums text-text-secondary transition-[background-color,color,transform] duration-150 ease-out hover:bg-press hover:text-text-primary active:scale-[0.97] has-checked:bg-text-0 has-checked:text-bg-0 has-focus-visible:ring-1 has-focus-visible:ring-ring motion-reduce:transition-none"
                 >
                   <input
                     type="radio"
@@ -285,7 +287,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                 </label>
               ))}
             </fieldset>
-            <div className="flex justify-between text-[10px] leading-none text-neutral-500">
+            <div className="flex justify-between text-[10px] leading-none text-text-tertiary">
               <span>Not likely</span>
               <span>Extremely likely</span>
             </div>
@@ -314,10 +316,10 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                   // chip under the pointer is the one the hint line is talking
                   // about, so if you cannot tell which is hovered, the hint is
                   // attached to nothing.
-                  className={`h-6 rounded-full border px-2.5 text-[11px] transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none ${
+                  className={`h-6 rounded-full border px-2.5 text-caption-2-regular transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none ${
                     failed
                       ? "border-danger/30 bg-danger/10 text-danger-ink hover:border-danger/60 hover:bg-danger/20"
-                      : "border-border bg-hover text-neutral-300 hover:border-text-muted hover:bg-press hover:text-text-0"
+                      : "border-border bg-hover text-text-primary hover:border-text-muted hover:bg-press hover:text-text-0"
                   }`}
                 >
                   {preset.label}
@@ -328,7 +330,7 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                 so a bubble above the chips lands on top of the question and a
                 bubble below lands on the input. One reserved line occludes
                 nothing and needs no hover delay to be readable. */}
-            <p className="h-3.5 truncate text-[10.5px] leading-[14px] text-neutral-500">
+            <p className="h-3.5 truncate text-[10.5px] leading-[14px] text-text-tertiary">
               {hint ?? "Tap one, or write your own."}
             </p>
             <div className="flex items-center gap-2">
@@ -343,12 +345,12 @@ export const StudioFeedbackCard = memo(function StudioFeedbackCard() {
                 placeholder={followUp.placeholder}
                 aria-label={followUp.prompt}
                 maxLength={500}
-                className="h-7 min-w-0 flex-1 rounded-md border border-border bg-input px-2 text-[11px] text-neutral-100 outline-hidden transition-colors duration-150 placeholder:text-neutral-500 focus:border-ring"
+                className="h-7 min-w-0 flex-1 rounded-md border border-border bg-input px-2 text-caption-2-regular text-text-primary outline-hidden transition-colors duration-150 placeholder:text-text-tertiary focus:border-ring"
               />
               <button
                 type="button"
                 onClick={() => submit()}
-                className="h-7 shrink-0 rounded-md bg-press px-2.5 text-[11px] text-neutral-100 transition-[background-color,transform] duration-150 ease-out hover:bg-on active:scale-[0.97] motion-reduce:transition-none"
+                className="h-7 shrink-0 rounded-md bg-press px-2.5 text-caption-2-regular text-text-primary transition-[background-color,transform] duration-150 ease-out hover:bg-on active:scale-[0.97] motion-reduce:transition-none"
               >
                 Send
               </button>

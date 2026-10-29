@@ -166,7 +166,7 @@ export function FlatMediaSection({
       <div className="flex min-h-8 items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2">
           <span className="h-5 w-8 shrink-0 rounded-[3px] bg-panel-surface" />
-          <span className="min-w-0 truncate font-mono text-[11px] text-panel-text-0">
+          <span className="min-w-0 truncate font-mono text-caption-2-regular text-panel-text-0">
             {srcAttr}
           </span>
         </span>
@@ -190,7 +190,7 @@ export function FlatMediaSection({
         <div className="ml-px border-l-2 border-panel-border-input py-1 pl-[10px]">
           <div className="flex min-h-6 items-center justify-between">
             <span className="flex items-baseline gap-[7px]">
-              <span className="text-[11px] font-semibold text-panel-text-1">Cutout</span>
+              <span className="text-caption-2-semibold text-panel-text-1">Cutout</span>
               <span className="font-mono text-[9px] text-panel-text-4">
                 transparent {isVideo ? "WebM" : "PNG"}
               </span>

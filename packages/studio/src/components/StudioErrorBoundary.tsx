@@ -31,9 +31,9 @@ export class StudioErrorBoundary extends Component<Props, State> {
     if (!this.state.error) return this.props.children;
 
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-neutral-950 font-sans text-neutral-200">
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-background-tertiary-default font-sans text-text-primary">
         <div className="text-lg font-semibold">Something went wrong</div>
-        <div className="max-w-[480px] text-center text-[13px] text-neutral-500">
+        <div className="max-w-[480px] text-center text-[13px] text-text-tertiary">
           {this.state.error.message}
         </div>
         <div className="mt-2 flex items-center gap-2">
@@ -47,7 +47,7 @@ export class StudioErrorBoundary extends Component<Props, State> {
               is the recovery path that always works. */}
           <button
             onClick={() => window.location.reload()}
-            className="rounded-md border border-neutral-700 px-5 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800 active:scale-[0.98]"
+            className="rounded-md border border-border-button-default px-5 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-background-primary-hover active:scale-[0.98]"
           >
             Reload Studio
           </button>

@@ -58,7 +58,7 @@ function GroupNameButton({
       // No `flex-1`: the row's control group owns the slack now (`ml-auto`), so
       // claiming it here would push the controls off the right edge — and the
       // count with them, since it rides inside this button.
-      className="flex h-6 min-w-0 items-center gap-1.5 rounded-sm border-0 bg-transparent p-0 text-left text-[11px] text-[var(--timeline-text-solid)] hover:text-[var(--timeline-accent)] focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)]"
+      className="flex h-6 min-w-0 items-center gap-1.5 rounded-sm border-0 bg-transparent p-0 text-left text-caption-2-regular text-[var(--timeline-text-solid)] hover:text-[var(--timeline-accent)] focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)]"
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation();
@@ -67,7 +67,7 @@ function GroupNameButton({
     >
       <span
         aria-hidden="true"
-        className="shrink-0 text-[12px] leading-none text-[var(--timeline-track-label)]"
+        className="shrink-0 text-caption-1-regular leading-none text-[var(--timeline-track-label)]"
       >
         ▤
       </span>
@@ -106,7 +106,7 @@ export function TimelineGroupHeader({
     <div
       role="rowheader"
       aria-colindex={1}
-      className="sticky left-0 z-12 flex shrink-0 items-center gap-1.5 overflow-hidden px-1.5 text-[11px]"
+      className="sticky left-0 z-12 flex shrink-0 items-center gap-1.5 overflow-hidden px-1.5 text-caption-2-regular"
       style={{
         width: columnWidth,
         height: TRACK_H,
@@ -173,7 +173,7 @@ export function TimelineGroupHeader({
             aria-label={`${isLaneOpen ? "Hide" : "Show"} ${label} lanes`}
             title={`${isLaneOpen ? "Hide" : "Show"} lanes`}
             // Anchored right, matching every other header's lane toggle.
-            className={`ml-auto flex h-6 items-center justify-center gap-0.5 rounded border-0 bg-transparent px-1 text-[11px] leading-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)] ${
+            className={`ml-auto flex h-6 items-center justify-center gap-0.5 rounded border-0 bg-transparent px-1 text-caption-2-regular leading-none focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)] ${
               isLaneOpen
                 ? "text-[var(--timeline-accent)]"
                 : "text-[var(--timeline-handle)] hover:text-[var(--timeline-text-solid)]"
