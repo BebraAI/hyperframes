@@ -20,8 +20,9 @@ jobs:
           node-version: 22
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - run: npm pack --pack-destination "$RUNNER_TEMP"
+      # Published as "hyperframes" upstream (see publish.yml), so the sandbox's paths stay the same.
+      - run: npm pkg set name=hyperframes && npm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/cli
-      - run: gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/hyperframes-cli-*.tgz --title "$GITHUB_REF_NAME" --notes "HyperFrames CLI with the promptwise Studio."
+      - run: gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/hyperframes-*.tgz --title "$GITHUB_REF_NAME" --notes "HyperFrames CLI with the promptwise Studio."
         env:
           GH_TOKEN: ${{ github.token }}
