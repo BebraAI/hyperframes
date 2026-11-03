@@ -19,6 +19,10 @@ const CRAFT_THRESHOLDS = {
   endCardSec: END_CARD_HOLD_SEC,
   typeFloorFraction: 0.026,
   typeFloorHoldSec: 0.5,
+  /** The house style's smallest headline: 56 px on 1080. */
+  headlineFraction: 0.052,
+  /** Kinetic type's hero word spans 60–90% of the frame's width. */
+  heroWidthFraction: 0.6,
   silentFilmSec: 15,
   /** One video frame: a line held exactly at its floor measures a hair under it. */
   measureToleranceSec: 1 / 30,
@@ -74,6 +78,8 @@ export async function auditCraft(input: CraftAuditInput, probe?: CraftProbe): Pr
     ...(await detectLineUnread(frames, input.duration, input.canvas, probe)),
     ...(input.stillnessJudgedElsewhere ? [] : detectDeadStretches(frames, input.duration)),
     ...detectTextBelowFloor(frames, input.duration, input.canvas),
+    ...detectHeadlineSmall(frames, input.duration, input.canvas),
+    ...detectHeroWordNarrow(frames, input.canvas),
     ...detectFilmSilent(input.duration, input.soundSources),
   ].sort((a, b) => a.time - b.time);
   return { enabled: true, step, samples: frames.length, findings };
@@ -450,25 +456,36 @@ export function typeFloorPx(canvas: Canvas): number {
   return Math.round(T.typeFloorFraction * Math.min(canvas.width, canvas.height));
 }
 
-export function detectTextBelowFloor(
+type TextPart = CraftFrame["parts"][number];
+type Sightings = Map<number, Map<number, TextPart>>;
+
+/** Reading text: words at ≥ 0.5 opacity, outside the captions track. */
+function isReading(part: TextPart): boolean {
+  return !part.captions && part.opacity >= T.readOpacity && readingWords(part.text) > 0;
+}
+
+function largest(parts: TextPart[]): TextPart | undefined {
+  return parts.reduce<TextPart | undefined>(
+    (best, part) => (!best || part.fontPx > best.fontPx ? part : best),
+    undefined,
+  );
+}
+
+function see(sightings: Sightings, part: TextPart, index: number): void {
+  const seen = sightings.get(part.key) ?? new Map();
+  seen.set(index, part);
+  sightings.set(part.key, seen);
+}
+
+/** Elements whose longest run of sightings lasts 0.5 s or more, sized by `size` over every sighting. */
+function heldTexts(
+  sightings: Sightings,
   frames: CraftFrame[],
   duration: number,
-  canvas: Canvas,
-): CraftFinding[] {
-  const floorPx = typeFloorPx(canvas);
+  size: (fontPx: number[]) => number,
+): SmallText[] {
   const step = sampleStep(frames);
-  const sightings = new Map<number, Map<number, CraftFrame["parts"][number]>>();
-  frames.forEach((frame, index) => {
-    for (const part of frame.parts) {
-      if (part.captions || part.opacity < T.readOpacity) continue;
-      // Half a pixel of slack: a scaled 28 px line measures 27.9.
-      if (part.fontPx >= floorPx - 0.5 || readingWords(part.text) === 0) continue;
-      const seen = sightings.get(part.key) ?? new Map();
-      seen.set(index, part);
-      sightings.set(part.key, seen);
-    }
-  });
-  const small: SmallText[] = [];
+  const held: SmallText[] = [];
   for (const seen of sightings.values()) {
     const [first, last] = longestRun(indexRuns([...seen.keys()]));
     const start = frames[first]?.time ?? 0;
@@ -477,11 +494,11 @@ export function detectTextBelowFloor(
     const parts = [...seen.values()];
     const part = parts[0];
     if (!part) continue;
-    small.push({
+    held.push({
       selector: part.selector,
       sourceFile: part.sourceFile,
       text: part.text,
-      fontPx: Math.min(...parts.map((entry) => entry.fontPx)),
+      fontPx: size(parts.map((entry) => entry.fontPx)),
       seconds: end - start,
       time: start,
       bbox: {
@@ -492,6 +509,23 @@ export function detectTextBelowFloor(
       },
     });
   }
+  return held;
+}
+
+export function detectTextBelowFloor(
+  frames: CraftFrame[],
+  duration: number,
+  canvas: Canvas,
+): CraftFinding[] {
+  const floorPx = typeFloorPx(canvas);
+  const sightings: Sightings = new Map();
+  frames.forEach((frame, index) => {
+    for (const part of frame.parts) {
+      // Half a pixel of slack: a scaled 28 px line measures 27.9.
+      if (isReading(part) && part.fontPx < floorPx - 0.5) see(sightings, part, index);
+    }
+  });
+  const small = heldTexts(sightings, frames, duration, (sizes) => Math.min(...sizes));
   const shortSide = Math.min(canvas.width, canvas.height);
   return groupBySourceFile(small).map((group) => smallTextFinding(group, floorPx, shortSide));
 }
@@ -536,12 +570,165 @@ function smallTextFinding(group: SmallText[], floorPx: number, shortSide: number
     fontPx: round(smallest.fontPx),
     floorPx,
     seconds: round(smallest.seconds),
-    elements: group.map((entry) => ({
-      selector: entry.selector,
-      text: entry.text,
-      fontPx: round(entry.fontPx),
-      time: round(entry.time),
-      seconds: round(entry.seconds),
+    elements: group.map(textElement),
+  };
+}
+
+function textElement(entry: SmallText): NonNullable<CraftFinding["elements"]>[number] {
+  return {
+    selector: entry.selector,
+    text: entry.text,
+    fontPx: round(entry.fontPx),
+    time: round(entry.time),
+    seconds: round(entry.seconds),
+  };
+}
+
+// ---------- headline_small ----------
+
+/** 5.2% of the short side, rounded: 56 px on 1080. */
+export function headlinePx(canvas: Canvas): number {
+  return Math.round(T.headlineFraction * Math.min(canvas.width, canvas.height));
+}
+
+/** The largest reading text in each frame, when it stays under headline size for 0.5 s or more. */
+export function detectHeadlineSmall(
+  frames: CraftFrame[],
+  duration: number,
+  canvas: Canvas,
+): CraftFinding[] {
+  const floorPx = typeFloorPx(canvas);
+  const headPx = headlinePx(canvas);
+  const sightings: Sightings = new Map();
+  frames.forEach((frame, index) => {
+    const headline = largest(frame.parts.filter(isReading));
+    // Under the type floor it is already text_below_floor.
+    if (!headline || headline.fontPx >= headPx - 0.5 || headline.fontPx < floorPx - 0.5) return;
+    see(sightings, headline, index);
+  });
+  // Its largest size: a headline that scales in or out is judged where it lands.
+  const small = heldTexts(sightings, frames, duration, (sizes) => Math.max(...sizes));
+  return groupBySourceFile(small).map((group) => headlineFinding(group, headPx));
+}
+
+function headlineFinding(group: SmallText[], headPx: number): CraftFinding {
+  const [smallest] = group;
+  if (!smallest) throw new Error("headline_small group is empty");
+  const subject =
+    group.length === 1
+      ? `the largest text on screen, ${quote(smallest.text, 48)}, is ${Math.round(smallest.fontPx)} px for ${seconds(smallest.seconds)}`
+      : `${group.length} texts are the largest on screen under it for 0.5 s or more, the smallest ${quote(smallest.text, 40)} at ${Math.round(smallest.fontPx)} px`;
+  return {
+    code: "headline_small",
+    severity: "warning",
+    message: `Headlines are ${headPx}–${Math.round((headPx * 96) / 56)} px and ${subject}: set the frame's headline to at least ${headPx} px so it reads on a phone, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.`,
+    text: smallest.text,
+    selector: smallest.selector,
+    dataAttributes: {},
+    sourceFile: smallest.sourceFile,
+    bbox: smallest.bbox,
+    time: round(smallest.time),
+    times: [...group].sort((a, b) => a.time - b.time).map((entry) => round(entry.time)),
+    fontPx: round(smallest.fontPx),
+    floorPx: headPx,
+    seconds: round(smallest.seconds),
+    elements: group.map(textElement),
+  };
+}
+
+// ---------- hero_word_narrow ----------
+
+interface Hero {
+  selector: string;
+  sourceFile: string;
+  text: string;
+  fontPx: number;
+  time: number;
+  frames: number;
+  widths: number[];
+  bbox: CheckBbox;
+}
+
+/** Text under a data-kinetic-type element: each frame's largest line is its hero, and fills 60% of the width. */
+export function detectHeroWordNarrow(frames: CraftFrame[], canvas: Canvas): CraftFinding[] {
+  const minWidth = Math.round(T.heroWidthFraction * canvas.width);
+  const step = sampleStep(frames);
+  const heroes = new Map<number, Hero>();
+  for (const frame of frames) {
+    const kinetic = frame.parts.filter((part) => part.kinetic && isReading(part));
+    const lead = largest(kinetic);
+    if (!lead) continue;
+    const block = kinetic.filter((part) => part.block === lead.block);
+    const left = Math.min(...block.map((part) => part.rect.left));
+    const right = Math.max(...block.map((part) => part.rect.left + part.rect.width));
+    const top = Math.min(...block.map((part) => part.rect.top));
+    const bottom = Math.max(...block.map((part) => part.rect.top + part.rect.height));
+    const hero = heroes.get(lead.block) ?? {
+      selector: lead.blockSelector,
+      sourceFile: lead.sourceFile,
+      text: block.map((part) => part.text).join(" "),
+      fontPx: lead.fontPx,
+      time: frame.time,
+      frames: 0,
+      widths: [],
+      bbox: { x: left, y: top, width: right - left, height: bottom - top },
+    };
+    hero.frames += 1;
+    hero.widths.push(right - left);
+    heroes.set(lead.block, hero);
+  }
+  // Its median width: a word that slams in or flies out is judged where it rests.
+  const narrow = [...heroes.values()].filter((hero) => median(hero.widths) < minWidth - 0.5);
+  const groups = new Map<string, Hero[]>();
+  for (const hero of narrow)
+    groups.set(hero.sourceFile, [...(groups.get(hero.sourceFile) ?? []), hero]);
+  return [...groups.values()].map((group) =>
+    heroFinding(
+      group.sort((a, b) => median(a.widths) - median(b.widths) || a.time - b.time),
+      minWidth,
+      canvas.width,
+      step,
+    ),
+  );
+}
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)] ?? 0;
+}
+
+function heroFinding(group: Hero[], minWidth: number, width: number, step: number): CraftFinding {
+  const [narrowest] = group;
+  if (!narrowest) throw new Error("hero_word_narrow group is empty");
+  const spans = (hero: Hero) => {
+    const px = median(hero.widths);
+    return `${Math.round(px)} px (${Math.round((px / width) * 100)}%)`;
+  };
+  const subject =
+    group.length === 1
+      ? `the hero ${quote(narrowest.text, 40)} spans ${spans(narrowest)}`
+      : `${group.length} heroes span less, the narrowest ${quote(narrowest.text, 40)} at ${spans(narrowest)}`;
+  return {
+    code: "hero_word_narrow",
+    severity: "warning",
+    message: `Kinetic type's hero words fill 60–90% of the ${width} px width (${minWidth} px or more) and ${subject}: enlarge each hero to fill it, inside the title-safe 80%; see references/motion.md ("Titles").`,
+    text: narrowest.text,
+    selector: narrowest.selector,
+    dataAttributes: {},
+    sourceFile: narrowest.sourceFile,
+    bbox: narrowest.bbox,
+    time: round(narrowest.time),
+    times: [...group].sort((a, b) => a.time - b.time).map((hero) => round(hero.time)),
+    fontPx: round(narrowest.fontPx),
+    widthPx: round(median(narrowest.widths)),
+    floorPx: minWidth,
+    elements: group.map((hero) => ({
+      selector: hero.selector,
+      text: hero.text,
+      fontPx: round(hero.fontPx),
+      widthPx: round(median(hero.widths)),
+      time: round(hero.time),
+      seconds: round(hero.frames * step),
     })),
   };
 }

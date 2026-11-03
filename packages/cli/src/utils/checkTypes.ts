@@ -229,6 +229,8 @@ export interface CraftTextPart {
   fontPx: number;
   rect: { left: number; top: number; width: number; height: number };
   captions: boolean;
+  /** Inside a data-kinetic-type element, whose largest line is held to hero_word_narrow. */
+  kinetic: boolean;
 }
 
 export interface CraftFrame {
@@ -345,9 +347,18 @@ export interface CraftFinding extends CheckFinding {
   seconds?: number;
   floorSeconds?: number;
   fontPx?: number;
+  /** hero_word_narrow: the hero's resting width. */
+  widthPx?: number;
   floorPx?: number;
   until?: number;
-  elements?: { selector: string; text: string; fontPx: number; time: number; seconds: number }[];
+  elements?: {
+    selector: string;
+    text: string;
+    fontPx: number;
+    widthPx?: number;
+    time: number;
+    seconds: number;
+  }[];
 }
 
 export interface CraftResult {

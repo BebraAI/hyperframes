@@ -4,8 +4,11 @@ import {
   detectDeadStretches,
   detectFilmSilent,
   detectFirstFrameEmpty,
+  detectHeadlineSmall,
+  detectHeroWordNarrow,
   detectLineUnread,
   detectTextBelowFloor,
+  headlinePx,
   lineFloorSec,
   readingWords,
   typeFloorPx,
@@ -22,6 +25,9 @@ interface Shown {
   to: number;
   fontPx?: number;
   captions?: boolean;
+  kinetic?: boolean;
+  /** Rendered width; defaults to 800 px. */
+  width?: number;
   /** Block key; defaults to the element's own key. */
   block?: number;
 }
@@ -37,8 +43,9 @@ function part(shown: Shown): CraftTextPart {
     text: shown.text,
     opacity: 1,
     fontPx,
-    rect: { left: 100, top: 100 + shown.key * 10, width: 800, height: fontPx * 1.2 },
+    rect: { left: 100, top: 100 + shown.key * 10, width: shown.width ?? 800, height: fontPx * 1.2 },
     captions: shown.captions ?? false,
+    kinetic: shown.kinetic ?? false,
   };
 }
 
@@ -240,6 +247,71 @@ describe("text_below_floor", () => {
       { key: 4, text: "✓", from: 0, to: 10, fontPx: 8 },
     ];
     expect(detectTextBelowFloor(film(10, shown), 10, CANVAS)).toEqual([]);
+  });
+});
+
+describe("headline_small", () => {
+  it("puts headline size at 5.2% of the short side", () => {
+    expect(headlinePx(CANVAS)).toBe(56);
+    expect(headlinePx({ width: 1080, height: 1920 })).toBe(56);
+    expect(headlinePx({ width: 3840, height: 2160 })).toBe(112);
+  });
+
+  it("warns when the largest text on screen stays under 56 px for 0.5 s or more", () => {
+    const shown: Shown[] = [
+      { key: 1, text: "Quarterly results", from: 0, to: 4, fontPx: 40 },
+      { key: 2, text: "Revenue grew in every region", from: 0, to: 4, fontPx: 30 },
+    ];
+    const findings = detectHeadlineSmall(film(8, shown), 8, CANVAS);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({
+      code: "headline_small",
+      severity: "warning",
+      text: "Quarterly results",
+      fontPx: 40,
+      floorPx: 56,
+    });
+    expect(findings[0]?.message).toContain("Headlines are 56–96 px");
+  });
+
+  it("judges a headline at the size it lands on, and leaves text under the floor to text_below_floor", () => {
+    const shown: Shown[] = [
+      { key: 1, text: "Landed title", from: 0, to: 0.25, fontPx: 40 },
+      { key: 1, text: "Landed title", from: 0.25, to: 4, fontPx: 72 },
+      { key: 2, text: "A tiny 20 px title", from: 4, to: 8, fontPx: 20 },
+      { key: 3, text: "Quick 40 px flash", from: 8, to: 8.3, fontPx: 40 },
+    ];
+    const frames = film(10, shown);
+    expect(detectHeadlineSmall(frames, 10, CANVAS)).toEqual([]);
+    expect(detectTextBelowFloor(frames, 10, CANVAS)[0]).toMatchObject({ fontPx: 20 });
+  });
+});
+
+describe("hero_word_narrow", () => {
+  it("warns on a kinetic hero under 60% of the width, judged at its median width", () => {
+    const shown: Shown[] = [
+      // Slams in at 1.35x for a sample, then rests at 950 px of 1920 (49%).
+      { key: 1, text: "ONE", from: 0, to: 0.125, fontPx: 300, width: 1300, kinetic: true },
+      { key: 1, text: "ONE", from: 0.125, to: 0.5, fontPx: 220, width: 950, kinetic: true },
+      { key: 2, text: "IDEA.", from: 0.5, to: 1, fontPx: 220, width: 1400, kinetic: true },
+      { key: 3, text: "a kicker", from: 0, to: 1, fontPx: 40, width: 200, kinetic: true },
+    ];
+    const findings = detectHeroWordNarrow(film(1, shown), CANVAS);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({
+      code: "hero_word_narrow",
+      severity: "warning",
+      text: "ONE",
+      widthPx: 950,
+      floorPx: 1152,
+    });
+    expect(findings[0]?.elements).toHaveLength(1);
+    expect(findings[0]?.message).toContain("950 px (49%)");
+  });
+
+  it("does not hold text outside data-kinetic-type to it", () => {
+    const shown: Shown[] = [{ key: 1, text: "Title", from: 0, to: 4, fontPx: 96, width: 400 }];
+    expect(detectHeroWordNarrow(film(4, shown), CANVAS)).toEqual([]);
   });
 });
 
