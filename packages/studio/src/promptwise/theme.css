@@ -24,7 +24,8 @@
   --color-text-off: var(--color-text-tertiary);
 
   --panel-shell-bg: var(--color-background-secondary-default);
-  --panel-strip-bg: var(--color-background-secondary-default);
+  /* The tab strip sits inside each panel's card, as in promptwise's own panels. */
+  --panel-strip-bg: var(--panel-card-bg);
 
   /* The promptwise orange. */
   --color-accent: light-dark(var(--color-accent-600), var(--color-accent-500));
@@ -46,12 +47,22 @@
   padding: 0 4px;
 }
 
-/* BoardUI's card radius on the dock's panels and their tabs. */
+/* BoardUI's card radius on the dock's panels. */
 .hf-dock .dv-groupview {
   border-radius: 16px;
 }
 
-.hf-dock .dv-tab,
+/* Tabs are BoardUI's gray pill tabs (promptwise's PillTab "gray"): the shown one on the tertiary background. */
+.hf-dock .dv-tabs-and-actions-container {
+  padding: 6px 6px 0;
+}
+
+.hf-dock .dv-tab.dv-tab,
 .hf-dock-tab-fill {
-  border-radius: 10px 10px 0 0;
+  height: 28px;
+  border-radius: var(--radius-md);
+}
+
+.hf-dock-tab-fill {
+  background-color: var(--color-background-tertiary-default);
 }

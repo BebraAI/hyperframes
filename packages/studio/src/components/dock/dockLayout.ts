@@ -10,6 +10,9 @@ const MIN_SIDE_W_FLOOR = 120;
 const DEFAULT_TIMELINE_H = 360;
 const DEFAULT_LEFT = ["compositions", "assets", "code", "catalog"] as const;
 const DEFAULT_RIGHT = ["design", "layers", "renders", "variables", "motionBlur"] as const;
+/** Below this dock width (promptwise's Timeline tab beside its chat) two side columns would crush the preview. */
+const COMPACT_DOCK_W = 1000;
+const COMPACT_SIDE = ["design", "layers", "renders", "compositions", "assets"] as const;
 
 /** Preferred side widths; when they overflow the preview's floor the right yields first, then the left. */
 export function defaultSideWidths(viewportWidth: number) {
@@ -99,12 +102,20 @@ function addSideColumn(
   return first;
 }
 
-/** The default Edit layout: [library | preview | inspector] over a full-width timeline. */
+/**
+ * The default Edit layout: [library | preview | inspector] over a full-width timeline, or on a narrow
+ * dock the preview over the timeline with one side group beside the preview, shown when asked for
+ * (Inspector, a selection) since it would leave the preview too little room.
+ */
 export function buildEditLayout(
   api: DockviewApi,
   viewportWidth: number,
   panels: readonly PanelId[] = PANEL_IDS,
 ) {
+  if (viewportWidth < COMPACT_DOCK_W) {
+    buildCompactLayout(api, viewportWidth, panels);
+    return;
+  }
   api.clear();
   const widths = defaultSideWidths(viewportWidth);
   addRegisteredPanel(api, "preview");
@@ -115,4 +126,16 @@ export function buildEditLayout(
   if (left) api.getPanel(left)?.group.api.setSize({ width: widths.left });
   if (right) api.getPanel(right)?.group.api.setSize({ width: widths.right });
   api.getPanel("timeline")?.group.api.setSize({ height: DEFAULT_TIMELINE_H });
+}
+
+function buildCompactLayout(api: DockviewApi, viewportWidth: number, panels: readonly PanelId[]) {
+  api.clear();
+  addRegisteredPanel(api, "preview");
+  addRegisteredPanel(api, "timeline", { referencePanel: "preview", direction: "below" });
+  const side = addSideColumn(api, COMPACT_SIDE, panels, "right");
+  applySideMinimums(api, viewportWidth);
+  api.getPanel("timeline")?.group.api.setSize({ height: DEFAULT_TIMELINE_H });
+  const group = side ? api.getPanel(side)?.group : undefined;
+  group?.api.setSize({ width: Math.max(MIN_SIDE_W, defaultSideWidths(viewportWidth).right) });
+  group?.api.setVisible(false);
 }
