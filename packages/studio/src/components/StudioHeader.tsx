@@ -7,6 +7,8 @@ import { Button, cn, Tooltip } from "./ui";
 import { ButtonGroup, ButtonGroupItem } from "../boardui/components/base/buttons/button-group";
 import { Dock } from "./dock/Dock";
 import { PromptwiseMark } from "../promptwise/PromptwiseMark";
+import { embeddedInPromptwise } from "../promptwise/embed";
+import { usePromptwiseToolbar } from "../promptwise/usePromptwiseToolbar";
 import { ShowThemeToggle, ThemeToggle } from "./ThemeToggle";
 
 interface StudioHeaderProps {
@@ -54,6 +56,39 @@ export const StudioHeader = memo(function StudioHeader({
   const { rightCollapsed, setRightCollapsed, setRightPanelTab } = usePanelLayoutContext();
   const isRendering = renderQueue.isRendering;
   const ffmpegMissing = renderQueue.ffmpegMissing;
+
+  const toggleInspector = () => {
+    if (shouldOpenInspector(rightCollapsed, inspectorPanelActive)) {
+      trackStudioEvent("panel_toggle", { panel: "inspector", collapsed: false });
+      setRightPanelTab("design");
+      setRightCollapsed(false);
+      return;
+    }
+    trackStudioEvent("panel_toggle", { panel: "inspector", collapsed: true });
+    // Keep the current selection when collapsing the Inspector — closing
+    // the panel shouldn't deselect the element.
+    setRightCollapsed(true);
+  };
+
+  const exportVideo = () => {
+    if (isRendering) return;
+    setRightPanelTab("renders");
+    setRightCollapsed(false);
+    // Without an encoder this render cannot finish, so the click
+    // delivers the user to the prompt that fixes it instead of
+    // queueing a job that exists only to fail. Disabling the button
+    // would leave them staring at a dead control with no route to
+    // the explanation.
+    if (ffmpegMissing) return;
+    onExport?.();
+  };
+
+  usePromptwiseToolbar(
+    { inspectorOpen: inspectorButtonActive, rendering: isRendering },
+    { inspector: toggleInspector, export: exportVideo },
+  );
+  // promptwise's Timeline tab has its own toolbar and tab name, so a second header would only repeat them.
+  if (embeddedInPromptwise) return null;
 
   return (
     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-button-default bg-background-primary-default px-3">
@@ -104,18 +139,7 @@ export const StudioHeader = memo(function StudioHeader({
               aria-pressed={inspectorButtonActive}
               selected={inspectorButtonActive}
               leadingIcon={RiLayoutRightLine}
-              onClick={() => {
-                if (shouldOpenInspector(rightCollapsed, inspectorPanelActive)) {
-                  trackStudioEvent("panel_toggle", { panel: "inspector", collapsed: false });
-                  setRightPanelTab("design");
-                  setRightCollapsed(false);
-                  return;
-                }
-                trackStudioEvent("panel_toggle", { panel: "inspector", collapsed: true });
-                // Keep the current selection when collapsing the Inspector — closing
-                // the panel shouldn't deselect the element.
-                setRightCollapsed(true);
-              }}
+              onClick={toggleInspector}
             >
               Inspector
             </ButtonGroupItem>
@@ -137,18 +161,7 @@ export const StudioHeader = memo(function StudioHeader({
             variant="primary"
             data-testid="header-export"
             disabled={isRendering}
-            onClick={() => {
-              if (isRendering) return;
-              setRightPanelTab("renders");
-              setRightCollapsed(false);
-              // Without an encoder this render cannot finish, so the click
-              // delivers the user to the prompt that fixes it instead of
-              // queueing a job that exists only to fail. Disabling the button
-              // would leave them staring at a dead control with no route to
-              // the explanation.
-              if (ffmpegMissing) return;
-              onExport?.();
-            }}
+            onClick={exportVideo}
           >
             {isRendering ? "Rendering…" : "Export"}
           </Button>
