@@ -1045,8 +1045,9 @@ function parseCraftTextPart(value: unknown): CraftTextPart[] {
   const rect = recordField(value, "rect");
   const box = rect ? requiredNumbers(rect, CRAFT_RECT_NUMBERS) : null;
   const captions = booleanValue(value, "captions");
+  const kinetic = booleanValue(value, "kinetic") ?? false;
   return nums && strings && box && captions !== null
-    ? [{ ...nums, ...strings, rect: box, captions }]
+    ? [{ ...nums, ...strings, rect: box, captions, kinetic }]
     : [];
 }
 

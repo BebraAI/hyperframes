@@ -2804,6 +2804,7 @@ describe("check pipeline", () => {
                 fontPx: 96,
                 rect: { left: 160, top: 380, width: 1600, height: 220 },
                 captions: false,
+                kinetic: false,
               },
             ]
           : [],

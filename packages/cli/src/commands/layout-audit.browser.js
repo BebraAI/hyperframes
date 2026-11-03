@@ -2720,6 +2720,7 @@
           fontPx: round(renderedFontPx(element, getComputedStyle(element))),
           rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
           captions: isCaptionsText(element),
+          kinetic: element.closest("[data-kinetic-type]") !== null,
         };
       });
   }
