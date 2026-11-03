@@ -6,7 +6,7 @@ interface TimelineShortcutHintProps {
 
 export function TimelineShortcutHint({ theme }: TimelineShortcutHintProps) {
   return (
-    <div className="hf-timeline-shortcut-hint absolute bottom-2 right-3 pointer-events-none z-20">
+    <div className="absolute bottom-2 right-3 pointer-events-none z-20">
       <div
         className="flex items-center gap-1.5 px-2 py-1 rounded-md border"
         style={{ background: "var(--timeline-shortcut-bg)", borderColor: theme.gutterBorder }}

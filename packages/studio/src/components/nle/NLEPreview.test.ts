@@ -218,9 +218,9 @@ describe("NLEPreview", () => {
   it("draws the canvas boundary on the preview stage", () => {
     const view = renderPreview();
 
-    // A hairline and BoardUI's medium shadow, light enough beside promptwise's flat cards.
-    expect(view.stage.className).toContain("ring-1 ring-border-button-default");
-    expect(view.stage.className).toContain("shadow-md");
+    expect(view.stage.className).toContain(
+      "shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_4px_32px_rgba(0,0,0,0.7)]",
+    );
     view.cleanup();
   });
 
