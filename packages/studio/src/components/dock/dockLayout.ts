@@ -13,6 +13,8 @@ const DEFAULT_RIGHT = ["design", "layers", "renders", "variables", "motionBlur"]
 /** Below this dock width (promptwise's Timeline tab beside its chat) two side columns would crush the preview. */
 const COMPACT_DOCK_W = 1000;
 const COMPACT_SIDE = ["design", "layers", "renders", "compositions", "assets"] as const;
+/** Room for three tracks under the toolbar and ruler; the preview gets the rest. */
+const COMPACT_TIMELINE_H = 260;
 
 /** Preferred side widths; when they overflow the preview's floor the right yields first, then the left. */
 export function defaultSideWidths(viewportWidth: number) {
@@ -134,7 +136,7 @@ function buildCompactLayout(api: DockviewApi, viewportWidth: number, panels: rea
   addRegisteredPanel(api, "timeline", { referencePanel: "preview", direction: "below" });
   const side = addSideColumn(api, COMPACT_SIDE, panels, "right");
   applySideMinimums(api, viewportWidth);
-  api.getPanel("timeline")?.group.api.setSize({ height: DEFAULT_TIMELINE_H });
+  api.getPanel("timeline")?.group.api.setSize({ height: COMPACT_TIMELINE_H });
   const group = side ? api.getPanel(side)?.group : undefined;
   group?.api.setSize({ width: Math.max(MIN_SIDE_W, defaultSideWidths(viewportWidth).right) });
   group?.api.setVisible(false);

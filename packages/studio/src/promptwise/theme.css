@@ -66,3 +66,13 @@
 .hf-dock-tab-fill {
   background-color: var(--color-background-tertiary-default);
 }
+
+/* The Shift+drag hint shows while the pointer is over the timeline's panel, not all the time. */
+.hf-timeline-shortcut-hint {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.dv-groupview:hover .hf-timeline-shortcut-hint {
+  opacity: 1;
+}

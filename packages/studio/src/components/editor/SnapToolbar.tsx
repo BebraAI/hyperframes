@@ -5,6 +5,10 @@ import { usePlayerStore } from "../../player/store/playerStore";
 import { usePreviewOverlayContext } from "./PreviewOverlayProvider";
 import { ownsPlainKeys } from "../../utils/typingTarget";
 
+/** A preview overlay button that's off: BoardUI's light surface with a hairline, readable over any frame. */
+const overlayButtonOff =
+  "bg-background-primary-default/90 text-foreground-icon-secondary shadow-xs ring-1 ring-border-button-default hover:bg-background-primary-hover hover:text-foreground-icon-primary";
+
 // fallow-ignore-next-line complexity
 export const SnapToolbar = memo(function SnapToolbar() {
   const [gridPopoverOpen, setGridPopoverOpen] = useState(false);
@@ -87,9 +91,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
         <button
           type="button"
           className={`rounded-md p-1.5 transition-colors active:scale-[0.95] ${
-            motionPathArmed
-              ? "bg-studio-accent/20 text-accent-ink"
-              : "bg-black/40 text-white/60 hover:bg-black/60 hover:text-white/80"
+            motionPathArmed ? "bg-studio-accent/20 text-accent-ink" : overlayButtonOff
           }`}
           onClick={() => setMotionPathArmed(!motionPathArmed)}
           title={
@@ -113,9 +115,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
             key={key}
             type="button"
             className={`rounded-md p-1.5 transition-colors active:scale-[0.95] ${
-              visible
-                ? "bg-studio-accent/20 text-accent-ink"
-                : "bg-black/40 text-white/60 hover:bg-black/60 hover:text-white/80"
+              visible ? "bg-studio-accent/20 text-accent-ink" : overlayButtonOff
             }`}
             onClick={() => {
               toggle();
@@ -132,9 +132,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
       <button
         type="button"
         className={`rounded-md p-1.5 transition-colors active:scale-[0.95] ${
-          prefs.snapEnabled
-            ? "bg-studio-accent/20 text-accent-ink"
-            : "bg-black/40 text-white/60 hover:bg-black/60 hover:text-white/80"
+          prefs.snapEnabled ? "bg-studio-accent/20 text-accent-ink" : overlayButtonOff
         }`}
         onClick={toggleSnap}
         title={prefs.snapEnabled ? "Snap enabled (S)" : "Snap disabled (S)"}
@@ -148,9 +146,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
           ref={gridButtonRef}
           type="button"
           className={`rounded-md p-1.5 transition-colors active:scale-[0.95] ${
-            prefs.gridVisible
-              ? "bg-studio-accent/20 text-accent-ink"
-              : "bg-black/40 text-white/60 hover:bg-black/60 hover:text-white/80"
+            prefs.gridVisible ? "bg-studio-accent/20 text-accent-ink" : overlayButtonOff
           }`}
           onClick={toggleGrid}
           onContextMenu={(e) => {
@@ -169,7 +165,7 @@ export const SnapToolbar = memo(function SnapToolbar() {
         </button>
         <button
           type="button"
-          className="absolute -right-0.5 -bottom-0.5 rounded-sm p-0.5 text-white/50 hover:text-white/90 bg-black/50"
+          className="absolute -right-0.5 -bottom-0.5 rounded-sm p-0.5 bg-background-tertiary-default text-foreground-icon-secondary hover:text-foreground-icon-primary"
           onClick={() => {
             if (gridPopoverOpen) settleGridSpacing();
             setGridPopoverOpen((v) => !v);

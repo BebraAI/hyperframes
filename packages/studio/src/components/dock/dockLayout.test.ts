@@ -158,6 +158,7 @@ describe("buildEditLayout on a narrow dock", () => {
     expect(api.getPanel("preview")!.group.api.isVisible).toBe(true);
     expect(api.getPanel("preview")!.group.width).toBe(640);
     expect(api.getPanel("timeline")!.group.width).toBe(640);
+    expect(api.getPanel("timeline")!.group.height).toBe(260);
     expect(api.getPanel("code")).toBeUndefined();
   });
 
