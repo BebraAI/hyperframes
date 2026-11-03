@@ -24,8 +24,7 @@
   --color-text-off: var(--color-text-tertiary);
 
   --panel-shell-bg: var(--color-background-secondary-default);
-  /* The tab strip sits inside each panel's card, as in promptwise's own panels. */
-  --panel-strip-bg: var(--panel-card-bg);
+  --panel-strip-bg: var(--color-background-secondary-default);
 
   /* The promptwise orange. */
   --color-accent: light-dark(var(--color-accent-600), var(--color-accent-500));
@@ -47,32 +46,12 @@
   padding: 0 4px;
 }
 
-/* BoardUI's card radius on the dock's panels. */
+/* BoardUI's card radius on the dock's panels and their tabs. */
 .hf-dock .dv-groupview {
   border-radius: 16px;
 }
 
-/* Tabs are BoardUI's gray pill tabs (promptwise's PillTab "gray"): the shown one on the tertiary background. */
-.hf-dock .dv-tabs-and-actions-container {
-  padding: 6px 6px 0;
-}
-
-.hf-dock .dv-tab.dv-tab,
+.hf-dock .dv-tab,
 .hf-dock-tab-fill {
-  height: 28px;
-  border-radius: var(--radius-md);
-}
-
-.hf-dock-tab-fill {
-  background-color: var(--color-background-tertiary-default);
-}
-
-/* The Shift+drag hint shows while the pointer is over the timeline's panel, not all the time. */
-.hf-timeline-shortcut-hint {
-  opacity: 0;
-  transition: opacity 150ms ease-out;
-}
-
-.dv-groupview:hover .hf-timeline-shortcut-hint {
-  opacity: 1;
+  border-radius: 10px 10px 0 0;
 }

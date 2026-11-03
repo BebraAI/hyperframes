@@ -3,7 +3,6 @@ import { usePlayerStore } from "../player";
 import { findElementForSelection, type DomEditSelection } from "../components/editor/domEditing";
 import { clampNumber, type RightPanelTab } from "../utils/studioHelpers";
 import { parseProjectIdFromHash } from "../utils/projectRouting";
-import { embeddedInPromptwise, openingTime } from "../promptwise/embed";
 import {
   buildStudioHash,
   parseStudioUrlStateFromHash,
@@ -11,17 +10,6 @@ import {
   type StudioUrlSelectionTarget,
   type StudioUrlState,
 } from "../utils/studioUrlState";
-
-/** A link with a time seeks there; in promptwise one without seeks too, to the opening frame. */
-function seeksOnHydration(requested: number | null): boolean {
-  return requested != null || embeddedInPromptwise;
-}
-
-/** Where hydration seeks: the link's time, else the opening frame (promptwise only); null until the length is known. */
-function hydrationSeekTime(requested: number | null, duration: number): number | null {
-  if (requested == null) return duration > 0 ? openingTime(duration) : null;
-  return duration > 0 ? clampNumber(requested, 0, duration) : Math.max(0, requested);
-}
 
 interface UseStudioUrlStateParams {
   projectId: string | null;
@@ -172,8 +160,6 @@ export async function resolveUrlSelections({
   return members;
 }
 
-// Inherited: cognitive 17 before the promptwise opening frame, which added none (fallow re-flags edited files).
-// fallow-ignore-next-line complexity
 export function useStudioUrlState({
   projectId,
   activeCompPath,
@@ -194,8 +180,7 @@ export function useStudioUrlState({
   initialState,
 }: UseStudioUrlStateParams) {
   const currentTime = usePlayerStore((s) => s.currentTime);
-  // In promptwise a link without a time still opens on a frame that shows something (openingTime).
-  const hydratedSeekRef = useRef(!seeksOnHydration(initialState.currentTime));
+  const hydratedSeekRef = useRef(initialState.currentTime == null);
   const hydratedInitialTimeRef = useRef(initialState.currentTime == null);
   const hydratedSelectionRef = useRef(initialState.selection == null);
   // Mirrors hydratedSelectionRef as state so the selection-hydration effect can
@@ -281,8 +266,11 @@ export function useStudioUrlState({
   );
 
   useEffect(() => {
-    const nextTime = hydrationSeekTime(initialState.currentTime, duration);
-    if (!projectId || hydratedSeekRef.current || compositionLoading || nextTime == null) return;
+    if (!projectId || hydratedSeekRef.current || compositionLoading) return;
+    const nextTime =
+      duration > 0
+        ? clampNumber(initialState.currentTime ?? 0, 0, duration)
+        : Math.max(0, initialState.currentTime ?? 0);
     // The request is honored even if it fires before the player runtime mounts:
     // initializeAdapter reconciles the store's requestedSeekTime when the adapter
     // becomes ready. currentTime then settles to nextTime, releasing the selection
