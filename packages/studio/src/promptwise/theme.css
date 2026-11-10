@@ -128,3 +128,35 @@
 :root[data-embedded] .hf-dock .dv-tabs-and-actions-container.dv-single-tab {
   display: none;
 }
+
+/* The dock's dividers are promptwise's sidebar edge: no coloured line, and under the pointer or while it's
+ * dragged the white grip with three lines (ResizeGrip), turned on its side between the preview and the timeline. */
+.hf-dock.hf-dock {
+  --dv-active-sash-color: transparent;
+  --grip-line: var(--color-foreground-icon-quaternary);
+}
+
+.hf-dock .dv-sash:hover::after,
+.hf-dock .dv-sash.dv-active::after,
+.hf-dock .dv-sash:focus-visible::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 25px;
+  translate: -50% -50%;
+  border: 1px solid var(--color-border-button-default);
+  border-radius: 4px;
+  background:
+    linear-gradient(var(--grip-line), var(--grip-line)) calc(50% - 3px) 50% / 1px 13px no-repeat,
+    linear-gradient(var(--grip-line), var(--grip-line)) 50% 50% / 1px 13px no-repeat,
+    linear-gradient(var(--grip-line), var(--grip-line)) calc(50% + 3px) 50% / 1px 13px no-repeat,
+    var(--color-background-primary-default);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+}
+
+.hf-dock .dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash::after {
+  rotate: 90deg;
+}

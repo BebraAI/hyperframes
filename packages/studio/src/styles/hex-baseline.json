@@ -1,5 +1,5 @@
 {
-  "total": 236,
+  "total": 235,
   "files": {
     "packages/studio/src/captions/components/CaptionOverlay.tsx": 5,
     "packages/studio/src/captions/components/CaptionTimeline.tsx": 11,
@@ -43,7 +43,6 @@
     "packages/studio/src/player/components/AudioWaveform.tsx": 2,
     "packages/studio/src/player/components/BeatStrip.tsx": 6,
     "packages/studio/src/player/components/CompositionThumbnail.tsx": 2,
-    "packages/studio/src/player/components/PlayerControls.tsx": 1,
     "packages/studio/src/player/components/SpeedMenu.tsx": 2,
     "packages/studio/src/promptwise/theme.css": 11,
     "packages/studio/src/styles/components.css": 48,
