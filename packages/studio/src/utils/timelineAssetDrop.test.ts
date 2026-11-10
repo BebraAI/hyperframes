@@ -306,3 +306,27 @@ it("writes a dropped file's name as a URL, so %, #, ? and apostrophes load", () 
   });
   expect(html).toContain('src="../assets/50%25%20off%20%231%3F%27s%20take.mp4"');
 });
+
+describe("a file at its own address (promptwise's media)", () => {
+  it("is known by its path, before any query", () => {
+    expect(getTimelineAssetKind("https://media.test/t/1/9f3b.MP4?v=2")).toBe("video");
+    expect(getTimelineAssetKind("https://media.test/t/1/logo.png#x")).toBe("image");
+    expect(getTimelineAssetKind("https://media.test/t/1/notes.txt")).toBeNull();
+  });
+
+  it("plays from that address as it is, with only the attribute's own characters escaped", () => {
+    const html = buildTimelineAssetInsertHtml({
+      id: "shot",
+      hfId: "hf-1",
+      assetPath: 'https://media.test/t/1/a b.mp4?x=1&y="2"',
+      kind: "video",
+      start: 0,
+      duration: 4,
+      track: 0,
+      zIndex: 1,
+      hasAudio: true,
+    });
+    expect(html).toContain('src="https://media.test/t/1/a b.mp4?x=1&amp;y=&quot;2&quot;"');
+    expect(html).toContain('data-has-audio="true"');
+  });
+});

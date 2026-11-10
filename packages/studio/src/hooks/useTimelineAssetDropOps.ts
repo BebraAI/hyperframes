@@ -13,6 +13,7 @@ import {
   fitTimelineAssetGeometry,
   getTimelineAssetKind,
   insertTimelineAssetIntoSource,
+  isRemoteAsset,
   resolveTimelineAssetCompositionSize,
   resolveTimelineAssetSrc,
 } from "../utils/timelineAssetDrop";
@@ -125,7 +126,9 @@ export function useTimelineAssetDropOps({
         // A video with an audio stream lands audible; the mixer only hears a
         // <video> marked data-has-audio, and a muted drop was losing the sound.
         const hasAudio = await resolveDroppedAssetHasAudio(pid, assetPath, kind);
-        const resolvedAssetSrc = resolveTimelineAssetSrc(targetPath, assetPath);
+        const resolvedAssetSrc = isRemoteAsset(assetPath)
+          ? assetPath
+          : resolveTimelineAssetSrc(targetPath, assetPath);
 
         const resolvedTargetPath = targetPath || "index.html";
         const fileElements = timelineElements
@@ -220,9 +223,9 @@ export function useTimelineAssetDropOps({
   );
 
   const handleTimelineAssetDrop = useCallback(
-    async (assetPath: string, placement: TimelineDropPlacement, durationOverride?: number) => {
-      await dropAssetAt(assetPath, placement, durationOverride);
-    },
+    // Gives the clip back so a drop of several files can put each after the one before.
+    (assetPath: string, placement: TimelineDropPlacement, durationOverride?: number) =>
+      dropAssetAt(assetPath, placement, durationOverride),
     [dropAssetAt],
   );
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { TIMELINE_ASSET_MIME, TIMELINE_BLOCK_MIME } from "../../utils/timelineAssetDrop";
+import { PROMPTWISE_ASSET_MIME, promptwiseAssetUrls } from "../../promptwise/embed";
 import {
   parseTimelineCompositionPayload,
   TIMELINE_COMPOSITION_MIME,
@@ -52,7 +53,33 @@ function applyJsonDropPayload(
 
 /** Only file and asset drops are written by the asset op that can open a track. */
 function canInsertTrackFor(types: readonly string[]): boolean {
-  return types.includes("Files") || types.includes(TIMELINE_ASSET_MIME);
+  return (
+    types.includes("Files") ||
+    types.includes(TIMELINE_ASSET_MIME) ||
+    types.includes(PROMPTWISE_ASSET_MIME)
+  );
+}
+
+/**
+ * Files dragged out of promptwise's chat land as clips that play from their own address, one after the
+ * other from the drop point, on the asset drop's own path.
+ */
+function applyPromptwiseDrop(
+  transfer: DataTransfer,
+  onAssetDrop: TimelineDropCallbacks["onAssetDrop"],
+  placement: TimelineDropPlacement,
+): boolean {
+  if (!onAssetDrop || !Array.from(transfer.types).includes(PROMPTWISE_ASSET_MIME)) return false;
+  const urls = promptwiseAssetUrls(transfer.getData(PROMPTWISE_ASSET_MIME));
+  if (urls.length === 0) return false;
+  invokeDropCallback(async () => {
+    let next = placement;
+    for (const url of urls) {
+      const clip = await onAssetDrop(url, next);
+      if (clip) next = { start: clip.start + clip.duration, track: clip.track };
+    }
+  });
+  return true;
 }
 
 /** The row boundary a pointer at `contentY` opens a new track at, or null over a row. */
@@ -100,7 +127,7 @@ function placeDrop(
   return alignDropStart(aimed, elements, geometry.pixelsPerSecond);
 }
 
-function invokeDropCallback(callback: () => Promise<void> | void): void {
+function invokeDropCallback(callback: () => Promise<unknown> | void): void {
   try {
     void Promise.resolve(callback()).catch(() => undefined);
   } catch {
@@ -122,7 +149,7 @@ function applyTypedJsonDrop(
   transfer: DataTransfer,
   mime: string,
   field: "name" | "path",
-  apply: ((value: string, placement: TimelineDropPlacement) => Promise<void> | void) | undefined,
+  apply: ((value: string, placement: TimelineDropPlacement) => Promise<unknown> | void) | undefined,
   placement: TimelineDropPlacement,
 ): boolean {
   if (!apply || !Array.from(transfer.types).includes(mime)) return false;
@@ -230,7 +257,7 @@ export function useTimelineAssetDrop({
     (e: React.DragEvent) => {
       const types = Array.from(e.dataTransfer.types);
       const hasFiles = types.includes("Files");
-      const hasAsset = types.includes(TIMELINE_ASSET_MIME);
+      const hasAsset = types.includes(TIMELINE_ASSET_MIME) || types.includes(PROMPTWISE_ASSET_MIME);
       const hasBlock = types.includes(TIMELINE_BLOCK_MIME);
       const hasComposition = types.includes(TIMELINE_COMPOSITION_MIME);
       if (!hasFiles && !hasAsset && !hasBlock && !hasComposition) return;
@@ -290,6 +317,7 @@ export function useTimelineAssetDrop({
       }
 
       if (applyFileDrop(e.dataTransfer, onFileDrop, placement)) return;
+      if (applyPromptwiseDrop(e.dataTransfer, onAssetDrop, placement)) return;
       if (applyTypedJsonDrop(e.dataTransfer, TIMELINE_ASSET_MIME, "path", onAssetDrop, placement)) {
         return;
       }

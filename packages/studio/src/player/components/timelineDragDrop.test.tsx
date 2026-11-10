@@ -4,6 +4,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import { TIMELINE_ASSET_MIME, TIMELINE_BLOCK_MIME } from "../../utils/timelineAssetDrop";
+import { PROMPTWISE_ASSET_MIME } from "../../promptwise/embed";
 import { usePlayerStore, type TimelineElement } from "../store/playerStore";
 import { createTimelineRowGeometry } from "./timelineLayout";
 import { resolveDropInsertRow, useTimelineAssetDrop } from "./timelineDragDrop";
@@ -381,6 +382,46 @@ describe("useTimelineAssetDrop new-track drops", () => {
       view.api.handleAssetDrop(dragEvent(transfer, 400, y));
     });
     expect(onBlockDrop).toHaveBeenCalledWith("b", { start: 10, track: 1 });
+    act(() => view.root.unmount());
+  });
+  // promptwise's chat drags its files as a list of URLs under its own type.
+  it("places files dragged out of promptwise's chat one after the other, each at its own address", async () => {
+    const lengths: Record<string, number> = {
+      "https://media.test/a.mp4": 4,
+      "https://media.test/b.png": 5,
+    };
+    const onAssetDrop = vi.fn(async (url: string, placement: { start: number; track: number }) => ({
+      id: url,
+      tag: "video",
+      start: placement.start,
+      duration: lengths[url] ?? 1,
+      track: placement.track,
+    }));
+    const view = renderHarness(onAssetDrop);
+    const payload = JSON.stringify([
+      { url: "https://media.test/a.mp4", video: true },
+      { url: "javascript:alert(1)" },
+      { url: "https://media.test/b.png" },
+    ]);
+    const transfer: DropTransfer = {
+      types: [PROMPTWISE_ASSET_MIME],
+      files: [],
+      dropEffect: "none",
+      getData: (type) => (type === PROMPTWISE_ASSET_MIME ? payload : ""),
+    };
+
+    await act(async () => {
+      view.api.handleAssetDragOver(dragEvent(transfer, 80, 20));
+      view.api.handleAssetDrop(dragEvent(transfer, 80, 20));
+    });
+
+    expect(transfer.dropEffect).toBe("copy");
+    expect(
+      onAssetDrop.mock.calls.map(([url, placement]) => [url, placement.start, placement.track]),
+    ).toEqual([
+      ["https://media.test/a.mp4", 0, 0],
+      ["https://media.test/b.png", 4, 0],
+    ]);
     act(() => view.root.unmount());
   });
 });
