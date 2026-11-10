@@ -13,11 +13,11 @@ export function textClipBackground(text: TimelineText): string {
 export function TextClipContent({ text }: { text: TimelineText }) {
   return (
     <div
-      className="absolute inset-0 flex items-center overflow-hidden px-2"
+      className="timeline-text-clip absolute inset-0 flex items-center overflow-hidden px-2"
       style={{ background: textClipBackground(text) }}
     >
       <span
-        className="whitespace-nowrap text-[15px] leading-none"
+        className="timeline-text-clip__words whitespace-nowrap text-[15px] leading-none"
         style={{ fontFamily: text.fontFamily, fontWeight: text.fontWeight, color: text.color }}
       >
         {text.value}
