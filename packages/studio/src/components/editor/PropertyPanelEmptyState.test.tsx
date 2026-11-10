@@ -28,7 +28,7 @@ describe("PropertyPanelEmptyState — flat empty", () => {
     expect(host.textContent).toContain("Nothing selected");
     expect(host.textContent).toContain("Record a gesture");
     // The agent chip only shows inside promptwise, whose chat it opens.
-    expect(host.textContent).not.toContain("Describe a change to the agent");
+    expect(host.textContent).not.toContain("Ask the agent");
     act(() => root.unmount());
   });
 });
