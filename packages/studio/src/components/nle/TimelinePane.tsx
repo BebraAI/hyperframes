@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Timeline } from "../../player";
 import type { TimelineElement, TimelineTimeRange } from "../../player";
+import type { TimelineDropCallbacks } from "../../player/components/timelineCallbacks";
 import type { TimelineProps } from "../../player/components/TimelineTypes";
 import type { BlockedTimelineEditIntent } from "../../player/components/timelineEditing";
 import { AudioMeterStrip } from "./AudioMeterStrip";
@@ -25,10 +26,7 @@ export interface TimelinePaneProps {
     placement?: Pick<TimelineElement, "start" | "track">,
   ) => Promise<void> | void;
   onDeleteElement?: (element: TimelineElement) => Promise<void> | void;
-  onAssetDrop?: (
-    assetPath: string,
-    placement: Pick<TimelineElement, "start" | "track">,
-  ) => Promise<void> | void;
+  onAssetDrop?: TimelineDropCallbacks["onAssetDrop"];
   onBlockDrop?: (
     blockName: string,
     placement: Pick<TimelineElement, "start" | "track">,

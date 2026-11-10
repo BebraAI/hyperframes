@@ -1,6 +1,5 @@
 import { useRef, useEffect, memo } from "react";
-import gsap from "gsap";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
+import { RiPauseFill, RiPlayFill } from "@remixicon/react";
 import { formatFrameTime, formatTime } from "../lib/time";
 import { liveTime, usePlayerStore } from "../store/playerStore";
 import { trackStudioEvent } from "../../utils/studioTelemetry";
@@ -15,46 +14,10 @@ import { PreviewSeekBar } from "./PreviewSeekBar";
 
 /* ── Icon sub-components ─────────────────────────────────────────── */
 
-gsap.registerPlugin(MorphSVGPlugin);
-
-// Play glyph: the right-hand blade from the HyperFrames favicon (points right).
-// Pause glyph: two bars centred in the same coordinate space so MorphSVG can
-// tween one `d` into the other. Both shapes live in the favicon's 0-100 space
-// and the svg viewBox frames the blade's bounding box.
-const PLAY_BLADE_D =
-  "M87.5129 57.5141L56.9696 73.5433C52.8371 75.7098 48.7046 73.2553 49.6688 69.2104L58.9483 30.1391C59.9125 26.0942 65.2097 23.6397 68.3154 25.8062L91.2447 41.8354C96.4668 45.4796 94.4631 53.8699 87.5129 57.5141Z";
-const PAUSE_BARS_D = "M56 28H67V71H56Z M73 28H84V71H73Z";
-
-// Morph the play blade <-> pause bars on toggle via GSAP MorphSVG. Both glyphs
-// are one path whose `d` tweens; the initial render matches `playing` with no
-// animation, and prefers-reduced-motion snaps instead of tweening.
-function PlayPauseMorphIcon({ playing }: { playing: boolean }) {
-  const pathRef = useRef<SVGPathElement>(null);
-  const isFirstRun = useRef(true);
-  useEffect(() => {
-    const el = pathRef.current;
-    if (!el) return;
-    const target = playing ? PAUSE_BARS_D : PLAY_BLADE_D;
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (isFirstRun.current || reduceMotion) {
-      isFirstRun.current = false;
-      gsap.set(el, { morphSVG: target });
-      return;
-    }
-    const tween = gsap.to(el, { duration: 0.28, ease: "power2.inOut", morphSVG: target });
-    return () => {
-      tween.kill();
-    };
-  }, [playing]);
-  return (
-    <span className="relative inline-flex h-3 w-3 items-center justify-center" aria-hidden="true">
-      <svg width="12" height="12" viewBox="46 21 54 56" fill="#FAFAFA">
-        <path ref={pathRef} d={playing ? PAUSE_BARS_D : PLAY_BLADE_D} />
-      </svg>
-    </span>
-  );
+// promptwise's own Timeline's play and pause (Remix's filled glyphs), in the button's ink.
+function PlayPauseIcon({ playing }: { playing: boolean }) {
+  const Icon = playing ? RiPauseFill : RiPlayFill;
+  return <Icon size={18} aria-hidden="true" />;
 }
 
 /* ── Button sub-components ───────────────────────────────────────── */
@@ -262,9 +225,9 @@ export const PlayerControls = memo(function PlayerControls({
               onTogglePlay();
             }}
             disabled={controlsDisabled}
-            className="flex h-7 w-8 items-center justify-center justify-self-center rounded-md text-text-primary transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-7 w-8 items-center justify-center justify-self-center rounded-md text-text-primary transition-colors hover:bg-hover disabled:pointer-events-none disabled:opacity-30"
           >
-            <PlayPauseMorphIcon playing={isPlaying} />
+            <PlayPauseIcon playing={isPlaying} />
           </button>
         </Tooltip>
 

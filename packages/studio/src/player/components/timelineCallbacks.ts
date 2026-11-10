@@ -30,7 +30,11 @@ export type TimelineDropPlacement = { start: number; track: number } & (
  */
 export interface TimelineDropCallbacks {
   onFileDrop?: (files: File[], placement?: TimelineDropPlacement) => Promise<void> | void;
-  onAssetDrop?: (assetPath: string, placement: TimelineDropPlacement) => Promise<void> | void;
+  /** May answer with the clip it placed, which a drop of several files lines the next one up after. */
+  onAssetDrop?: (
+    assetPath: string,
+    placement: TimelineDropPlacement,
+  ) => Promise<TimelineElement | undefined | void> | void;
   onBlockDrop?: (
     blockName: string,
     placement: { start: number; track: number },

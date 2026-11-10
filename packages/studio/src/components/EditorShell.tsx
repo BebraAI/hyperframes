@@ -17,7 +17,10 @@ import type { BlockPreviewInfo } from "./sidebar/BlocksTab";
 import type { GestureRecordingState } from "./editor/GestureRecordControl";
 import { useTimelineSelectionPreviewSync } from "../hooks/useTimelineSelectionPreviewSync";
 import { StudioAgentTools } from "../webmcp/StudioAgentTools";
-import type { TimelineDropPlacement } from "../player/components/timelineCallbacks";
+import type {
+  TimelineDropCallbacks,
+  TimelineDropPlacement,
+} from "../player/components/timelineCallbacks";
 import type { TimelineProps } from "../player/components/TimelineTypes";
 import { Dock } from "./dock/Dock";
 
@@ -34,10 +37,7 @@ export interface EditorShellProps extends TimelineEditCallbackDeps {
   timelineToolbar: ReactNode;
   renderClipContent: RenderClipContent;
   handleTimelineElementDelete: (element: TimelineElement) => Promise<void> | void;
-  handleTimelineAssetDrop: (
-    assetPath: string,
-    placement: TimelineDropPlacement,
-  ) => Promise<void> | void;
+  handleTimelineAssetDrop: NonNullable<TimelineDropCallbacks["onAssetDrop"]>;
   handleTimelineBlockDrop?: (
     blockName: string,
     placement: TimelineDropPlacement,
@@ -246,7 +246,7 @@ interface EditorShellBodyProps {
   timelineToolbar: ReactNode;
   renderClipContent: RenderClipContent;
   onFileDrop: (files: File[], placement?: TimelineDropPlacement) => Promise<void> | void;
-  onAssetDrop: (assetPath: string, placement: TimelineDropPlacement) => Promise<void> | void;
+  onAssetDrop: NonNullable<TimelineDropCallbacks["onAssetDrop"]>;
   onBlockDrop?: (blockName: string, placement: TimelineDropPlacement) => Promise<void> | void;
   onCompositionDrop?: (
     sourcePath: string,

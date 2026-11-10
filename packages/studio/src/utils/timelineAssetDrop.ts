@@ -11,10 +11,17 @@ const FALLBACK_TIMELINE_FILE_DROP_DURATION = 5;
 
 export type TimelineAssetKind = "image" | "video" | "audio";
 
+/** A file at its own http(s) address (promptwise's media), which a clip plays from there instead of from the project. */
+export function isRemoteAsset(assetPath: string): boolean {
+  return /^https?:\/\//.test(assetPath);
+}
+
 export function getTimelineAssetKind(assetPath: string): TimelineAssetKind | null {
-  if (IMAGE_EXT.test(assetPath)) return "image";
-  if (VIDEO_EXT.test(assetPath)) return "video";
-  if (AUDIO_EXT.test(assetPath)) return "audio";
+  // A remote file's kind is in its path, before any query.
+  const path = isRemoteAsset(assetPath) ? assetPath.replace(/[?#].*$/, "") : assetPath;
+  if (IMAGE_EXT.test(path)) return "image";
+  if (VIDEO_EXT.test(path)) return "video";
+  if (AUDIO_EXT.test(path)) return "audio";
   return null;
 }
 
@@ -106,7 +113,11 @@ export function buildTimelineAssetInsertHtml(input: {
   /** Video only: true inserts `data-has-audio="true"` with no `muted`. Unknown or false stays muted. */
   hasAudio?: boolean;
 }): string {
-  const sharedAttrs = `id="${input.id}" data-hf-id="${input.hfId}" class="clip" src="${encodeUrlPath(input.assetPath)}" data-start="${input.start}" data-duration="${input.duration}" data-track-index="${input.track}"`;
+  // A remote file keeps its address as it is; only the quote and ampersand an attribute can't hold are escaped.
+  const src = isRemoteAsset(input.assetPath)
+    ? input.assetPath.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+    : encodeUrlPath(input.assetPath);
+  const sharedAttrs = `id="${input.id}" data-hf-id="${input.hfId}" class="clip" src="${src}" data-start="${input.start}" data-duration="${input.duration}" data-track-index="${input.track}"`;
   const geometry = input.geometry ?? { left: 0, top: 0, width: 640, height: 360 };
   const visualStyles = `position: absolute; left: ${geometry.left}px; top: ${geometry.top}px; width: ${geometry.width}px; height: ${geometry.height}px; object-fit: contain; z-index: ${input.zIndex}`;
 

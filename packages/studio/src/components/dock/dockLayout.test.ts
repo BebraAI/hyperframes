@@ -132,3 +132,40 @@ describe("applySideMinimums", () => {
     expect(timeline.group.minimumWidth).toBe(120);
   });
 });
+
+describe("buildEditLayout on a narrow dock", () => {
+  let api: DockviewApi;
+  beforeEach(() => {
+    ({ api } = mountBareDockview());
+  });
+  afterEach(() => {
+    api.dispose();
+    document.body.innerHTML = "";
+  });
+
+  it("puts the preview over the timeline and one hidden side group beside it, as in promptwise's tab", () => {
+    api.layout(640, 820);
+    buildEditLayout(api, 640);
+    const side = api.getPanel("design")!.group;
+    expect(side.panels.map((panel) => panel.id)).toEqual([
+      "design",
+      "layers",
+      "renders",
+      "compositions",
+      "assets",
+    ]);
+    expect(side.api.isVisible).toBe(false);
+    expect(api.getPanel("preview")!.group.api.isVisible).toBe(true);
+    expect(api.getPanel("preview")!.group.width).toBe(640);
+    expect(api.getPanel("timeline")!.group.width).toBe(640);
+    expect(api.getPanel("timeline")!.group.height).toBe(260);
+    expect(api.getPanel("code")).toBeUndefined();
+  });
+
+  it("keeps the three columns on a wide one", () => {
+    api.layout(1200, 700);
+    buildEditLayout(api, 1200);
+    expect(api.getPanel("compositions")!.group).not.toBe(api.getPanel("design")!.group);
+    expect(api.getPanel("design")!.group.api.isVisible).toBe(true);
+  });
+});

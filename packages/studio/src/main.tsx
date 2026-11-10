@@ -111,6 +111,9 @@ window.addEventListener("unhandledrejection", (event) => {
   trackStudioEvent("unhandled_promise_rejection", props);
 });
 
+// The theme styles Studio for promptwise's tab: no tab on a lone panel.
+if (embeddedInPromptwise) document.documentElement.dataset.embedded = "";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {/* One icon size and weight for the whole app, taken from the theme file.

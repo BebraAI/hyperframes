@@ -24,7 +24,8 @@
   --color-text-off: var(--color-text-tertiary);
 
   --panel-shell-bg: var(--color-background-secondary-default);
-  --panel-strip-bg: var(--color-background-secondary-default);
+  /* The tab strip sits inside each panel's card, as in promptwise's own panels. */
+  --panel-strip-bg: var(--panel-card-bg);
 
   /* The promptwise orange. */
   --color-accent: light-dark(var(--color-accent-600), var(--color-accent-500));
@@ -46,12 +47,116 @@
   padding: 0 4px;
 }
 
-/* BoardUI's card radius on the dock's panels and their tabs. */
+/* BoardUI's card radius on the dock's panels. */
 .hf-dock .dv-groupview {
   border-radius: 16px;
 }
 
-.hf-dock .dv-tab,
+/* Tabs are BoardUI's gray pill tabs (promptwise's PillTab "gray"): the shown one on the tertiary background. */
+.hf-dock .dv-tabs-and-actions-container {
+  padding: 6px 6px 0;
+}
+
+.hf-dock .dv-tab.dv-tab,
 .hf-dock-tab-fill {
-  border-radius: 10px 10px 0 0;
+  height: 28px;
+  border-radius: var(--radius-md);
+}
+
+.hf-dock-tab-fill {
+  background-color: var(--color-background-tertiary-default);
+}
+
+/* The Shift+drag hint shows while the pointer is over the timeline's panel, not all the time. */
+.hf-timeline-shortcut-hint {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.dv-groupview:hover .hf-timeline-shortcut-hint {
+  opacity: 1;
+}
+
+/* Clips look like promptwise's own Timeline's: flat blocks with no title band or shadow, the name a small
+ * chip on pictures, and a text layer as its words in the interface's type on the tertiary surface. Effect
+ * badges show on the clip in hand. Audio clips keep Studio's fill, which their waveform is drawn for. */
+:root {
+  --timeline-clip-radius: 8px;
+  --timeline-clip-band-height: 0px;
+  --timeline-clip-shadow: none;
+  --timeline-clip-highlight: transparent;
+}
+
+/* components.css comes after this file, so :root is what lets these win over its title band. */
+:root .timeline-clip:not(.is-audio) .timeline-clip__label {
+  top: 4px;
+  left: 6px;
+  width: fit-content;
+  max-width: calc(100% - 12px);
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--timeline-clip-chip-bg);
+  font-weight: 400;
+  line-height: 16px;
+  /* Over the filmstrip, which now starts at the clip's top. */
+  z-index: 6;
+}
+
+.timeline-clip:not(.is-hovered, .is-selected) .timeline-clip__label [data-testid="clip-badges"] {
+  display: none;
+}
+
+.timeline-clip:has(.timeline-text-clip)
+  .timeline-clip__label:not(:has([data-testid="clip-badges"])),
+.timeline-clip:has(.timeline-text-clip):not(.is-hovered, .is-selected) .timeline-clip__label {
+  display: none;
+}
+
+.timeline-text-clip {
+  background: var(--color-background-tertiary-default) !important;
+}
+
+.timeline-text-clip__words {
+  color: var(--color-text-primary) !important;
+  font-family: inherit !important;
+  font-size: 11px;
+  font-weight: 400 !important;
+}
+
+/* Embedded in promptwise's tab, a panel alone in its group needs no tab to name it. */
+:root[data-embedded] .hf-dock .dv-tabs-and-actions-container.dv-single-tab {
+  display: none;
+}
+
+/* The dock's dividers are promptwise's sidebar edge: no coloured line, and under the pointer or while it's
+ * dragged the white grip with three lines (ResizeGrip), turned on its side between the preview and the timeline. */
+.hf-dock.hf-dock {
+  --dv-active-sash-color: transparent;
+  --grip-line: var(--color-foreground-icon-quaternary);
+}
+
+.hf-dock .dv-sash:hover::after,
+.hf-dock .dv-sash.dv-active::after,
+.hf-dock .dv-sash:focus-visible::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 25px;
+  translate: -50% -50%;
+  border: 1px solid var(--color-border-button-default);
+  border-radius: 4px;
+  background:
+    linear-gradient(var(--grip-line), var(--grip-line)) calc(50% - 3px) 50% / 1px 13px no-repeat,
+    linear-gradient(var(--grip-line), var(--grip-line)) 50% 50% / 1px 13px no-repeat,
+    linear-gradient(var(--grip-line), var(--grip-line)) calc(50% + 3px) 50% / 1px 13px no-repeat,
+    var(--color-background-primary-default);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+}
+
+.hf-dock .dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash::after {
+  rotate: 90deg;
 }

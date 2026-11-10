@@ -2,7 +2,7 @@ import { buildProjectApiPath } from "./projectRouting";
 import { isTypingTarget } from "./typingTarget";
 import type { TimelineElement } from "../player/store/playerStore";
 import type { DomEditSelection } from "../components/editor/domEditing";
-import type { TimelineAssetKind } from "./timelineAssetDrop";
+import { isRemoteAsset, type TimelineAssetKind } from "./timelineAssetDrop";
 import { roundToCenti } from "./rounding";
 import { studioApiFetch } from "./studioApiFetch";
 import { encodeUrlPath } from "@hyperframes/parsers";
@@ -354,7 +354,9 @@ export async function resolveDroppedAssetDuration(
 
   const media = document.createElement(kind === "video" ? "video" : "audio");
   media.preload = "metadata";
-  media.src = buildProjectApiPath(projectId, `/preview/${encodeUrlPath(assetPath)}`);
+  media.src = isRemoteAsset(assetPath)
+    ? assetPath
+    : buildProjectApiPath(projectId, `/preview/${encodeUrlPath(assetPath)}`);
 
   const duration = await new Promise<number>((resolve) => {
     const timeout = window.setTimeout(() => resolve(DEFAULT_TIMELINE_ASSET_DURATION[kind]), 3000);
@@ -396,6 +398,8 @@ export async function resolveDroppedAssetHasAudio(
   kind: TimelineAssetKind,
 ): Promise<boolean> {
   if (kind !== "video") return false;
+  // The project's probe can't reach a remote file: it lands audible, as a converted timeline's videos do.
+  if (isRemoteAsset(assetPath)) return true;
   return (await resolveAssetHasAudio(projectId, assetPath)) === true;
 }
 
