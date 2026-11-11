@@ -53,9 +53,15 @@ export const StudioHeader = memo(function StudioHeader({
 }: StudioHeaderProps) {
   const showThemeToggle = useContext(ShowThemeToggle);
   const { projectId, renderQueue } = useStudioShellContext();
-  const { rightCollapsed, setRightCollapsed, setRightPanelTab } = usePanelLayoutContext();
+  const { leftCollapsed, setLeftCollapsed, rightCollapsed, setRightCollapsed, setRightPanelTab } =
+    usePanelLayoutContext();
   const isRendering = renderQueue.isRendering;
   const ffmpegMissing = renderQueue.ffmpegMissing;
+
+  const toggleSidebar = () => {
+    trackStudioEvent("panel_toggle", { panel: "sidebar", collapsed: !leftCollapsed });
+    setLeftCollapsed(!leftCollapsed);
+  };
 
   const toggleInspector = () => {
     if (shouldOpenInspector(rightCollapsed, inspectorPanelActive)) {
@@ -84,8 +90,8 @@ export const StudioHeader = memo(function StudioHeader({
   };
 
   usePromptwiseToolbar(
-    { inspectorOpen: inspectorButtonActive, rendering: isRendering },
-    { inspector: toggleInspector, export: exportVideo },
+    { sidebarOpen: !leftCollapsed, inspectorOpen: inspectorButtonActive, rendering: isRendering },
+    { sidebar: toggleSidebar, inspector: toggleInspector, export: exportVideo },
   );
   // promptwise's Timeline tab has its own toolbar and tab name, so a second header would only repeat them.
   if (embeddedInPromptwise) return null;
