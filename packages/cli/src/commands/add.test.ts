@@ -595,7 +595,7 @@ describe("describeInstallFailure", () => {
   it("stays quiet about the registry when it is the default one", () => {
     const message = describeInstallFailure(
       new Error("fetch failed"),
-      "https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry",
+      "https://raw.githubusercontent.com/BebraAI/hyperframes/main/registry",
     );
 
     expect(message).not.toContain("not the public registry");
