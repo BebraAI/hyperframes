@@ -322,7 +322,7 @@ describe("unreachableRegistryMessage", () => {
   it("stays quiet when the registry is the public one", () => {
     const message = unreachableRegistryMessage(
       "blur-in",
-      "https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry",
+      "https://raw.githubusercontent.com/BebraAI/hyperframes/main/registry",
     );
 
     expect(message).toBe('Item "blur-in" not found \u2014 registry unreachable or empty.');
