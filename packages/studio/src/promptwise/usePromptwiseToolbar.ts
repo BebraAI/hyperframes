@@ -1,20 +1,22 @@
 import { useEffect, useRef } from "react";
 import { embeddedInPromptwise } from "./embed";
 
-export type PromptwiseCommand = "inspector" | "export";
+export type PromptwiseCommand = "sidebar" | "inspector" | "export";
 
 export interface PromptwiseToolbarState {
+  sidebarOpen: boolean;
   inspectorOpen: boolean;
   rendering: boolean;
 }
 
 function isCommand(value: unknown): value is PromptwiseCommand {
-  return value === "inspector" || value === "export";
+  return value === "sidebar" || value === "inspector" || value === "export";
 }
 
 /**
- * Embedded in promptwise, Studio draws no header: the Timeline tab's toolbar carries Inspector and
- * Export. It sends their presses as promptwise:command messages, and Studio sends back their state.
+ * Embedded in promptwise, Studio draws no header: the Timeline tab's toolbar carries the left
+ * column's and the Inspector's switches and Export. It sends their presses as promptwise:command
+ * messages, and Studio sends back their state.
  */
 export function usePromptwiseToolbar(
   state: PromptwiseToolbarState,
@@ -36,9 +38,12 @@ export function usePromptwiseToolbar(
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  const { inspectorOpen, rendering } = state;
+  const { sidebarOpen, inspectorOpen, rendering } = state;
   useEffect(() => {
     if (!embeddedInPromptwise) return;
-    window.parent.postMessage({ type: "promptwise:state", inspectorOpen, rendering }, "*");
-  }, [inspectorOpen, rendering]);
+    window.parent.postMessage(
+      { type: "promptwise:state", sidebarOpen, inspectorOpen, rendering },
+      "*",
+    );
+  }, [sidebarOpen, inspectorOpen, rendering]);
 }

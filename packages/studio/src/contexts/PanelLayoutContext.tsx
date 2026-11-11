@@ -13,15 +13,36 @@ export function usePanelLayoutContext(): PanelLayoutValue {
 }
 
 export function PanelLayoutProvider({
-  value: { rightCollapsed, setRightCollapsed, rightPanelTab, setRightPanelTab },
+  value: {
+    leftCollapsed,
+    setLeftCollapsed,
+    rightCollapsed,
+    setRightCollapsed,
+    rightPanelTab,
+    setRightPanelTab,
+  },
   children,
 }: {
   value: PanelLayoutValue;
   children: ReactNode;
 }) {
   const stable = useMemo<PanelLayoutValue>(
-    () => ({ rightCollapsed, setRightCollapsed, rightPanelTab, setRightPanelTab }),
-    [rightCollapsed, setRightCollapsed, rightPanelTab, setRightPanelTab],
+    () => ({
+      leftCollapsed,
+      setLeftCollapsed,
+      rightCollapsed,
+      setRightCollapsed,
+      rightPanelTab,
+      setRightPanelTab,
+    }),
+    [
+      leftCollapsed,
+      setLeftCollapsed,
+      rightCollapsed,
+      setRightCollapsed,
+      rightPanelTab,
+      setRightPanelTab,
+    ],
   );
   return <PanelLayoutContext value={stable}>{children}</PanelLayoutContext>;
 }
