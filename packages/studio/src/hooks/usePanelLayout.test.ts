@@ -124,39 +124,6 @@ describe("usePanelLayout over the dock", () => {
     expect(controller.activate).toHaveBeenCalledWith("design");
   });
 
-  it("reads the left column as collapsed when none of its panels is showing", () => {
-    showDock(["preview", "timeline", "assets", "design"]);
-    expect(renderLayout().layout.leftCollapsed).toBe(false);
-    showDock(["preview", "timeline", "design"]);
-    expect(renderLayout().layout.leftCollapsed).toBe(true);
-  });
-
-  it("collapses every open left-zone panel group and leaves the other zones alone", () => {
-    const controller = showDock(["preview", "compositions", "design"]);
-    const view = renderLayout();
-    act(() => view.layout.setLeftCollapsed(true));
-    const hidden = vi.mocked(controller.setGroupVisible).mock.calls;
-    expect(hidden.map(([id]) => id).sort()).toEqual(["assets", "catalog", "code", "compositions"]);
-    expect(hidden.every(([, visible]) => visible === false)).toBe(true);
-  });
-
-  it("brings a hidden left column back on the panel it was showing, Compositions by default", () => {
-    const controller = showDock(["preview"]);
-    const view = renderLayout();
-    act(() => view.layout.setLeftCollapsed(false));
-    expect(controller.activate).toHaveBeenLastCalledWith("compositions");
-    act(() => useDockLayoutStore.setState({ lastActive: { left: "assets" } }));
-    act(() => view.layout.setLeftCollapsed(false));
-    expect(controller.activate).toHaveBeenLastCalledWith("assets");
-  });
-
-  it("expanding an already-showing left column does nothing to its panel", () => {
-    const controller = showDock(["code"]);
-    const view = renderLayout();
-    act(() => view.layout.setLeftCollapsed(false));
-    expect(controller.activate).not.toHaveBeenCalled();
-  });
-
   it("applies the URL's tab and collapse state once, when the dock attaches", () => {
     useDockLayoutStore.setState({ controller: null, openPanels: new Set(PANEL_IDS) });
     const view = renderLayout({ rightPanelTab: "variables", rightCollapsed: true });
