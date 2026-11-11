@@ -1,0 +1,15 @@
+{
+  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
+  "name": "caption-word-pop",
+  "type": "hyperframes:component",
+  "title": "Word Pop",
+  "description": "One word at a time in the middle of the frame: heavy lowercase type, a thick black outline with a solid drop shadow, key words in red",
+  "tags": ["captions", "caption-style", "word-by-word", "outline", "social", "shorts"],
+  "files": [
+    {
+      "path": "caption-word-pop.html",
+      "target": "compositions/components/caption-word-pop.html",
+      "type": "hyperframes:snippet"
+    }
+  ]
+}
