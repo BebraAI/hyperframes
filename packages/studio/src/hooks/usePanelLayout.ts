@@ -19,7 +19,7 @@ function tabForPanel(id: PanelId | null): RightPanelTab {
   return id !== null && PANEL_DEFINITIONS[id].zone === "right" ? (id as RightPanelTab) : "design";
 }
 
-/** The side columns as the rest of Studio reads them, backed by the dock's panel state. */
+/** The right column as the rest of Studio reads it, backed by the dock's panel state. */
 export function usePanelLayout(initialState?: InitialPanelLayoutState) {
   const controller = useDockLayoutStore((state) => state.controller);
   const lastActive = useDockLayoutStore((state) => state.lastActive);
@@ -67,26 +67,8 @@ export function usePanelLayout(initialState?: InitialPanelLayoutState) {
     store.setZoneVisible("right", !collapsed);
   }, []);
 
-  const leftCollapsed = visiblePanelInZone("left", lastActive, visiblePanels) === null;
-
-  /** Hides the left column, or brings it back on the panel it was showing (Compositions if it never showed one). */
-  const setLeftCollapsed = useCallback((collapsed: boolean) => {
-    const store = useDockLayoutStore.getState();
-    if (collapsed) store.setZoneVisible("left", false);
-    else if (visiblePanelInZone("left", store.lastActive, store.visiblePanels) === null) {
-      store.activatePanel(store.lastActive.left ?? "compositions");
-    }
-  }, []);
-
   return useStableHandlers(
-    {
-      leftCollapsed,
-      setLeftCollapsed,
-      rightCollapsed,
-      setRightCollapsed,
-      rightPanelTab,
-      setRightPanelTab,
-    },
+    { rightCollapsed, setRightCollapsed, rightPanelTab, setRightPanelTab },
     null,
   );
 }

@@ -1,19 +1,13 @@
 // @vitest-environment happy-dom
 
-/** Embedded in promptwise: no header; the Timeline tab's toolbar drives the side columns and Export by message. */
+/** Embedded in promptwise: no header; the Timeline tab's toolbar drives Inspector and Export by message. */
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const layout = {
-  leftCollapsed: false,
-  setLeftCollapsed: vi.fn(),
-  rightCollapsed: true,
-  setRightCollapsed: vi.fn(),
-  setRightPanelTab: vi.fn(),
-};
+const layout = { rightCollapsed: true, setRightCollapsed: vi.fn(), setRightPanelTab: vi.fn() };
 
 vi.mock("../promptwise/embed", () => ({ embeddedInPromptwise: true }));
 vi.mock("../contexts/StudioContext", () => ({
@@ -62,12 +56,7 @@ it("draws no header, runs the toolbar's presses and reports their state", () => 
   );
 
   expect(host.innerHTML).toBe("");
-  expect(posted).toEqual([
-    { type: "promptwise:state", sidebarOpen: true, inspectorOpen: false, rendering: false },
-  ]);
-
-  command("sidebar");
-  expect(layout.setLeftCollapsed).toHaveBeenLastCalledWith(true);
+  expect(posted).toEqual([{ type: "promptwise:state", inspectorOpen: false, rendering: false }]);
 
   command("inspector");
   expect(layout.setRightPanelTab).toHaveBeenLastCalledWith("design");
