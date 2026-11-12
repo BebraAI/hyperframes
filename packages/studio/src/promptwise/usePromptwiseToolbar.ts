@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { embeddedInPromptwise } from "./embed";
 
-export type PromptwiseCommand = "inspector" | "export";
+export type PromptwiseCommand = "inspector" | "export" | "undo" | "redo";
 
 export interface PromptwiseToolbarState {
   inspectorOpen: boolean;
@@ -9,12 +9,14 @@ export interface PromptwiseToolbarState {
 }
 
 function isCommand(value: unknown): value is PromptwiseCommand {
-  return value === "inspector" || value === "export";
+  return value === "inspector" || value === "export" || value === "undo" || value === "redo";
 }
 
 /**
  * Embedded in promptwise, Studio draws no header: the Timeline tab's toolbar carries Inspector and
  * Export. It sends their presses as promptwise:command messages, and Studio sends back their state.
+ * Undo and redo come the same way: Cmd+Z pressed while the keyboard is in promptwise's own page, not
+ * in this frame, would otherwise never reach Studio.
  */
 export function usePromptwiseToolbar(
   state: PromptwiseToolbarState,

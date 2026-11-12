@@ -52,7 +52,7 @@ export const StudioHeader = memo(function StudioHeader({
   onExport,
 }: StudioHeaderProps) {
   const showThemeToggle = useContext(ShowThemeToggle);
-  const { projectId, renderQueue } = useStudioShellContext();
+  const { projectId, renderQueue, handleUndo, handleRedo } = useStudioShellContext();
   const { rightCollapsed, setRightCollapsed, setRightPanelTab } = usePanelLayoutContext();
   const isRendering = renderQueue.isRendering;
   const ffmpegMissing = renderQueue.ffmpegMissing;
@@ -85,7 +85,12 @@ export const StudioHeader = memo(function StudioHeader({
 
   usePromptwiseToolbar(
     { inspectorOpen: inspectorButtonActive, rendering: isRendering },
-    { inspector: toggleInspector, export: exportVideo },
+    {
+      inspector: toggleInspector,
+      export: exportVideo,
+      undo: () => void handleUndo(),
+      redo: () => void handleRedo(),
+    },
   );
   // promptwise's Timeline tab has its own toolbar and tab name, so a second header would only repeat them.
   if (embeddedInPromptwise) return null;
