@@ -3,7 +3,7 @@
   "name": "caption-word-pop",
   "type": "hyperframes:component",
   "title": "Word Pop",
-  "description": "One word at a time in the middle of the frame: heavy lowercase type, a thick black outline with a solid drop shadow, key words in red",
+  "description": "One word at a time over the picture: heavy type with a thick black outline and a solid drop shadow, key words in red. Words, colours, font, case, size and position are variables",
   "tags": ["captions", "caption-style", "word-by-word", "outline", "social", "shorts"],
   "files": [
     {

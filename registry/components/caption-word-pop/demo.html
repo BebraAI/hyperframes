@@ -1,15 +1,13 @@
 <!doctype html>
+<!--
+  Word Pop, standalone demo: a line of narration shown one word at a time. It mounts
+  caption-word-pop.html full-frame over a dark backdrop, with the words passed as a variable.
+-->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>Word Pop</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap"
-      rel="stylesheet"
-    />
+    <title>Word Pop, Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
       *,
@@ -19,179 +17,47 @@
       }
       html,
       body {
-        width: 1920px;
-        height: 1080px;
         margin: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
-        background: #0a0a0a;
       }
-      #word-pop {
+      #root {
         position: relative;
         width: 1920px;
         height: 1080px;
         overflow: hidden;
-        background: #0a0a0a;
-      }
-      .wp-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        z-index: 1;
-        pointer-events: none;
-      }
-      #wp-container {
-        position: absolute;
-        inset: 0;
-        z-index: 10;
-        pointer-events: none;
-      }
-      .wp-word {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        font-family: "Montserrat", sans-serif;
-        font-weight: 900;
-        font-size: 150px;
-        line-height: 1;
-        text-transform: lowercase;
-        white-space: nowrap;
-        color: #ffffff;
-        opacity: 0;
-        visibility: hidden;
-        will-change: transform, opacity;
-      }
-      .wp-word.wp-key {
-        color: #ff2d2d;
+        background: radial-gradient(circle at 50% 40%, #2a2f3a, #0a0a0a 70%);
       }
     </style>
   </head>
   <body>
     <div
-      id="word-pop"
-      data-composition-id="caption-word-pop"
+      id="root"
+      data-composition-id="caption-word-pop-demo"
       data-start="0"
-      data-duration="8"
-      data-fps="30"
       data-width="1920"
       data-height="1080"
+      data-duration="8"
     >
-      <div class="wp-overlay"></div>
-      <div id="wp-container"></div>
+      <div
+        class="clip"
+        id="caption-word-pop"
+        data-composition-id="caption-word-pop"
+        data-composition-src="./caption-word-pop.html"
+        data-variable-values='{"words":"[{\"text\":\"Every\",\"start\":0.0,\"end\":0.3},{\"text\":\"great\",\"start\":0.3,\"end\":0.55,\"key\":true},{\"text\":\"video\",\"start\":0.55,\"end\":0.85},{\"text\":\"starts\",\"start\":0.85,\"end\":1.1},{\"text\":\"with\",\"start\":1.1,\"end\":1.25},{\"text\":\"a\",\"start\":1.25,\"end\":1.35},{\"text\":\"single\",\"start\":1.35,\"end\":1.65},{\"text\":\"frame.\",\"start\":1.65,\"end\":2.0,\"key\":true},{\"text\":\"HyperFrames\",\"start\":2.1,\"end\":2.65},{\"text\":\"lets\",\"start\":2.65,\"end\":2.85},{\"text\":\"you\",\"start\":2.85,\"end\":2.95},{\"text\":\"write\",\"start\":2.95,\"end\":3.15},{\"text\":\"HTML\",\"start\":3.15,\"end\":3.55,\"key\":true},{\"text\":\"and\",\"start\":3.55,\"end\":3.65},{\"text\":\"render\",\"start\":3.65,\"end\":3.95},{\"text\":\"professional\",\"start\":3.95,\"end\":4.45},{\"text\":\"video.\",\"start\":4.45,\"end\":4.8},{\"text\":\"No\",\"start\":4.9,\"end\":5.05},{\"text\":\"timeline.\",\"start\":5.05,\"end\":5.45},{\"text\":\"No\",\"start\":5.5,\"end\":5.65},{\"text\":\"drag\",\"start\":5.65,\"end\":5.85},{\"text\":\"and\",\"start\":5.85,\"end\":5.95},{\"text\":\"drop.\",\"start\":5.95,\"end\":6.25},{\"text\":\"Just\",\"start\":6.35,\"end\":6.55},{\"text\":\"code\",\"start\":6.55,\"end\":6.8},{\"text\":\"that\",\"start\":6.8,\"end\":6.95},{\"text\":\"becomes\",\"start\":6.95,\"end\":7.3},{\"text\":\"cinema.\",\"start\":7.3,\"end\":7.7,\"key\":true}]"}'
+        data-start="0"
+        data-duration="8"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+        style="position: absolute; inset: 0; width: 1920px; height: 1080px"
+      ></div>
     </div>
 
     <script>
-      (function () {
-        window.__timelines = window.__timelines || {};
-
-        var _fitCanvas = document.createElement("canvas");
-        var _fitCtx = _fitCanvas.getContext("2d");
-        function fitFontSize(text, baseFontSize, fontWeight, fontFamily, maxWidth) {
-          var size = baseFontSize;
-          var minSize = Math.floor(baseFontSize * 0.45);
-          while (size > minSize) {
-            _fitCtx.font = fontWeight + " " + size + "px " + fontFamily;
-            if (_fitCtx.measureText(text).width <= maxWidth) return size;
-            size -= 2;
-          }
-          return minSize;
-        }
-
-        // A thick black outline with a solid shadow down and to the right, as one text-shadow: black copies
-        // of the letters all around them, and the same ring again where the shadow falls.
-        var OUTLINE = 0.1;
-        var SHADOW = 0.08;
-        function ring(radius, copies, shift) {
-          var out = [];
-          for (var i = 0; i < copies; i++) {
-            var angle = (2 * Math.PI * i) / copies;
-            var x = (Math.cos(angle) * radius + shift).toFixed(3);
-            var y = (Math.sin(angle) * radius + shift).toFixed(3);
-            out.push(x + "em " + y + "em 0 #000");
-          }
-          return out;
-        }
-        var TEXT_SHADOW = []
-          .concat(ring(OUTLINE, 24, 0), ring(OUTLINE / 2, 12, 0))
-          .concat(ring(OUTLINE, 24, SHADOW), ring(OUTLINE / 2, 12, SHADOW))
-          .concat([SHADOW + "em " + SHADOW + "em 0 #000"])
-          .join(", ");
-
-        // One word at a time. `key: true` marks a key word, shown in the accent colour.
-        var WORDS = [
-          { text: "Every", start: 0.0, end: 0.3 },
-          { text: "great", start: 0.3, end: 0.55, key: true },
-          { text: "video", start: 0.55, end: 0.85 },
-          { text: "starts", start: 0.85, end: 1.1 },
-          { text: "with", start: 1.1, end: 1.25 },
-          { text: "a", start: 1.25, end: 1.35 },
-          { text: "single", start: 1.35, end: 1.65 },
-          { text: "frame.", start: 1.65, end: 2.0, key: true },
-          { text: "HyperFrames", start: 2.1, end: 2.65 },
-          { text: "lets", start: 2.65, end: 2.85 },
-          { text: "you", start: 2.85, end: 2.95 },
-          { text: "write", start: 2.95, end: 3.15 },
-          { text: "HTML", start: 3.15, end: 3.55, key: true },
-          { text: "and", start: 3.55, end: 3.65 },
-          { text: "render", start: 3.65, end: 3.95 },
-          { text: "professional", start: 3.95, end: 4.45 },
-          { text: "video.", start: 4.45, end: 4.8 },
-          { text: "No", start: 4.9, end: 5.05 },
-          { text: "timeline.", start: 5.05, end: 5.45 },
-          { text: "No", start: 5.5, end: 5.65 },
-          { text: "drag", start: 5.65, end: 5.85 },
-          { text: "and", start: 5.85, end: 5.95 },
-          { text: "drop.", start: 5.95, end: 6.25 },
-          { text: "Just", start: 6.35, end: 6.55 },
-          { text: "code", start: 6.55, end: 6.8 },
-          { text: "that", start: 6.8, end: 6.95 },
-          { text: "becomes", start: 6.95, end: 7.3 },
-          { text: "cinema.", start: 7.3, end: 7.7, key: true },
-        ];
-
-        // When each word shows. Speech-to-text gives some words no time of their own (they start when the
-        // next one does) and stretches a word over the silence before it: the first takes the later half of
-        // the time before it, the second shows only for its last half second.
-        var MIN = 0.1;
-        var starts = WORDS.map(function (w) {
-          return w.end - w.start > 1 ? w.end - 0.5 : w.start;
-        });
-        WORDS.forEach(function (_, i) {
-          if (i + 1 < WORDS.length && starts[i + 1] - starts[i] < MIN) {
-            starts[i] = ((i > 0 ? starts[i - 1] : 0) + starts[i]) / 2;
-          }
-        });
-
-        var container = document.getElementById("wp-container");
-        var tl = gsap.timeline({ paused: true });
-
-        WORDS.forEach(function (w, i) {
-          // Up until the next word, or half a second into a pause.
-          var start = starts[i];
-          var next = i + 1 < WORDS.length ? starts[i + 1] : Infinity;
-          var end = Math.max(start + MIN, Math.min(next, w.end + 0.5));
-
-          var el = document.createElement("div");
-          el.className = "wp-word" + (w.key ? " wp-key" : "");
-          el.id = "wp-w-" + i;
-          el.textContent = w.text.replace(/[.,!?;:]+$/, "");
-          el.style.fontSize =
-            fitFontSize(el.textContent.toLowerCase(), 150, "900", "Montserrat", 1620) + "px";
-          el.style.textShadow = TEXT_SHADOW;
-          container.appendChild(el);
-
-          tl.set(el, { visibility: "visible", opacity: 1 }, start);
-          tl.fromTo(
-            el,
-            { scale: 0.82, xPercent: -50, yPercent: -50 },
-            { scale: 1, xPercent: -50, yPercent: -50, duration: 0.1, ease: "back.out(2.2)" },
-            start,
-          );
-          tl.set(el, { opacity: 0, visibility: "hidden" }, end);
-        });
-
-        tl.seek(0);
-        window.__timelines["caption-word-pop"] = tl;
-      })();
+      window.__timelines = window.__timelines || {};
+      window.__timelines["caption-word-pop-demo"] = gsap.timeline({ paused: true });
     </script>
   </body>
 </html>
