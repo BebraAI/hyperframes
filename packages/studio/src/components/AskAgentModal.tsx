@@ -1,6 +1,7 @@
 import { useState, useRef, type CSSProperties } from "react";
 import { useMountEffect } from "../hooks/useMountEffect";
 import { type AgentModalAnchorPoint, clampNumber } from "../utils/studioHelpers";
+import { PROMPTWISE_AGENT, embeddedInPromptwise } from "../promptwise/embed";
 import { Button, cn } from "./ui";
 import { DialogHeader, dialogClasses } from "./ui/Dialog";
 import { useDialogBehavior } from "./ui/useDialogBehavior";
@@ -34,6 +35,21 @@ export interface AskAgentModalProps {
   onSubmit: (instruction: string) => void;
   onClose: () => void;
 }
+
+/** In promptwise the request goes to its own agent; elsewhere the prompt is copied for the user's. */
+const COPY = embeddedInPromptwise
+  ? {
+      title: `Ask ${PROMPTWISE_AGENT}`,
+      action: "Send",
+      key: "send",
+      context: `What ${PROMPTWISE_AGENT} gets with it`,
+    }
+  : {
+      title: "Copy prompt to AI agent",
+      action: "Copy prompt",
+      key: "copy",
+      context: "Context included in prompt",
+    };
 
 export function AskAgentModal({
   selectionLabel,
@@ -73,14 +89,14 @@ export function AskAgentModal({
         ref={containerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Copy prompt to AI agent"
+        aria-label={COPY.title}
         tabIndex={-1}
         className={cn(dialogClasses.panel, "w-[480px]", anchorPoint && "fixed")}
         style={modalPositionStyle}
         onClick={(e) => e.stopPropagation()}
       >
         <DialogHeader
-          title="Copy prompt to AI agent"
+          title={COPY.title}
           description={
             selectionLabel.length > 50 ? `${selectionLabel.slice(0, 49)}…` : selectionLabel
           }
@@ -102,7 +118,7 @@ export function AskAgentModal({
           {contextPreview && (
             <details className="group">
               <summary className="cursor-pointer select-none text-caption-1-medium text-text-secondary hover:text-text-primary">
-                Context included in prompt
+                {COPY.context}
               </summary>
               <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap wrap-break-word rounded-2lg bg-background-tertiary-default px-3 py-2 text-caption-1-regular text-text-secondary">
                 {contextPreview}
@@ -112,10 +128,10 @@ export function AskAgentModal({
         </div>
         <div className={dialogClasses.footer}>
           <span className={dialogClasses.hint}>
-            {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+Enter to copy
+            {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+Enter to {COPY.key}
           </span>
           <Button variant="primary" disabled={!value.trim()} onClick={handleSubmit}>
-            Copy prompt
+            {COPY.action}
           </Button>
         </div>
       </div>

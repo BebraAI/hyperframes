@@ -6,6 +6,7 @@ import {
   RiErrorWarningLine,
 } from "@remixicon/react";
 import { copyTextToClipboard } from "../utils/clipboard";
+import { PROMPTWISE_AGENT, askPromptwise, embeddedInPromptwise } from "../promptwise/embed";
 import { Button, cn } from "./ui";
 import { DialogHeader, dialogClasses } from "./ui/Dialog";
 import { useDialogBehavior } from "./ui/useDialogBehavior";
@@ -44,6 +45,22 @@ export function LintModal({
   const { requestClose } = useDialogBehavior({ open: true, onClose, containerRef });
 
   const handleCopyToAgent = async () => {
+    if (embeddedInPromptwise) {
+      // promptwise's agent gets the findings to fix in the tab's folder.
+      askPromptwise({
+        instruction: promptIntro,
+        context: {
+          kind: "lint",
+          findings: findings.slice(0, 50).map(({ severity, message, file }) => ({
+            severity,
+            message,
+            ...(file ? { file } : {}),
+          })),
+        },
+      });
+      onClose();
+      return;
+    }
     const lines = findings.map((f) => {
       let line = `[${f.severity}] ${f.message}`;
       if (f.file) line += `\n  File: ${f.file}`;
@@ -97,7 +114,13 @@ export function LintModal({
               size="sm"
               onClick={handleCopyToAgent}
             >
-              {copied ? "Copied!" : copyFailed ? "Copy failed. Check permissions" : "Copy to Agent"}
+              {embeddedInPromptwise
+                ? `Ask ${PROMPTWISE_AGENT} to fix`
+                : copied
+                  ? "Copied!"
+                  : copyFailed
+                    ? "Copy failed. Check permissions"
+                    : "Copy to Agent"}
             </Button>
           </div>
         )}

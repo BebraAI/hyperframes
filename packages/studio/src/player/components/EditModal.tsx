@@ -5,6 +5,7 @@ import { usePlayerStore } from "../store/playerStore";
 import { formatTime } from "../lib/time";
 import { buildPromptCopyText, buildTimelineAgentPrompt } from "./timelineEditing";
 import { copyTextToClipboard } from "../../utils/clipboard";
+import { PROMPTWISE_AGENT, askPromptwise, embeddedInPromptwise } from "../../promptwise/embed";
 
 interface EditPopoverProps {
   rangeStart: number;
@@ -33,6 +34,58 @@ function writeDraft(key: string, value: string): void {
   } catch {
     /* storage unavailable — draft persistence degrades gracefully */
   }
+}
+
+/** promptwise's agent gets the range and its clips with the user's words, not a prompt to paste. False with no words. */
+function sendRange(
+  prompt: string,
+  start: number,
+  end: number,
+  clips: { id: string; label?: string }[],
+): boolean {
+  if (!prompt.trim()) return false;
+  askPromptwise({
+    instruction: prompt.trim(),
+    context: {
+      kind: "range",
+      start,
+      end,
+      clips: clips.map((el) => ({ id: el.id, label: el.label ?? el.id })),
+    },
+  });
+  return true;
+}
+
+// Embedded in promptwise there is nothing to copy: the one button sends.
+const GRID_COLS = embeddedInPromptwise ? "grid-cols-1" : "grid-cols-2";
+
+function CopyPromptButton({
+  prompt,
+  copied,
+  onCopy,
+}: {
+  prompt: string;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  return (
+    <button
+      onClick={onCopy}
+      disabled={!buildPromptCopyText(prompt)}
+      className={`py-1.5 text-caption-2-medium rounded-lg transition-all border ${
+        copied
+          ? "bg-accent/15 text-accent-ink border-accent/30"
+          : "bg-background-tertiary-default text-text-primary border-border-button-default hover:bg-background-primary-hover"
+      } disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      {copied ? "Prompt Copied!" : "Copy Prompt"}
+    </button>
+  );
+}
+
+function agentButtonLabel(copied: boolean): string {
+  if (embeddedInPromptwise) return `Send to ${PROMPTWISE_AGENT}`;
+  return copied ? "Copied!" : "Copy to Agent";
 }
 
 export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }: EditPopoverProps) {
@@ -91,6 +144,13 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
   }, [start, end, elementsInRange, prompt]);
 
   const handleCopy = useCallback(async () => {
+    if (embeddedInPromptwise) {
+      if (sendRange(prompt, start, end, elementsInRange)) {
+        writeDraft(storageKey, "");
+        onClose();
+      }
+      return;
+    }
     const copied = await copyTextToClipboard(buildClipboardText());
     if (!copied) {
       setCopyError(true);
@@ -103,7 +163,7 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
       setCopiedAgentPrompt(false);
       onClose();
     }, 800);
-  }, [buildClipboardText, onClose, storageKey]);
+  }, [buildClipboardText, onClose, storageKey, prompt, start, end, elementsInRange]);
 
   const handleCopyPrompt = useCallback(async () => {
     const promptText = buildPromptCopyText(prompt);
@@ -179,18 +239,10 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
             Copy failed. Check clipboard permissions and try again.
           </p>
         )}
-        <div className="grid grid-cols-2 gap-2 px-3 pb-3">
-          <button
-            onClick={handleCopyPrompt}
-            disabled={!buildPromptCopyText(prompt)}
-            className={`py-1.5 text-caption-2-medium rounded-lg transition-all border ${
-              copiedPromptOnly
-                ? "bg-accent/15 text-accent-ink border-accent/30"
-                : "bg-background-tertiary-default text-text-primary border-border-button-default hover:bg-background-primary-hover"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {copiedPromptOnly ? "Prompt Copied!" : "Copy Prompt"}
-          </button>
+        <div className={`grid ${GRID_COLS} gap-2 px-3 pb-3`}>
+          {!embeddedInPromptwise && (
+            <CopyPromptButton prompt={prompt} copied={copiedPromptOnly} onCopy={handleCopyPrompt} />
+          )}
           <button
             onClick={handleCopy}
             className={`py-1.5 text-caption-2-medium rounded-lg transition-all ${
@@ -199,7 +251,7 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
                 : "bg-studio-accent/15 text-accent-ink border border-studio-accent/25 hover:bg-studio-accent/25"
             }`}
           >
-            {copiedAgentPrompt ? "Copied!" : "Copy to Agent"}
+            {agentButtonLabel(copiedAgentPrompt)}
             {!copiedAgentPrompt && (
               <span className="text-[9px] text-text-muted ml-1.5">Cmd+Enter</span>
             )}

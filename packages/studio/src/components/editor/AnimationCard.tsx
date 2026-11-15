@@ -20,6 +20,7 @@ import {
   BOOLEAN_PROPS,
 } from "./AnimationCardParts";
 import type { AnimationKeyframeTarget } from "../../hooks/gsapTweenSynth";
+import { PROMPTWISE_AGENT, askPromptwise, embeddedInPromptwise } from "../../promptwise/embed";
 
 interface AnimationCardProps extends GsapAnimationEditCallbacks {
   animation: GsapAnimation;
@@ -268,14 +269,25 @@ export const AnimationCard = memo(function AnimationCard({
               <button
                 type="button"
                 onClick={() => {
+                  if (embeddedInPromptwise) {
+                    // promptwise's chat opens with this animation as the context of what the user types next.
+                    askPromptwise({
+                      context: { kind: "animation", animationId: animation.id, summary },
+                    });
+                    return;
+                  }
                   void navigator.clipboard.writeText(summary);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 }}
                 className="shrink-0 rounded-sm px-1.5 py-0.5 text-[9px] font-medium text-text-tertiary transition-colors hover:bg-background-primary-hover hover:text-text-primary"
-                title="Copy description for agent prompts"
+                title={
+                  embeddedInPromptwise
+                    ? `Ask ${PROMPTWISE_AGENT} about this animation`
+                    : "Copy description for agent prompts"
+                }
               >
-                {copied ? "Copied" : "Copy"}
+                {embeddedInPromptwise ? `Ask ${PROMPTWISE_AGENT}` : copied ? "Copied" : "Copy"}
               </button>
             </div>
             <div className={RESPONSIVE_GRID}>
