@@ -68,6 +68,23 @@ function PanelSlot({ api }: IDockviewPanelProps) {
 
 const COMPONENTS = { [DOCK_PANEL_COMPONENT]: PanelSlot };
 
+const shownSides = (api: DockviewApi) =>
+  api.groups.filter((group) => group.api.isVisible && sideZone(group) !== null);
+
+/**
+ * The strip actions (DockStripActions) are drawn on the active group only. So a side column that comes
+ * out becomes the active group, on the tab it shows; and a hidden active group (a closed column, as the
+ * narrow layout starts) hands over to one that shows. Returns the side groups now showing.
+ */
+function keepActiveVisible(api: DockviewApi, before: ReadonlySet<unknown> = new Set()) {
+  const shown = shownSides(api);
+  const opened = shown.find((group) => !before.has(group));
+  if (opened) opened.activePanel?.api.setActive();
+  else if (!api.activeGroup?.api.isVisible)
+    (shown[0]?.activePanel ?? api.getPanel("preview"))?.api.setActive();
+  return new Set(shownSides(api));
+}
+
 const sideGroup = (api: DockviewApi, side: "left" | "right") =>
   api.groups.find((group) => sideZone(group) === side);
 
@@ -190,6 +207,8 @@ function Root({
       disposeRef.current();
       const options = { panels, storageKey, dockWidth };
       restoreOrBuild(api, projectId, options);
+      let sidesShown = new Set(shownSides(api));
+      keepActiveVisible(api, sidesShown);
       applySideMinimums(api, dockWidth());
       const root = api.groups[0]?.element.closest<HTMLElement>(".hf-dock");
       const disposeAccessibility = root ? installDockAccessibility(api, root) : () => {};
@@ -227,7 +246,10 @@ function Root({
         }),
         api.onDidRemovePanel(onDockChange),
         api.onDidActivePanelChange(onDockChange),
-        api.onDidLayoutChange(onDockChange),
+        api.onDidLayoutChange(() => {
+          sidesShown = keepActiveVisible(api, sidesShown);
+          onDockChange();
+        }),
       ];
       disposeRef.current = () => {
         clearTimeout(timer);
