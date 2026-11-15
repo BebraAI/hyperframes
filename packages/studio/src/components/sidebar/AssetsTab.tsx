@@ -17,6 +17,8 @@ import { AudioRow } from "./AudioRow";
 import { GlobalAssetsView } from "./GlobalAssetsView";
 import { AssetCard, FontRow } from "./AssetCard";
 import { studioApiFetch } from "../../utils/studioApiFetch";
+import { usePromptwiseMedia, type PromptwiseMedia } from "../../promptwise/media";
+import { PromptwiseMediaView } from "./PromptwiseMediaView";
 
 interface AssetsTabProps {
   projectId: string;
@@ -193,6 +195,27 @@ function EmptyState({
   );
 }
 
+/** The toggle's second view: the promptwise project's media in promptwise, else every project's. */
+function OtherAssetsView({
+  projectMedia,
+  searchQuery,
+  onAdd,
+}: {
+  projectMedia: PromptwiseMedia[] | null;
+  searchQuery: string;
+  onAdd?: (url: string) => void;
+}) {
+  if (!projectMedia) return <GlobalAssetsView searchQuery={searchQuery} />;
+  return <PromptwiseMediaView media={projectMedia} searchQuery={searchQuery} onAdd={onAdd} />;
+}
+
+/** The scope toggle's words: in promptwise the folder is the timeline's, and "the project" is promptwise's. */
+const SCOPE_LABELS = {
+  studio: { local: "This project", global: "All projects" },
+  promptwise: { local: "This timeline", global: "Project media" },
+} as const;
+
+// fallow-ignore-next-line complexity
 export const AssetsTab = memo(function AssetsTab({
   projectId,
   assets,
@@ -208,7 +231,9 @@ export const AssetsTab = memo(function AssetsTab({
   const [activeFilter, setActiveFilter] = useState<MediaCategory | "all">("all");
   const [usageFilter, setUsageFilter] = useState<"all" | "used" | "unused">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"local" | "global">("local");
+  // In promptwise the second view is the promptwise project's media, which it opens on; elsewhere every project's.
+  const projectMedia = usePromptwiseMedia();
+  const [viewMode, setViewMode] = useState<"local" | "global">(projectMedia ? "global" : "local");
   const [manifest, setManifest] = useState<
     Map<string, { description?: string; duration?: number; width?: number; height?: number }>
   >(new Map());
@@ -354,7 +379,7 @@ export const AssetsTab = memo(function AssetsTab({
                   : "text-panel-text-3 hover:text-panel-text-1"
               }`}
             >
-              {m === "local" ? "This project" : "All projects"}
+              {SCOPE_LABELS[projectMedia ? "promptwise" : "studio"][m]}
             </button>
           ))}
         </div>
@@ -450,7 +475,11 @@ export const AssetsTab = memo(function AssetsTab({
 
       <div className="flex-1 overflow-y-auto mt-1">
         {viewMode === "global" ? (
-          <GlobalAssetsView searchQuery={searchQuery} />
+          <OtherAssetsView
+            projectMedia={projectMedia}
+            searchQuery={searchQuery}
+            onAdd={onAddAssetToTimeline}
+          />
         ) : mediaAssets.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onClearSearch={() => setSearchQuery("")} />
         ) : (
