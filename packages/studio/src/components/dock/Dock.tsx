@@ -19,7 +19,8 @@ import { installDockAccessibility } from "./dockAccessibility";
 import { DockStripActions } from "./DockStripActions";
 import { DockTab } from "./DockTab";
 import { installTabFill } from "./dockTabFill";
-import { addRegisteredPanel, applySideMinimums, buildEditLayout } from "./dockLayout";
+import { addRegisteredPanel, applySideMinimums, buildEditLayout, sideZone } from "./dockLayout";
+import { SideDrawerEdges } from "./SideDrawerEdges";
 import { DOCK_PANEL_COMPONENT, parseDockLayout } from "./dockLayoutSchema";
 import { useDockLayoutStore, type DockController, type DockSnapshot } from "./dockLayoutStore";
 import {
@@ -67,6 +68,9 @@ function PanelSlot({ api }: IDockviewPanelProps) {
 
 const COMPONENTS = { [DOCK_PANEL_COMPONENT]: PanelSlot };
 
+const sideGroup = (api: DockviewApi, side: "left" | "right") =>
+  api.groups.find((group) => sideZone(group) === side);
+
 function snapshot(api: DockviewApi): DockSnapshot {
   const openPanels = new Set<PanelId>();
   const visiblePanels = new Set<PanelId>();
@@ -80,11 +84,17 @@ function snapshot(api: DockviewApi): DockSnapshot {
     return isPanelId(id) ? [id] : [];
   });
   const active = api.activePanel?.id;
+  const sides: DockSnapshot["sides"] = {};
+  for (const side of ["left", "right"] as const) {
+    const group = sideGroup(api, side);
+    if (group) sides[side] = { open: group.api.isVisible, width: group.width };
+  }
   return {
     openPanels,
     visiblePanels,
     activePanel: isPanelId(active) ? active : null,
     groupActivePanels,
+    sides,
   };
 }
 
@@ -127,6 +137,7 @@ function createController(api: DockviewApi, options: DockOptions): DockControlle
     },
     setTitle: (id, title) => api.getPanel(id)?.api.setTitle(title),
     setGroupVisible: (id, visible) => api.getPanel(id)?.group.api.setVisible(visible),
+    resizeSide: (side, width) => sideGroup(api, side)?.api.setSize({ width }),
     reset: () => buildEditLayout(api, options.dockWidth(), options.panels),
   };
 }
@@ -232,17 +243,21 @@ function Root({
 
   return (
     <SlotsContext.Provider value={{ slots, registerSlot }}>
-      <DockviewReact
-        key={projectId ?? ""}
-        className="hf-dock flex-1 min-h-0"
-        components={COMPONENTS}
-        defaultTabComponent={DockTab}
-        rightHeaderActionsComponent={DockStripActions}
-        defaultRenderer="always"
-        disableFloatingGroups
-        disableTabsOverflowList
-        onReady={onReady}
-      />
+      {/* Isolated, so the drawer edges can sit over dockview's sashes (z-index 99) without rising over menus outside the dock. */}
+      <div className="relative isolate flex min-h-0 flex-1 flex-col">
+        <DockviewReact
+          key={projectId ?? ""}
+          className="hf-dock flex-1 min-h-0"
+          components={COMPONENTS}
+          defaultTabComponent={DockTab}
+          rightHeaderActionsComponent={DockStripActions}
+          defaultRenderer="always"
+          disableFloatingGroups
+          disableTabsOverflowList
+          onReady={onReady}
+        />
+        <SideDrawerEdges />
+      </div>
       {children}
     </SlotsContext.Provider>
   );

@@ -17,6 +17,8 @@ export interface DockController {
   close: (id: PanelId) => void;
   /** Hides or shows the panel's whole tab group without closing it. */
   setGroupVisible: (id: PanelId, visible: boolean) => void;
+  /** Sets the width of the side column of `side`. */
+  resizeSide?: (side: "left" | "right", width: number) => void;
   reset: () => void;
 }
 
@@ -27,6 +29,8 @@ export interface DockSnapshot {
   activePanel: PanelId | null;
   /** The tab each group shows, so a restored layout still records what every side column last showed. */
   groupActivePanels?: readonly PanelId[];
+  /** Each side column there is: whether it shows, and its width. */
+  sides?: Partial<Record<"left" | "right", { open: boolean; width: number }>>;
 }
 
 type LastActive = Partial<Record<PanelZone, PanelId>>;
@@ -54,6 +58,7 @@ export const useDockLayoutStore = create<DockLayoutState>((set, get) => ({
   openPanels: new Set(PANEL_IDS),
   visiblePanels: new Set(PANEL_IDS),
   activePanel: null,
+  sides: {},
   lastActive: {},
   pendingActivation: null,
   attach: (controller, panels = PANEL_IDS) => set({ controller, panels }),

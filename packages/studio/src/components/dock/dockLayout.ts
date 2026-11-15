@@ -12,7 +12,8 @@ const DEFAULT_LEFT = ["compositions", "assets", "code", "catalog"] as const;
 const DEFAULT_RIGHT = ["design", "layers", "renders", "variables", "motionBlur"] as const;
 /** Below this dock width (promptwise's Timeline tab beside its chat) two side columns would crush the preview. */
 const COMPACT_DOCK_W = 1000;
-const COMPACT_SIDE = ["design", "layers", "renders", "compositions", "assets"] as const;
+const COMPACT_LEFT = ["assets", "compositions"] as const;
+const COMPACT_RIGHT = ["design", "layers", "renders"] as const;
 /** Room for three tracks under the toolbar and ruler; the preview gets the rest. */
 const COMPACT_TIMELINE_H = 260;
 
@@ -41,7 +42,7 @@ function holdsPreview(group: DockviewApi["groups"][number]) {
 }
 
 /** The zone of a group whose every tab is a side panel, else null. */
-function sideZone(group: DockviewApi["groups"][number]): "left" | "right" | null {
+export function sideZone(group: DockviewApi["groups"][number]): "left" | "right" | null {
   const zones = group.panels.map((panel) =>
     isPanelId(panel.id) ? PANEL_DEFINITIONS[panel.id].zone : "center",
   );
@@ -106,8 +107,8 @@ function addSideColumn(
 
 /**
  * The default Edit layout: [library | preview | inspector] over a full-width timeline, or on a narrow
- * dock the preview over the timeline with one side group beside the preview, shown when asked for
- * (Inspector, a selection) since it would leave the preview too little room.
+ * dock the preview over the timeline with both side groups closed, shown when asked for (Inspector,
+ * a selection, a drag on the dock's edge) since they would leave the preview too little room.
  */
 export function buildEditLayout(
   api: DockviewApi,
@@ -134,10 +135,14 @@ function buildCompactLayout(api: DockviewApi, viewportWidth: number, panels: rea
   api.clear();
   addRegisteredPanel(api, "preview");
   addRegisteredPanel(api, "timeline", { referencePanel: "preview", direction: "below" });
-  const side = addSideColumn(api, COMPACT_SIDE, panels, "right");
+  const left = addSideColumn(api, COMPACT_LEFT, panels, "left");
+  const right = addSideColumn(api, COMPACT_RIGHT, panels, "right");
   applySideMinimums(api, viewportWidth);
   api.getPanel("timeline")?.group.api.setSize({ height: COMPACT_TIMELINE_H });
-  const group = side ? api.getPanel(side)?.group : undefined;
-  group?.api.setSize({ width: Math.max(MIN_SIDE_W, defaultSideWidths(viewportWidth).right) });
-  group?.api.setVisible(false);
+  // Both sides start closed, as drawers the user pulls out from the dock's edges (sideDrawer.ts).
+  for (const side of [left, right]) {
+    const group = side ? api.getPanel(side)?.group : undefined;
+    group?.api.setSize({ width: Math.max(MIN_SIDE_W, defaultSideWidths(viewportWidth).right) });
+    group?.api.setVisible(false);
+  }
 }
