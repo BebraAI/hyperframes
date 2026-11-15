@@ -60,6 +60,8 @@ import {
   type StudioTransformResult,
   type TransformToolDeps,
 } from "./tools/transformTools";
+import { promptwiseCall, runPromptwiseCall } from "../promptwise/agentCalls";
+import { embeddedInPromptwise } from "../promptwise/embed";
 import {
   studioAddAnimation,
   studioAddKeyframe,
@@ -344,5 +346,25 @@ export function useStudioAgentTools(deps: StudioAgentToolsDeps): void {
     })();
 
     return () => controller.abort();
+  }, []);
+
+  // Embedded in promptwise, its agent calls the same tools from its server, through promptwise's page.
+  // eslint-disable-next-line no-restricted-syntax
+  useEffect(() => {
+    if (!embeddedInPromptwise) return;
+    const tools = buildStudioTools(depsRef);
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== window.parent) return;
+      const call = promptwiseCall(event.data);
+      if (!call) return;
+      void runPromptwiseCall(tools, call).then((result) =>
+        window.parent.postMessage(
+          { type: "promptwise:studio-result", callId: call.callId, result },
+          event.origin,
+        ),
+      );
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
   }, []);
 }
