@@ -11,6 +11,7 @@ const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
 let texts: Map<string, string>;
 let asked: string[];
 let uploads: Map<string, string>;
+let extra: { path: string; sha1: string; url: string }[];
 const tab = async (request: FolderRequest): Promise<FolderReply> => {
   asked.push(request.op === "list" ? "list" : `${request.op} ${request.path}`);
   if (request.op === "list") {
@@ -20,6 +21,7 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
       files: [
         ...files,
         { path: "assets/clip.mp4", sha1: "a".repeat(40), url: "https://media.test/clip.mp4" },
+        ...extra,
       ],
     };
   }
@@ -56,6 +58,7 @@ describe("Studio's API over a tab's folder", () => {
     texts = new Map([["index.html", HTML]]);
     asked = [];
     uploads = new Map();
+    extra = [];
     changes = [];
   });
 
@@ -187,6 +190,16 @@ describe("Studio's API over a tab's folder", () => {
       vi.unstubAllGlobals();
     }
   }, 30_000);
+
+  it("tells Studio about a clip added elsewhere, once", async () => {
+    const studio = await open();
+    extra = [{ path: "assets/new.mp4", sha1: "c".repeat(40), url: "https://media.test/new.mp4" }];
+    await studio.refresh();
+    await studio.refresh();
+    expect(changes.map((change) => change.path)).toEqual(["assets/new.mp4"]);
+    const clip = await studio.fetch(at("/projects/d1/preview/assets/new.mp4"));
+    expect(clip.headers.get("location")).toBe("https://media.test/new.mp4");
+  });
 
   it("uploads Studio's files through the tab and links them, under a free name", async () => {
     const studio = await open();
