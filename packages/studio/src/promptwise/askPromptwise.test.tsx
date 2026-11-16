@@ -5,9 +5,9 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DomEditSelection } from "../components/editor/domEditing";
 import { LintModal } from "../components/LintModal";
-import { PromptPreviewModal } from "../components/sidebar/PromptPreviewModal";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
 import { useAskAgentModal } from "../hooks/useAskAgentModal";
+import { askAboutBlock } from "./askAboutBlock";
 import { EditPopover } from "../player/components/EditModal";
 
 // Studio embedded in promptwise: every "ask agent" goes to promptwise's own agent, none to the clipboard.
@@ -44,10 +44,8 @@ function type(textarea: HTMLTextAreaElement, value: string) {
 }
 
 describe("asking promptwise's agent from Studio", () => {
-  it("sends a catalog block with the user's words", () => {
-    let closed = false;
-    const context = {
-      kind: "block" as const,
+  it("opens the chat with a catalog block and its words waiting, without sending them", () => {
+    const block = {
       name: "exploded-stack",
       title: "Exploded Stack",
       description: "Plates",
@@ -55,21 +53,11 @@ describe("asking promptwise's agent from Studio", () => {
       webgl: true,
       time: 5,
     };
-    mountHost(
-      <PromptPreviewModal
-        title="Exploded Stack"
-        prompt='Add "Exploded Stack" to my composition.'
-        context={context}
-        onClose={() => (closed = true)}
-      />,
-    );
-    expect(document.querySelector('[role="dialog"]')?.getAttribute("aria-label")).toBe(
-      "Ask Wisey: Exploded Stack",
-    );
-    type(document.querySelector("textarea")!, "Add it over the intro only");
-    click("Send");
-    expect(asked).toEqual([{ instruction: "Add it over the intro only", context }]);
-    expect([closed, copied]).toEqual([true, []]);
+    askAboutBlock(block);
+    expect(asked).toEqual([
+      { draft: 'Add "Exploded Stack" to my composition.', context: { kind: "block", ...block } },
+    ]);
+    expect(copied).toEqual([]);
   });
 
   it("sends a time range with its clips, and offers no copy", () => {
