@@ -24,11 +24,19 @@ async function ask(docId: string, request: FolderRequest): Promise<FolderReply> 
   if (!page) return { status: 503 };
   const channel = new MessageChannel();
   return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve({ status: 504 }), ANSWER_MS);
-    channel.port1.onmessage = (event) => {
+    // A page closed or reloaded before it answered never will: give up on it at once, so the next page's requests
+    // don't wait out ANSWER_MS behind it.
+    const gone = setInterval(
+      async () => (await self.clients.get(page.id)) ?? done({ status: 503 }),
+      1000,
+    );
+    const timer = setTimeout(() => done({ status: 504 }), ANSWER_MS);
+    function done(reply: FolderReply) {
+      clearInterval(gone);
       clearTimeout(timer);
-      resolve(event.data as FolderReply);
-    };
+      resolve(reply);
+    }
+    channel.port1.onmessage = (event) => done(event.data as FolderReply);
     page.postMessage({ type: "promptwise:folder", request }, [channel.port2]);
   });
 }

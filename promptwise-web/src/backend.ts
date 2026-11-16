@@ -52,16 +52,18 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
   async function pull() {
     const files = await folder.list();
     const there = new Set(files.map((f) => f.path));
-    for (const file of files) {
-      if (file.url) {
-        if (!media.has(file.path)) place(file.path, "");
-        media.set(file.path, file.url);
-      } else if (known.get(file.path) !== file.sha1) {
-        place(file.path, await folder.read(file.path));
-        known.set(file.path, file.sha1);
-        changed(file.path);
-      }
+    for (const file of files.filter((f) => f.url)) {
+      if (!media.has(file.path)) place(file.path, "");
+      media.set(file.path, file.url!);
     }
+    // Read at once: each read is a trip through the tab, and a folder has a dozen files or more.
+    const stale = files.filter((f) => !f.url && known.get(f.path) !== f.sha1);
+    const texts = await Promise.all(stale.map((f) => folder.read(f.path)));
+    stale.forEach((file, i) => {
+      place(file.path, texts[i]!);
+      known.set(file.path, file.sha1);
+      changed(file.path);
+    });
     for (const path of [...known.keys(), ...media.keys()].filter((p) => !there.has(p))) {
       vol.rmSync(local(path), { force: true });
       known.delete(path);
