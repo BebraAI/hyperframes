@@ -3,7 +3,8 @@ import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { SearchInput } from "../ui/SearchInput";
 import { PromptPreviewModal } from "./PromptPreviewModal";
-import { embeddedInPromptwise, type PromptwiseAskContext } from "../../promptwise/embed";
+import { embeddedInPromptwise } from "../../promptwise/embed";
+import { askAboutBlock } from "../../promptwise/askAboutBlock";
 import { useBlockCatalog } from "../../hooks/useBlockCatalog";
 import {
   BLOCK_CATEGORIES,
@@ -20,11 +21,10 @@ export interface BlockPreviewInfo {
   title: string;
 }
 
-/** What a card's "Ask agent" opens: the prompt to edit, and in promptwise the block it's about. */
+/** What a card's "Ask agent" opens outside promptwise: the prompt to edit and copy. */
 interface PromptRequest {
   title: string;
   prompt: string;
-  context?: PromptwiseAskContext;
 }
 
 interface BlocksTabProps {
@@ -134,7 +134,6 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
           <PromptPreviewModal
             title={promptModal.title}
             prompt={promptModal.prompt}
-            context={promptModal.context}
             onClose={() => setPromptModal(null)}
           />,
           document.body,
@@ -368,19 +367,15 @@ function BlockCard({
         compositionDimensions: compositionDimensions ?? undefined,
       };
       if (embeddedInPromptwise) {
-        // promptwise's agent gets the block as context and knows how to add it: the user only says what they want.
-        onShowPrompt?.({
+        // promptwise's agent gets the block as context and knows how to add it; the words wait in promptwise's
+        // own chat, where the user sends or changes them.
+        askAboutBlock({
+          name,
           title,
-          prompt: `Add "${title}" to my composition.`,
-          context: {
-            kind: "block",
-            name,
-            title,
-            description,
-            category,
-            webgl: needsWebGL === true,
-            time: context.currentTime,
-          },
+          description,
+          category,
+          webgl: needsWebGL === true,
+          time: context.currentTime,
         });
         return;
       }

@@ -33,9 +33,12 @@ export const PROMPTWISE_AGENT = "Wisey";
 
 /**
  * Asks promptwise's agent instead of copying a prompt for an outside one: with `instruction` the page
- * sends it at once; without, it opens its chat with the context waiting for the user's words.
+ * sends it at once; without, it opens its chat with the context waiting for the user's words, and
+ * `draft` in its prompt for the user to send or change.
  */
-export function askPromptwise(ask: { instruction?: string; context?: PromptwiseAskContext } = {}) {
+export function askPromptwise(
+  ask: { instruction?: string; draft?: string; context?: PromptwiseAskContext } = {},
+) {
   window.parent.postMessage({ type: "promptwise:ask-agent", ...ask }, "*");
 }
 
