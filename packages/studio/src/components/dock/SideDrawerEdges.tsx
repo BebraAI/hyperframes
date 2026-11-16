@@ -42,6 +42,8 @@ function followPointer(e: PointerEvent<HTMLElement>) {
 interface Column {
   open: boolean;
   width: number;
+  top?: number;
+  height?: number;
 }
 
 /** Pointer handlers for one side's edge: drag to resize, drag far in to close, drag a closed column out, click to toggle. */
@@ -129,9 +131,13 @@ function Edge({ side }: { side: DrawerSide }) {
       aria-label={`${look.verb} the ${side === "left" ? "media" : "inspector"}`}
       title={look.title}
       data-drawer-edge={side}
-      style={{ [side]: Math.max(0, column.width - 8) * Number(column.open) }}
+      style={{
+        [side]: Math.max(0, column.width - 8) * Number(column.open),
+        // Its column's row, so the pill sits mid-height beside the preview, not lower for the timeline under it.
+        ...(column.height ? { top: column.top, height: column.height } : { top: 0, bottom: 0 }),
+      }}
       {...handlers}
-      className={cn("group/edge absolute inset-y-0 z-[100] outline-none", look.className)}
+      className={cn("group/edge absolute z-[100] outline-none", look.className)}
     >
       <look.Mark />
     </button>

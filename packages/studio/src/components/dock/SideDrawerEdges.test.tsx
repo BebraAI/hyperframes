@@ -68,6 +68,22 @@ describe("SideDrawerEdges", () => {
     expect(edge()).toBeNull();
   });
 
+  // The closed column's pill sat low, mid-height of the whole dock with the timeline under it, not beside the preview.
+  it("spans its column's row when the dock knows it, and the whole dock when not", () => {
+    act(() =>
+      useDockLayoutStore.setState({
+        sides: { left: { open: false, width: 0, top: 0, height: 420 } },
+      }),
+    );
+    expect([edge()!.style.top, edge()!.style.height, edge()!.style.bottom]).toEqual([
+      "0px",
+      "420px",
+      "",
+    ]);
+    setSide(false, 0);
+    expect([edge()!.style.top, edge()!.style.bottom]).toEqual(["0px", "0px"]);
+  });
+
   it("opens a closed column on a click at its remembered width, and closes it on another", () => {
     setSide(false, 0);
     expect(edge()!.getAttribute("aria-label")).toBe("Show the media");
