@@ -1,6 +1,7 @@
 import type { Direction, DockviewApi } from "dockview-react";
 import { DOCK_PANEL_COMPONENT } from "./dockLayoutSchema";
 import { PANEL_DEFINITIONS, PANEL_IDS, isPanelId, type PanelId } from "./panelRegistry";
+import { embeddedInPromptwise } from "../../promptwise/embed";
 
 const MIN_PREVIEW_W = 360;
 const MIN_PREVIEW_H = 200;
@@ -12,8 +13,9 @@ const DEFAULT_LEFT = ["compositions", "assets", "code", "catalog"] as const;
 const DEFAULT_RIGHT = ["design", "layers", "renders", "variables", "motionBlur"] as const;
 /** Below this dock width (promptwise's Timeline tab beside its chat) two side columns would crush the preview. */
 const COMPACT_DOCK_W = 1000;
-const COMPACT_LEFT = ["assets", "compositions"] as const;
-const COMPACT_RIGHT = ["design", "layers", "renders"] as const;
+/** What promptwise's users work with; Compositions, Code, Variables and Blur wait in the Window menu. */
+const LEAN_LEFT = ["assets", "catalog"] as const;
+const LEAN_RIGHT = ["design", "layers", "renders"] as const;
 /** Room for three tracks under the toolbar and ruler; the preview gets the rest. */
 const COMPACT_TIMELINE_H = 260;
 
@@ -114,6 +116,7 @@ export function buildEditLayout(
   api: DockviewApi,
   viewportWidth: number,
   panels: readonly PanelId[] = PANEL_IDS,
+  embedded = embeddedInPromptwise,
 ) {
   if (viewportWidth < COMPACT_DOCK_W) {
     buildCompactLayout(api, viewportWidth, panels);
@@ -123,8 +126,8 @@ export function buildEditLayout(
   const widths = defaultSideWidths(viewportWidth);
   addRegisteredPanel(api, "preview");
   addRegisteredPanel(api, "timeline", { referencePanel: "preview", direction: "below" });
-  const left = addSideColumn(api, DEFAULT_LEFT, panels, "left");
-  const right = addSideColumn(api, DEFAULT_RIGHT, panels, "right");
+  const left = addSideColumn(api, embedded ? LEAN_LEFT : DEFAULT_LEFT, panels, "left");
+  const right = addSideColumn(api, embedded ? LEAN_RIGHT : DEFAULT_RIGHT, panels, "right");
   applySideMinimums(api, viewportWidth);
   if (left) api.getPanel(left)?.group.api.setSize({ width: widths.left });
   if (right) api.getPanel(right)?.group.api.setSize({ width: widths.right });
@@ -135,8 +138,8 @@ function buildCompactLayout(api: DockviewApi, viewportWidth: number, panels: rea
   api.clear();
   addRegisteredPanel(api, "preview");
   addRegisteredPanel(api, "timeline", { referencePanel: "preview", direction: "below" });
-  const left = addSideColumn(api, COMPACT_LEFT, panels, "left");
-  const right = addSideColumn(api, COMPACT_RIGHT, panels, "right");
+  const left = addSideColumn(api, LEAN_LEFT, panels, "left");
+  const right = addSideColumn(api, LEAN_RIGHT, panels, "right");
   applySideMinimums(api, viewportWidth);
   api.getPanel("timeline")?.group.api.setSize({ height: COMPACT_TIMELINE_H });
   // Both sides start closed, as drawers the user pulls out from the dock's edges (sideDrawer.ts).

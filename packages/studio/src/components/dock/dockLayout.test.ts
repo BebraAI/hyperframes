@@ -149,19 +149,35 @@ describe("buildEditLayout on a narrow dock", () => {
     const right = api.getPanel("design")!.group;
     const left = api.getPanel("assets")!.group;
     expect(right.panels.map((panel) => panel.id)).toEqual(["design", "layers", "renders"]);
-    expect(left.panels.map((panel) => panel.id)).toEqual(["assets", "compositions"]);
+    expect(left.panels.map((panel) => panel.id)).toEqual(["assets", "catalog"]);
     expect([left.api.isVisible, right.api.isVisible]).toEqual([false, false]);
     expect(api.getPanel("preview")!.group.api.isVisible).toBe(true);
     expect(api.getPanel("preview")!.group.width).toBe(640);
     expect(api.getPanel("timeline")!.group.width).toBe(640);
     expect(api.getPanel("timeline")!.group.height).toBe(260);
     expect(api.getPanel("code")).toBeUndefined();
+    expect(api.getPanel("compositions")).toBeUndefined();
   });
 
   it("keeps the three columns on a wide one", () => {
     api.layout(1200, 700);
     buildEditLayout(api, 1200);
     expect(api.getPanel("compositions")!.group).not.toBe(api.getPanel("design")!.group);
+    expect(api.getPanel("design")!.group.api.isVisible).toBe(true);
+  });
+
+  it("opens only the lean panels in promptwise's tab, however wide", () => {
+    api.layout(1200, 700);
+    buildEditLayout(api, 1200, undefined, true);
+    expect(api.getPanel("assets")!.group.panels.map((panel) => panel.id)).toEqual([
+      "assets",
+      "catalog",
+    ]);
+    expect(api.getPanel("design")!.group.panels.map((panel) => panel.id)).toEqual([
+      "design",
+      "layers",
+      "renders",
+    ]);
     expect(api.getPanel("design")!.group.api.isVisible).toBe(true);
   });
 });
