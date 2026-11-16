@@ -1,7 +1,7 @@
 // fallow-ignore-file complexity
 import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { openProject, PULL_MS } from "./backend";
+import { FEED_MS, openProject, PULL_MS } from "./backend";
 import { folder, type FolderRequest, type FolderReply } from "./folder";
 
 // promptwise is the outside world here: a fake tab over a folder that takes writes only over the version it has, as
@@ -86,7 +86,7 @@ describe("Studio's API over a tab's folder", () => {
   it("takes promptwise's copy when the agent changed the file meanwhile, and tells Studio", async () => {
     const studio = await open();
     const feed = (await studio.fetch(at("/events"))).body!.getReader();
-    await feed.read(); // ": open"
+    await feed.read(); // "retry: 500", ": open"
     const version = await versionOf(studio);
     texts.set("index.html", HTML.replace("Made to move fast.", "The agent's line"));
     await studio.fetch(
@@ -136,6 +136,22 @@ describe("Studio's API over a tab's folder", () => {
     await Promise.all(feeds.map((feed) => feed.cancel()));
     await vi.advanceTimersByTimeAsync(PULL_MS * 2);
     expect(asked).toEqual(["list", "list"]);
+    vi.useRealTimers();
+  });
+
+  // Chrome stops a worker whose one event runs past five minutes, streaming or not, and a request caught in that
+  // stop went to the host instead: Wisey's move of a clip failed with the host's 404.
+  it("ends each change feed before Chrome's five-minute limit, and stops looking once it has", async () => {
+    vi.useFakeTimers();
+    const studio = await open();
+    const feed = (await studio.fetch(at("/events"))).body!.getReader();
+    expect(new TextDecoder().decode((await feed.read()).value)).toBe("retry: 500\n: open\n\n");
+    await vi.advanceTimersByTimeAsync(FEED_MS);
+    expect((await feed.read()).done).toBe(true);
+    expect(FEED_MS).toBeLessThan(5 * 60_000);
+    asked.length = 0;
+    await vi.advanceTimersByTimeAsync(PULL_MS * 2);
+    expect(asked).toEqual([]);
     vi.useRealTimers();
   });
 

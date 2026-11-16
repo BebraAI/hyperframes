@@ -17,6 +17,12 @@ import type { Folder } from "./folder";
 
 /** How often a project with Studio open looks for changes made elsewhere. */
 export const PULL_MS = 5000;
+/**
+ * How long one change feed stays open. Chrome stops a Service Worker whose one event runs past five minutes, a
+ * streaming response included, and a request caught in that stop goes to the network instead (a 404 from the host).
+ * Closed sooner, the feed ends cleanly and Studio's EventSource opens the next one at once.
+ */
+export const FEED_MS = 4 * 60_000;
 /** Studio's own notes beside the project (backups, history) stay in the page. */
 const LOCAL = /^\.hyperframes\//;
 
@@ -147,6 +153,7 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
   /** Studio's change feed: what changed elsewhere, as the CLI's file watcher tells it. */
   function events(): Response {
     let send: (path: string) => void;
+    let end: ReturnType<typeof setTimeout>;
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
         send = (path) => {
@@ -167,9 +174,17 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
           );
         };
         listen(send);
-        controller.enqueue(encoder.encode(": open\n\n"));
+        // Reopen after half a second rather than EventSource's default three.
+        controller.enqueue(encoder.encode("retry: 500\n: open\n\n"));
+        end = setTimeout(() => {
+          unlisten(send);
+          controller.close();
+        }, FEED_MS);
       },
-      cancel: () => unlisten(send),
+      cancel: () => {
+        clearTimeout(end);
+        unlisten(send);
+      },
     });
     return new Response(stream, {
       headers: { "content-type": "text/event-stream", "cache-control": "no-cache" },
