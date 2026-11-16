@@ -5,6 +5,7 @@
     // built-ins, which no import names.
     "promptwise-web/build.mjs",
     "promptwise-web/check.mjs",
+    "promptwise-web/deploy.mjs",
     "promptwise-web/vitest.config.ts",
     "promptwise-web/src/sw.ts",
     "promptwise-web/src/boot.ts",
