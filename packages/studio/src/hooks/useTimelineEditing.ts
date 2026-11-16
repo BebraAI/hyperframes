@@ -23,6 +23,11 @@ import {
 } from "./timelineTrackVisibility";
 import { useTimelineGroupEditing } from "./useTimelineGroupEditing";
 import { useTimelineClipTimingEditing } from "./useTimelineClipTimingEditing";
+import { timingGestureStep } from "./timelineTimingSync";
+import {
+  resolveShiftedElements,
+  resolveTrimRippleShifts,
+} from "../player/components/timelineGapCommit";
 import { useBlockedTimelineEditToast } from "./useBlockedTimelineEditToast";
 import { useTimelineEditGate, type TimelineEditOutcome } from "./timelineEditPermission";
 import type { UseTimelineEditingOptions } from "./useTimelineEditingTypes";
@@ -271,7 +276,33 @@ export function useTimelineEditing({
   );
   const editing = {
     handleTimelineElementMove: track(guard((element) => [element], handleTimelineElementMove)),
-    handleTimelineElementResize: track(guard((element) => [element], handleTimelineElementResize)),
+    handleTimelineElementResize: track(
+      guard(
+        (element) => [element],
+        async (
+          element: TimelineElement,
+          updates: Pick<TimelineElement, "start" | "duration" | "playbackStart">,
+        ) => {
+          // Ripple: a trimmed shot takes what follows it along, in the same Undo step as the trim.
+          const shifts = resolveTrimRippleShifts(
+            timelineElements,
+            element,
+            updates,
+            usePlayerStore.getState().rippleEditEnabled,
+          );
+          const step = timingGestureStep("timeline-resize");
+          await handleTimelineElementResize(element, updates, step);
+          if (!shifts) return;
+          const others = timelineElements.filter(
+            (el) => (el.key ?? el.id) !== (element.key ?? element.id),
+          );
+          await groupEditing.handleTimelineGroupMove(resolveShiftedElements(others, shifts), {
+            coalesceKey: step.coalesceKey,
+            label: "Resize timeline clip",
+          });
+        },
+      ),
+    ),
     handleToggleTrackHidden: track(
       guard(
         (trackIndex) => timelineElements.filter((el) => el.track === trackIndex),

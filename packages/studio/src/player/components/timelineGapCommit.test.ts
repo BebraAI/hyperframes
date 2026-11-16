@@ -6,6 +6,7 @@ import {
   commitCloseAllTrackGaps,
   commitCloseTrackGap,
   resolveMainTrackDeleteRippleShifts,
+  resolveTrimRippleShifts,
   resolveShiftedElements,
 } from "./timelineGapCommit";
 import { resolveAllTrackGaps } from "./timelineGaps";
@@ -232,6 +233,32 @@ describe("resolveMainTrackDeleteRippleShifts", () => {
     expect(resolveMainTrackDeleteRippleShifts(survivors, deleted, true)).toBeNull();
   });
 
+  it("moves what follows the deleted shot on other tracks, and leaves what spans the cut", () => {
+    // a(0-2), b(2-4)[deleted], c(4-6) on the main track; a sound effect at 4.5 on c, a title at 1 on a,
+    // a transition from 3 inside b, and music under the whole video.
+    const deleted = [el("b", 2, 2)];
+    const survivors = [
+      el("a", 0, 2),
+      el("c", 4, 2),
+      el("sfx", 4.5, 0.5, 2),
+      el("title", 1, 1, 1),
+      el("dip", 3, 0.5, 1),
+      el("music", 0, 6, 3),
+    ];
+    expect(resolveMainTrackDeleteRippleShifts(survivors, deleted, true)).toEqual([
+      { key: "c", newStart: 2 },
+      { key: "sfx", newStart: 2.5 },
+    ]);
+  });
+
+  it("moves a sound after the last shot that was deleted, even with no shot left after it", () => {
+    const deleted = [el("b", 2, 2)];
+    const survivors = [el("a", 0, 2), el("outro", 4, 1, 1)];
+    expect(resolveMainTrackDeleteRippleShifts(survivors, deleted, true)).toEqual([
+      { key: "outro", newStart: 2 },
+    ]);
+  });
+
   it("refuses the whole ripple (not a partial one) when a shifting survivor is locked", () => {
     const deleted = [el("b", 2, 2)];
     const survivors = [el("a", 0, 2), lockedEl("c", 8, 1)];
@@ -255,5 +282,29 @@ describe("resolveMainTrackDeleteRippleShifts", () => {
       { key: "c", newStart: 2 },
       { key: "e", newStart: 4 },
     ]);
+  });
+});
+
+describe("resolveTrimRippleShifts", () => {
+  const edit = [el("a", 0, 4), el("b", 4, 3), el("sfx", 4.5, 1, 2), el("music", 0, 7, 3)];
+
+  it("pulls what follows a shortened shot back by as much, on every track", () => {
+    expect(resolveTrimRippleShifts(edit, edit[0]!, { start: 0, duration: 2.5 }, true)).toEqual([
+      { key: "b", newStart: 2.5 },
+      { key: "sfx", newStart: 3 },
+    ]);
+  });
+
+  it("pushes it on when the shot gets longer", () => {
+    expect(resolveTrimRippleShifts(edit, edit[0]!, { start: 0, duration: 5 }, true)).toEqual([
+      { key: "b", newStart: 5 },
+      { key: "sfx", newStart: 5.5 },
+    ]);
+  });
+
+  it("does nothing with ripple off, for a clip off the main track, or when the end stays", () => {
+    expect(resolveTrimRippleShifts(edit, edit[0]!, { start: 0, duration: 2 }, false)).toBeNull();
+    expect(resolveTrimRippleShifts(edit, edit[2]!, { start: 4.5, duration: 0.5 }, true)).toBeNull();
+    expect(resolveTrimRippleShifts(edit, edit[0]!, { start: 0, duration: 4 }, true)).toBeNull();
   });
 });
