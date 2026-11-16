@@ -6,7 +6,8 @@ import {
   RiErrorWarningLine,
 } from "@remixicon/react";
 import { copyTextToClipboard } from "../utils/clipboard";
-import { PROMPTWISE_AGENT, askPromptwise, embeddedInPromptwise } from "../promptwise/embed";
+import { PROMPTWISE_AGENT, embeddedInPromptwise } from "../promptwise/embed";
+import { askToFixLint } from "../promptwise/asks";
 import { Button, cn } from "./ui";
 import { DialogHeader, dialogClasses } from "./ui/Dialog";
 import { useDialogBehavior } from "./ui/useDialogBehavior";
@@ -46,18 +47,8 @@ export function LintModal({
 
   const handleCopyToAgent = async () => {
     if (embeddedInPromptwise) {
-      // promptwise's agent gets the findings to fix in the tab's folder.
-      askPromptwise({
-        instruction: promptIntro,
-        context: {
-          kind: "lint",
-          findings: findings.slice(0, 50).map(({ severity, message, file }) => ({
-            severity,
-            message,
-            ...(file ? { file } : {}),
-          })),
-        },
-      });
+      // promptwise's chat opens with the findings and "Fix these …" for the user to send.
+      askToFixLint(promptIntro, findings);
       onClose();
       return;
     }

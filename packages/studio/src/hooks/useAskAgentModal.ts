@@ -81,12 +81,31 @@ export function useAskAgentModal({
 
   const handleAskAgent = useCallback(() => {
     if (!domEditSelection) return;
+    if (embeddedInPromptwise) {
+      // promptwise's chat opens with the element, by the handle its studio tool takes; the user says what to do there.
+      const targetPath = domEditSelection.sourceFile || activeCompPath || "index.html";
+      askPromptwise({
+        context: {
+          kind: "element",
+          handle:
+            mintElementHandle(
+              patchTargetAddress(domEditSelection, activeCompPath, projectIdRef.current),
+            ) ?? "",
+          file: targetPath,
+          label: domEditSelection.label,
+          tag: domEditSelection.tagName.toLowerCase(),
+          time: usePlayerStore.getState().currentTime,
+          markup: liveMarkupWithoutPreviewMarks(domEditSelection.element).slice(0, 4000),
+        },
+      });
+      return;
+    }
     setAgentPromptTagSnippet(undefined);
     setAgentPromptSelectionContext(undefined);
     setAgentModalAnchorPoint(null);
     void preloadAgentPromptSnippet(domEditSelection);
     setAgentModalOpen(true);
-  }, [domEditSelection, preloadAgentPromptSnippet]);
+  }, [domEditSelection, preloadAgentPromptSnippet, activeCompPath, projectIdRef]);
 
   const handleAgentModalSubmit = useCallback(
     async (userInstruction: string) => {
@@ -105,26 +124,6 @@ export function useAskAgentModal({
         sourceFilePath: toProjectAbsolutePath(projectDir, targetPath),
       });
 
-      if (embeddedInPromptwise) {
-        // promptwise's own agent gets the request with what it's about, by the handle its studio tool takes.
-        askPromptwise({
-          instruction: userInstruction,
-          context: {
-            kind: "element",
-            handle:
-              mintElementHandle(
-                patchTargetAddress(domEditSelection, activeCompPath, projectIdRef.current),
-              ) ?? "",
-            file: targetPath,
-            label: domEditSelection.label,
-            tag: domEditSelection.tagName.toLowerCase(),
-            time: usePlayerStore.getState().currentTime,
-            markup: tagSnippet.slice(0, 4000),
-          },
-        });
-        setAgentModalOpen(false);
-        return;
-      }
       const copied = await copyTextToClipboard(prompt);
       if (!copied) {
         showToast("Could not copy prompt to clipboard.", "error");
@@ -144,7 +143,6 @@ export function useAskAgentModal({
       agentPromptTagSnippet,
       domEditSelection,
       projectDir,
-      projectIdRef,
       showToast,
     ],
   );

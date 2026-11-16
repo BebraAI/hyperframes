@@ -7,10 +7,11 @@ import type { DomEditSelection } from "../components/editor/domEditing";
 import { LintModal } from "../components/LintModal";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
 import { useAskAgentModal } from "../hooks/useAskAgentModal";
-import { askAboutBlock } from "./askAboutBlock";
-import { EditPopover } from "../player/components/EditModal";
+import { askAboutBlock } from "./asks";
+import { AskAboutRange } from "../player/components/EditModal";
 
-// Studio embedded in promptwise: every "ask agent" goes to promptwise's own agent, none to the clipboard.
+// Studio embedded in promptwise: every "ask agent" opens promptwise's chat with what it's about (and words to send,
+// where there are obvious ones), none copies to the clipboard, and none sends by itself.
 const asked = vi.hoisted(() => [] as unknown[]);
 const copied = vi.hoisted(() => [] as string[]);
 vi.mock("./embed", async (importOriginal) => ({
@@ -35,13 +36,6 @@ afterEach(() => {
 const button = (text: string) =>
   [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(text)) ?? null;
 const click = (text: string) => act(() => button(text)!.click());
-function type(textarea: HTMLTextAreaElement, value: string) {
-  const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!;
-  act(() => {
-    set.call(textarea, value);
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
 
 describe("asking promptwise's agent from Studio", () => {
   it("opens the chat with a catalog block and its words waiting, without sending them", () => {
@@ -60,31 +54,19 @@ describe("asking promptwise's agent from Studio", () => {
     expect(copied).toEqual([]);
   });
 
-  it("sends a time range with its clips, and offers no copy", () => {
-    vi.stubGlobal("sessionStorage", {
-      getItem: () => null,
-      setItem: () => {},
-      removeItem: () => {},
-    });
+  it("opens the chat with a time range and its clips, and no popover to type in", () => {
+    let done = false;
     const host = document.body.appendChild(document.createElement("div"));
     act(() =>
       createRoot(host).render(
-        <EditPopover rangeStart={2} rangeEnd={1} anchorX={10} anchorY={10} onClose={() => {}} />,
+        <AskAboutRange rangeStart={2} rangeEnd={1} onDone={() => (done = true)} />,
       ),
     );
-    expect(button("Copy Prompt")).toBeNull();
-    type(document.querySelector("textarea")!, "Slow this part down");
-    click("Send to Wisey");
-    expect(asked).toEqual([
-      {
-        instruction: "Slow this part down",
-        context: { kind: "range", start: 1, end: 2, clips: [] },
-      },
-    ]);
-    expect(copied).toEqual([]);
+    expect(asked).toEqual([{ context: { kind: "range", start: 1, end: 2, clips: [] } }]);
+    expect([done, document.querySelector("textarea"), copied]).toEqual([true, null, []]);
   });
 
-  it("sends lint findings to fix", () => {
+  it("opens the chat with lint findings and the words to fix them", () => {
     let closed = false;
     const findings = [
       {
@@ -98,7 +80,7 @@ describe("asking promptwise's agent from Studio", () => {
     click("Ask Wisey to fix");
     expect(asked).toEqual([
       {
-        instruction: "Fix these HyperFrames lint issues",
+        draft: "Fix these HyperFrames lint issues.",
         context: {
           kind: "lint",
           findings: [{ severity: "error", message: "No duration", file: "index.html" }],
@@ -108,7 +90,7 @@ describe("asking promptwise's agent from Studio", () => {
     expect([closed, copied]).toEqual([true, []]);
   });
 
-  it("sends the selected element by the handle the agent's studio tool takes, with its markup", async () => {
+  it("opens the chat with the selected element, by the handle the agent's studio tool takes, with no modal", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     const element = document.createElement("h1");
     element.textContent = "Made to move";
@@ -155,12 +137,11 @@ describe("asking promptwise's agent from Studio", () => {
     }
     const host = document.body.appendChild(document.createElement("div"));
     await act(async () => createRoot(host).render(<Harness />));
-    await act(async () => hook!.handleAgentModalSubmit("Make it bigger"));
+    await act(async () => hook!.handleAskAgent());
 
     expect(copied).toEqual([]);
     expect(asked).toEqual([
       {
-        instruction: "Make it bigger",
         context: {
           kind: "element",
           handle: expect.stringMatching(/^hf:v\d+:demo:index\.html:.*hf-2vh1$/),

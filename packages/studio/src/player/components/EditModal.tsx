@@ -5,7 +5,7 @@ import { usePlayerStore } from "../store/playerStore";
 import { formatTime } from "../lib/time";
 import { buildPromptCopyText, buildTimelineAgentPrompt } from "./timelineEditing";
 import { copyTextToClipboard } from "../../utils/clipboard";
-import { PROMPTWISE_AGENT, askPromptwise, embeddedInPromptwise } from "../../promptwise/embed";
+import { askAboutRange } from "../../promptwise/asks";
 
 interface EditPopoverProps {
   rangeStart: number;
@@ -36,28 +36,37 @@ function writeDraft(key: string, value: string): void {
   }
 }
 
-/** promptwise's agent gets the range and its clips with the user's words, not a prompt to paste. False with no words. */
-function sendRange(
-  prompt: string,
+/** The clips that overlap a range of the timeline. */
+function clipsInRange<T extends { start: number; duration: number }>(
+  elements: T[],
   start: number,
   end: number,
-  clips: { id: string; label?: string }[],
-): boolean {
-  if (!prompt.trim()) return false;
-  askPromptwise({
-    instruction: prompt.trim(),
-    context: {
-      kind: "range",
-      start,
-      end,
-      clips: clips.map((el) => ({ id: el.id, label: el.label ?? el.id })),
-    },
-  });
-  return true;
+): T[] {
+  return elements.filter((el) => el.start < end && el.start + el.duration > start);
 }
 
-// Embedded in promptwise there is nothing to copy: the one button sends.
-const GRID_COLS = embeddedInPromptwise ? "grid-cols-1" : "grid-cols-2";
+/**
+ * In promptwise a range opens its chat with the range and its clips, where the user says what to change, instead of
+ * this popover. Renders nothing; done once it has asked.
+ */
+export function AskAboutRange({
+  rangeStart,
+  rangeEnd,
+  onDone,
+}: {
+  rangeStart: number;
+  rangeEnd: number;
+  onDone: () => void;
+}) {
+  const elements = usePlayerStore((s) => s.elements);
+  useMountEffect(() => {
+    const start = Math.min(rangeStart, rangeEnd);
+    const end = Math.max(rangeStart, rangeEnd);
+    askAboutRange(start, end, clipsInRange(elements, start, end));
+    onDone();
+  });
+  return null;
+}
 
 function CopyPromptButton({
   prompt,
@@ -84,10 +93,10 @@ function CopyPromptButton({
 }
 
 function agentButtonLabel(copied: boolean): string {
-  if (embeddedInPromptwise) return `Send to ${PROMPTWISE_AGENT}`;
   return copied ? "Copied!" : "Copy to Agent";
 }
 
+// fallow-ignore-next-line complexity
 export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }: EditPopoverProps) {
   const elements = usePlayerStore((s) => s.elements);
   const start = Math.min(rangeStart, rangeEnd);
@@ -105,12 +114,7 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
   const popoverRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const elementsInRange = useMemo(() => {
-    return elements.filter((el) => {
-      const elEnd = el.start + el.duration;
-      return el.start < end && elEnd > start;
-    });
-  }, [elements, start, end]);
+  const elementsInRange = useMemo(() => clipsInRange(elements, start, end), [elements, start, end]);
 
   useMountEffect(() => {
     setTimeout(() => textareaRef.current?.focus(), 50);
@@ -144,13 +148,6 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
   }, [start, end, elementsInRange, prompt]);
 
   const handleCopy = useCallback(async () => {
-    if (embeddedInPromptwise) {
-      if (sendRange(prompt, start, end, elementsInRange)) {
-        writeDraft(storageKey, "");
-        onClose();
-      }
-      return;
-    }
     const copied = await copyTextToClipboard(buildClipboardText());
     if (!copied) {
       setCopyError(true);
@@ -163,7 +160,7 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
       setCopiedAgentPrompt(false);
       onClose();
     }, 800);
-  }, [buildClipboardText, onClose, storageKey, prompt, start, end, elementsInRange]);
+  }, [buildClipboardText, onClose, storageKey]);
 
   const handleCopyPrompt = useCallback(async () => {
     const promptText = buildPromptCopyText(prompt);
@@ -239,10 +236,8 @@ export function EditPopover({ rangeStart, rangeEnd, anchorX, anchorY, onClose }:
             Copy failed. Check clipboard permissions and try again.
           </p>
         )}
-        <div className={`grid ${GRID_COLS} gap-2 px-3 pb-3`}>
-          {!embeddedInPromptwise && (
-            <CopyPromptButton prompt={prompt} copied={copiedPromptOnly} onCopy={handleCopyPrompt} />
-          )}
+        <div className="grid grid-cols-2 gap-2 px-3 pb-3">
+          <CopyPromptButton prompt={prompt} copied={copiedPromptOnly} onCopy={handleCopyPrompt} />
           <button
             onClick={handleCopy}
             className={`py-1.5 text-caption-2-medium rounded-lg transition-all ${

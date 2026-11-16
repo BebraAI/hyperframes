@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { SearchInput } from "../ui/SearchInput";
 import { PromptPreviewModal } from "./PromptPreviewModal";
 import { embeddedInPromptwise } from "../../promptwise/embed";
-import { askAboutBlock } from "../../promptwise/askAboutBlock";
+import { askAboutBlock } from "../../promptwise/asks";
 import { useBlockCatalog } from "../../hooks/useBlockCatalog";
 import {
   BLOCK_CATEGORIES,
