@@ -140,7 +140,9 @@ export async function openProject({
   async function push() {
     const lost = await send(vol.toJSON(dir) as Record<string, string | null>);
     lost.forEach((path) => known.delete(path));
-    if (lost.length) await pull();
+    if (!lost.length) return;
+    onError?.(lost.join(", "), "changed in promptwise meanwhile, so Studio's edit gave way to it");
+    await pull();
   }
 
   // One look or send at a time, in order.
@@ -248,7 +250,14 @@ export async function openProject({
     const response = await api.fetch(
       new Request(url, { method: request.method, headers: request.headers, body }),
     );
-    if (!reads) await serial(push);
+    if (!reads)
+      await serial(push).catch((error: unknown) => {
+        onError?.(
+          path,
+          `not saved to promptwise: ${error instanceof Error ? error.message : error}`,
+        );
+        throw error;
+      });
     // 501 is what isn't in the browser yet (thumbnails, renders, ffmpeg), which the tab needn't hear about each time.
     if (response.status >= 500 && response.status !== 501)
       onError?.(path, (await response.clone().text()).slice(0, 500));

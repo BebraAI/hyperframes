@@ -56,6 +56,7 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
 const HTML =
   '<!doctype html><html><body><div data-composition-id="main" data-width="1920" data-height="1080"><h1 id="title">Made to move fast.</h1></div></body></html>';
 let changes: FileChange[];
+let errors: string[];
 let opened: Awaited<ReturnType<typeof openProject>>[] = [];
 const open = () =>
   openProject({
@@ -64,6 +65,7 @@ const open = () =>
     folder: folder(tab),
     runtimeUrl: "https://app.test/runtime.js",
     onChange: (change) => changes.push(change),
+    onError: (path, message) => errors.push(`${path}: ${message}`),
   }).then((studio) => (opened.push(studio), studio));
 const at = (path: string, init?: RequestInit) =>
   new Request(`https://studio.test/studio/d1/api${path}`, init);
@@ -75,6 +77,7 @@ describe("Studio's API over a tab's folder", () => {
     uploads = new Map();
     extra = [];
     changes = [];
+    errors = [];
     givesContent = true;
   });
 
@@ -151,6 +154,9 @@ describe("Studio's API over a tab's folder", () => {
     );
 
     expect(texts.get("index.html")).toContain("The agent's line");
+    expect(errors).toEqual([
+      "index.html: changed in promptwise meanwhile, so Studio's edit gave way to it",
+    ]);
     expect(await (await studio.fetch(at("/projects/d1/files/index.html"))).text()).toContain(
       "The agent's line",
     );
