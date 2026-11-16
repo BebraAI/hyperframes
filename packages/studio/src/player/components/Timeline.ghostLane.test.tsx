@@ -25,7 +25,8 @@ describe("Timeline ghost lane", () => {
   it("draws one empty track below the last with a drop hint", async () => {
     const { root, ghost } = await mountThreeTracks({ onAssetDrop: vi.fn() });
     expect(ghost()?.textContent).toBe("Drop media here");
-    expect(ghost()?.getAttribute("aria-hidden")).toBe("true");
+    // Not hidden from screen readers: it holds the + and says what is uploading.
+    expect(ghost()?.getAttribute("aria-hidden")).toBeNull();
     expect(ghost()?.style.top).toBe(`${getTimelineRowTop(3) + CLIP_Y}px`);
     expect(ghost()?.dataset.active).toBeUndefined();
     act(() => root.unmount());
