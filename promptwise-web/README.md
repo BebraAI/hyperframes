@@ -20,4 +20,4 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
 - `shims/` stand in for Node's built-ins (`node:fs` is memfs).
 
 Build (after `bun run build` at the root): `npm install && node build.mjs`, then `tar -czf studio-web.tgz -C dist .`
-for the release. Test: `npm test`.
+for the release. Test: `npm test`; in a browser: `node check.mjs dist <files.json>` (see the file).

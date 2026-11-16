@@ -4,6 +4,7 @@
     // promptwise: Studio in the browser. The build bundles sw.ts and boot.ts with the shims as aliases for Node's
     // built-ins, which no import names.
     "promptwise-web/build.mjs",
+    "promptwise-web/check.mjs",
     "promptwise-web/vitest.config.ts",
     "promptwise-web/src/sw.ts",
     "promptwise-web/src/boot.ts",
