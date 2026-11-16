@@ -168,15 +168,49 @@ export async function openProject({
   };
   const api = createStudioApi(adapter as never);
 
+  /** A path no file has: name, then "name (2)", as Studio's server names a second upload of one file. */
+  function free(path: string) {
+    const [, base, ext] = /^(.*?)(\.[^./]*)?$/.exec(path)!;
+    let next = path;
+    for (let n = 2; vol.existsSync(local(next)); n++) next = `${base} (${n})${ext ?? ""}`;
+    return next;
+  }
+
+  /** Studio's upload (a drop, Upload from computer): each file goes up through the tab, and comes back as a link. */
+  async function upload(request: Request): Promise<Response> {
+    const dir = new URL(request.url).searchParams.get("dir")?.replace(/^\/+|\/+$/g, "");
+    const files: string[] = [];
+    const invalid: { name: string; reason: string }[] = [];
+    for (const value of (await request.formData()).values()) {
+      if (typeof value === "string") continue;
+      const name = value.name.split(/[\\/]/).pop() ?? "";
+      if (!name || name.includes("..") || dir?.includes("..")) continue;
+      const path = free(dir ? `${dir}/${name}` : name);
+      try {
+        const saved = await folder.upload(path, await value.arrayBuffer(), value.type);
+        if (!saved) throw new Error("another file took its name");
+        // After any look in flight, which wouldn't have seen it yet.
+        await serial(async () => {
+          place(path, "");
+          media.set(path, saved.url);
+        });
+        files.push(path);
+      } catch (error) {
+        invalid.push({ name, reason: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return Response.json({ ok: true, files, skipped: [], invalid, unchecked: [] }, { status: 201 });
+  }
+
   /** What the worker answers itself rather than Studio's API. */
-  function own(path: string): Response | Promise<Response> | undefined {
+  function own(request: Request, path: string): Response | Promise<Response> | undefined {
     if (path === "/runtime.js") return fetch(runtimeUrl);
     const link = media.get(
       decodeURIComponent(/^\/projects\/[^/]+\/preview\/(.+)$/.exec(path)?.[1] ?? ""),
     );
     if (link) return Response.redirect(link, 302);
-    if (/^\/projects\/[^/]+\/upload/.test(path))
-      return new Response("Add media from promptwise's chat or Project media", { status: 501 });
+    if (request.method === "POST" && /^\/projects\/[^/]+\/upload$/.test(path))
+      return upload(request);
   }
 
   /** Studio's API, at its root as the CLI mounts it; a request that changes something is sent on before it's answered. */
@@ -199,7 +233,7 @@ export async function openProject({
     /** Answers one of Studio's API requests. */
     fetch(request: Request): Promise<Response> {
       const path = new URL(request.url).pathname.slice(apiBase.length);
-      return Promise.resolve(own(path) ?? answer(request, path));
+      return Promise.resolve(own(request, path) ?? answer(request, path));
     },
     /** Looks for changes made elsewhere: Studio's page asks every few seconds while it's open. */
     refresh: () => serial(pull),
