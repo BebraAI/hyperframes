@@ -82,9 +82,11 @@ export async function openProject({
   async function pull() {
     const files = await folder.list();
     const there = new Set(files.map((f) => f.path));
-    for (const file of files.filter((f) => f.url)) {
+    // A clip or picture added elsewhere (the agent's sandbox) shows in Studio's assets without a reload.
+    for (const file of files.filter((f) => f.url && media.get(f.path) !== f.url)) {
       if (!media.has(file.path)) place(file.path, "");
       media.set(file.path, file.url!);
+      changed(file.path);
     }
     // Read at once: each read is a trip through the tab, and a folder has a dozen files or more.
     const stale = files.filter((f) => !f.url && known.get(f.path) !== f.sha1);
