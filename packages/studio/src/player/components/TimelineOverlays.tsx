@@ -1,7 +1,8 @@
 import { TimelineAudioGainOverlay } from "./AudioGainDialog";
 import { useEffect, useMemo } from "react";
 import type { TimelineElement } from "../store/playerStore";
-import { EditPopover } from "./EditModal";
+import { AskAboutRange, EditPopover } from "./EditModal";
+import { embeddedInPromptwise } from "../../promptwise/embed";
 import { KeyframeDiamondContextMenu } from "./KeyframeDiamondContextMenu";
 import { ClipContextMenu } from "./ClipContextMenu";
 import { TrackGapContextMenu } from "./TrackGapContextMenu";
@@ -42,6 +43,18 @@ export function TimelineEditPopoverOverlay() {
   const { state } = useTimelineContext();
   const { showPopover, rangeSelection, setShowPopover, setRangeSelection } = state.overlays;
   if (!showPopover || !rangeSelection) return null;
+  const close = () => {
+    setShowPopover(false);
+    setRangeSelection(null);
+  };
+  if (embeddedInPromptwise)
+    return (
+      <AskAboutRange
+        rangeStart={rangeSelection.start}
+        rangeEnd={rangeSelection.end}
+        onDone={close}
+      />
+    );
   return (
     <EditPopover
       rangeStart={rangeSelection.start}

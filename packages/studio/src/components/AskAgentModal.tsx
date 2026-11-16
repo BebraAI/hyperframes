@@ -1,7 +1,6 @@
 import { useState, useRef, type CSSProperties } from "react";
 import { useMountEffect } from "../hooks/useMountEffect";
 import { type AgentModalAnchorPoint, clampNumber } from "../utils/studioHelpers";
-import { PROMPTWISE_AGENT, embeddedInPromptwise } from "../promptwise/embed";
 import { Button, cn } from "./ui";
 import { DialogHeader, dialogClasses } from "./ui/Dialog";
 import { useDialogBehavior } from "./ui/useDialogBehavior";
@@ -36,20 +35,13 @@ export interface AskAgentModalProps {
   onClose: () => void;
 }
 
-/** In promptwise the request goes to its own agent; elsewhere the prompt is copied for the user's. */
-const COPY = embeddedInPromptwise
-  ? {
-      title: `Ask ${PROMPTWISE_AGENT}`,
-      action: "Send",
-      key: "send",
-      context: `What ${PROMPTWISE_AGENT} gets with it`,
-    }
-  : {
-      title: "Copy prompt to AI agent",
-      action: "Copy prompt",
-      key: "copy",
-      context: "Context included in prompt",
-    };
+/** The prompt is copied for the user's own agent. (In promptwise, "Ask agent" opens promptwise's chat instead.) */
+const COPY = {
+  title: "Copy prompt to AI agent",
+  action: "Copy prompt",
+  key: "copy",
+  context: "Context included in prompt",
+};
 
 export function AskAgentModal({
   selectionLabel,
