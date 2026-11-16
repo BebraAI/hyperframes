@@ -282,6 +282,18 @@ describe("Studio's API over a tab's folder", () => {
     expect([...texts.keys()].filter((path) => path.startsWith(".hyperframes/"))).toEqual([]);
   });
 
+  it("names the agent's edit in Undo, not a change from outside the app", async () => {
+    const studio = await open();
+    // Studio's history starts with its first request.
+    await studio.fetch(at("/projects/d1/history"));
+    texts.set("index.html", HTML.replace("Made to move fast.", "The agent's title"));
+    await studio.refresh();
+    await vi.waitFor(async () => {
+      const history = await (await studio.fetch(at("/projects/d1/history"))).json();
+      expect(history.back?.label).toBe("Agent's edit");
+    });
+  });
+
   it("tells Studio about a clip added elsewhere, once", async () => {
     const studio = await open();
     extra = [{ path: "assets/new.mp4", sha1: "c".repeat(40), url: "https://media.test/new.mp4" }];

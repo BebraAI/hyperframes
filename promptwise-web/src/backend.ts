@@ -20,6 +20,7 @@ import {
   listStudioCatalog,
 } from "../../packages/cli/src/server/studioCatalog.ts";
 import type { Folder } from "./folder";
+import { AGENT_EDIT_LABEL } from "../../packages/studio/src/promptwise/agentEdit.ts";
 
 /** Studio's own notes beside the project (backups, history) stay in the page. */
 const LOCAL = /^\.hyperframes\//;
@@ -280,6 +281,8 @@ export async function openProject({
       historyRoot: `${HISTORY_ROOT}/${projectId}`,
       // One worker holds the folder: there is no other process to wait for.
       ownerWaitMs: 0,
+      // What changes the folder outside Studio here is promptwise's agent, so Undo names it.
+      outsideLabel: AGENT_EDIT_LABEL,
       onError: (error) => onError?.("/history", String(error)),
     }).catch((error: unknown) => {
       onError?.("/history", `Studio's undo is off: ${String(error)}`);

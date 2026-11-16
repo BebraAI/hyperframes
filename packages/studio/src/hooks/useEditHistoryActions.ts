@@ -4,6 +4,7 @@ import { STUDIO_MOTION_PATH } from "../components/editor/studioMotion";
 import { serializeStudioFileMutations } from "../utils/studioFileMutationCoordinator";
 import type { RestoreFiles } from "../utils/gsapUndoRestore";
 import { whileScriptWrites } from "../player/previewReloading";
+import { historyStepToast } from "../promptwise/agentEdit";
 import {
   beginStudioShownRestore,
   cancelNewestStudioWaitingPress,
@@ -136,7 +137,7 @@ export function useEditHistoryActions({
           forceReloadSdkSession?.();
         }
         await syncHistoryPreviewAfterApply(restore);
-        showToast(result.label, "info");
+        showToast(historyStepToast(direction, result.label), "info");
       }
     },
     [
