@@ -142,6 +142,8 @@ export interface StudioApiAdapter {
 
   /** URL to the hyperframe runtime JS (injected into preview HTML). */
   runtimeUrl: string;
+  /** Where the API is mounted, for the preview's `<base>`: `/api` unless a page hosts it elsewhere. */
+  apiBase?: string;
 
   gsapLocalRoot?: `/${string}`;
 

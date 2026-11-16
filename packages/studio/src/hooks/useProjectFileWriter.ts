@@ -7,6 +7,7 @@ import {
 } from "../utils/studioSaveDiagnostics";
 import { studioExpectedFileVersion, studioWriteHeaders } from "../utils/studioFileVersion";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 export interface UseProjectFileWriterOptions {
   projectId: string | null;
@@ -15,7 +16,7 @@ export interface UseProjectFileWriterOptions {
 async function fetchProjectFile(projectId: string | null, path: string, query: string) {
   if (!projectId) throw new Error("No active project");
   const response = await studioApiFetch(
-    `/api/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(path)}${query}`,
+    `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(path)}${query}`,
   );
   if (!response.ok) throw new Error(`Failed to read ${path}`);
   const data = (await response.json()) as { content?: string; version?: string };
@@ -65,7 +66,7 @@ export function useProjectFileWriter({ projectId }: UseProjectFileWriterOptions)
       let expectedVersion = await studioExpectedFileVersion(fileVersions, path, expectedContent);
       if (expectedVersion === undefined) {
         const preflight = await studioApiFetch(
-          `/api/projects/${encodeURIComponent(writeProjectId)}/files/${encodeURIComponent(path)}`,
+          `${STUDIO_API}/projects/${encodeURIComponent(writeProjectId)}/files/${encodeURIComponent(path)}`,
         );
         if (preflight.ok) {
           const data = (await preflight.json()) as { content?: string; version?: string };
@@ -88,7 +89,7 @@ export function useProjectFileWriter({ projectId }: UseProjectFileWriterOptions)
         let response: Response;
         try {
           response = await studioApiFetch(
-            `/api/projects/${encodeURIComponent(writeProjectId)}/files/${encodeURIComponent(path)}`,
+            `${STUDIO_API}/projects/${encodeURIComponent(writeProjectId)}/files/${encodeURIComponent(path)}`,
             {
               method: "PUT",
               headers: {

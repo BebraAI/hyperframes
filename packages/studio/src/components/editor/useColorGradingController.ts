@@ -31,6 +31,7 @@ import {
 } from "./useColorGradingPreviews";
 import { studioApiFetch } from "../../utils/studioApiFetch";
 import { authoredSrcPath } from "../../player/components/thumbnailUtils";
+import { STUDIO_API } from "../../utils/studioApiBase";
 
 export type { ColorGradingPresetPreviews, ColorGradingPreviewOptions };
 
@@ -72,7 +73,7 @@ function stripPreviewAssetPath(src: string, projectId: string): string | null {
   } catch {
     return null;
   }
-  const projectMarker = `/api/projects/${encodeURIComponent(projectId)}/preview/`;
+  const projectMarker = `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/preview/`;
   const genericMarker = "/preview/";
   const marker = pathname.includes(projectMarker) ? projectMarker : genericMarker;
   const index = pathname.indexOf(marker);

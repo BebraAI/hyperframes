@@ -1,3 +1,4 @@
+import { STUDIO_API } from "./studioApiBase";
 const PROJECT_HASH_PREFIX = "#project/";
 
 export interface ProjectHashRoute {
@@ -79,5 +80,5 @@ export function parseProjectIdFromHash(hash: string): string | null {
 
 export function buildProjectApiPath(projectId: string, suffix = ""): string {
   const normalizedSuffix = suffix && !suffix.startsWith("/") ? `/${suffix}` : suffix;
-  return `/api/projects/${encodeProjectId(projectId)}${normalizedSuffix}`;
+  return `${STUDIO_API}/projects/${encodeProjectId(projectId)}${normalizedSuffix}`;
 }

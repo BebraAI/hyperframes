@@ -21,6 +21,7 @@ import {
 import { useTrackDesignInput } from "../../contexts/DesignPanelInputContext";
 import { runWhenInputIdle } from "./overlayFrameLoop";
 import { studioApiFetch } from "../../utils/studioApiFetch";
+import { STUDIO_API } from "../../utils/studioApiBase";
 
 /* ------------------------------------------------------------------ */
 /*  Font helper functions                                              */
@@ -144,8 +145,8 @@ async function fetchFontList(url: string): Promise<string[]> {
 function loadFontLists(): void {
   if (fontLists.loaded) return;
   fontListsRequest ??= Promise.all([
-    fetchFontList("/api/fonts"),
-    fetchFontList("/api/fonts/google"),
+    fetchFontList(`${STUDIO_API}/fonts`),
+    fetchFontList(`${STUDIO_API}/fonts/google`),
   ])
     .then(([installed, google]) => {
       const names = google.concat(POPULAR_GOOGLE_FONT_FAMILIES);
@@ -357,7 +358,9 @@ export function FontFamilyField({
 
   const importSystemFont = async (family: string): Promise<ImportedFontAsset | null> => {
     if (!onImportFonts) return null;
-    const response = await studioApiFetch(`/api/fonts/file?family=${encodeURIComponent(family)}`);
+    const response = await studioApiFetch(
+      `${STUDIO_API}/fonts/file?family=${encodeURIComponent(family)}`,
+    );
     if (!response.ok) return null;
     const blob = await response.blob();
     const ext = response.headers.get("Content-Disposition")?.match(/\.(\w+)"?$/)?.[1] ?? "ttf";

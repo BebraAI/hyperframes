@@ -5,11 +5,11 @@ function thumbnailSource(source: string): string {
   const url = new URL(source, window.location.href);
   if (
     url.origin !== window.location.origin ||
-    !/^\/api\/projects\/[^/]+\/preview\/.+\.jpe?g$/i.test(url.pathname)
+    !/^(?:\/[^/]+)*?\/api\/projects\/[^/]+\/preview\/.+\.jpe?g$/i.test(url.pathname)
   )
     return source;
   url.pathname = url.pathname.replace(
-    /^(\/api\/projects\/[^/]+)\/preview\//,
+    /^((?:\/[^/]+)*?\/api\/projects\/[^/]+)\/preview\//,
     "$1/image-thumbnail/",
   );
   return url.href;

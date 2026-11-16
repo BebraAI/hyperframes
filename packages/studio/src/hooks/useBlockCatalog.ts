@@ -6,6 +6,7 @@ import {
   resolveBlockCategory,
 } from "../utils/blockCategories";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 type CatalogItem = RegistryItem & {
   category: BlockCategory;
@@ -15,7 +16,7 @@ let catalogCache: CatalogItem[] | null = null;
 let catalogRequest: Promise<CatalogItem[]> | null = null;
 
 function loadCatalog(): Promise<CatalogItem[]> {
-  catalogRequest ??= studioApiFetch("/api/registry/blocks")
+  catalogRequest ??= studioApiFetch(`${STUDIO_API}/registry/blocks`)
     .then((response) => {
       if (!response.ok) throw new Error("Failed to load catalog");
       return response.json() as Promise<RegistryItem[]>;

@@ -304,6 +304,14 @@ describe("registerPreviewRoutes", () => {
     expect(html).toContain('<base href="/api/projects/Take%20%232/preview/">');
   });
 
+  it("puts the preview's <base> under the API's mount when a page hosts it elsewhere", async () => {
+    const projectDir = createProjectDir();
+    const app = new Hono();
+    registerPreviewRoutes(app, createAdapter(projectDir, { apiBase: "/studio/p1/api" }));
+    const html = await (await app.request("http://localhost/projects/demo/preview")).text();
+    expect(html).toContain('<base href="/studio/p1/api/projects/demo/preview/">');
+  });
+
   it("serves the mark the runtime keys preview-only work on, ahead of the runtime script", async () => {
     const projectDir = createProjectDir();
     const app = new Hono();

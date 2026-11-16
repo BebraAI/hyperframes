@@ -11,6 +11,7 @@ import type { ExternalConflictSnapshot } from "../utils/externalConflictStorage"
 import { isSelfWriteEcho } from "./sdkSelfWriteRegistry";
 import { consumeStudioWriteToken } from "../utils/studioFileVersion";
 import { logReload } from "../utils/reloadDebug";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 type ExternalChangeDrainResult =
   | { status: "clean" }
@@ -129,7 +130,7 @@ export function sseFileChangeChannel(
   onDelivery: (delivery: unknown) => void,
   onReconnect: () => void,
 ): () => void {
-  const eventSource = new EventSource("/api/events");
+  const eventSource = new EventSource(`${STUDIO_API}/events`);
   eventSource.addEventListener("file-change", onDelivery);
   // Reopening the stream does not replay changes missed during a disconnect.
   let opened = false;

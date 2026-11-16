@@ -10,6 +10,7 @@ import { studioWriteHeaders } from "../utils/studioFileVersion";
 import { studioApiFetch } from "../utils/studioApiFetch";
 import { findUnsafeDomPatchValues } from "@hyperframes/core/studio-api/finite-mutation";
 import type { DomEditSelection } from "../components/editor/domEditingTypes";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 export function formatUnsafeFieldList(fields: Array<{ path: string }>): string {
   return fields.map((field) => field.path).join(", ");
@@ -103,7 +104,7 @@ export async function patchElementBatches(projectId: string, batches: DomEditPat
   const body = JSON.stringify({ batches });
   try {
     const response = await studioApiFetch(
-      `/api/projects/${encodeURIComponent(projectId)}/file-mutations/patch-element-batches`,
+      `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/file-mutations/patch-element-batches`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", ...studioWriteHeaders() },

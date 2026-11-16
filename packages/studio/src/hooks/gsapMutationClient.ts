@@ -1,5 +1,6 @@
 import { studioWriteHeaders } from "../utils/studioFileVersion";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 export class GsapPreviewConvergenceError extends Error {}
 export class GsapOwnershipProtocolError extends GsapPreviewConvergenceError {}
@@ -7,7 +8,7 @@ export class GsapOwnershipProtocolError extends GsapPreviewConvergenceError {}
 /** Verify rollback ownership support before any GSAP mutation can land. */
 export async function requireGsapOwnershipProtocol(projectId: string): Promise<void> {
   const response = await studioApiFetch(
-    `/api/projects/${encodeURIComponent(projectId)}/gsap-mutation-capabilities`,
+    `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/gsap-mutation-capabilities`,
   );
   if (!response.ok) {
     throw new GsapOwnershipProtocolError("Server does not support owned GSAP mutations");
@@ -31,7 +32,7 @@ export async function rollbackOwnedMutation(
     throw new Error(`Unsafe path: ${targetPath}`);
   }
   const response = await studioApiFetch(
-    `/api/projects/${encodeURIComponent(projectId)}/gsap-mutation-rollback/${encodeURIComponent(targetPath)}`,
+    `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/gsap-mutation-rollback/${encodeURIComponent(targetPath)}`,
     {
       method: "POST",
       // Deliberately unclaimed: a rollback runs because a mutation did not
@@ -97,7 +98,7 @@ export function requestGsapMutation(
   body: unknown,
 ): Promise<Response> {
   return studioApiFetch(
-    `/api/projects/${encodeURIComponent(projectId)}/${route}/${encodeURIComponent(filePath)}`,
+    `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/${route}/${encodeURIComponent(filePath)}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json", ...studioWriteHeaders() },

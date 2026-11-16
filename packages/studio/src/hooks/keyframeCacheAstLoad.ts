@@ -15,6 +15,7 @@ import {
   type MergeableKeyframe,
 } from "./gsapTweenSynth";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 export { resolveSelectorElementIds };
 
@@ -81,7 +82,7 @@ async function requestParsedAnimations(
   if (!isPreviewBooted(projectId) && !(await whenPreviewBooted(projectId))) return null;
   try {
     const res = await studioApiFetch(
-      `/api/projects/${encodeURIComponent(projectId)}/gsap-animations/${encodeURIComponent(sourceFile)}`,
+      `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/gsap-animations/${encodeURIComponent(sourceFile)}`,
       // Always revalidate; an unchanged file answers 304. No per-call timestamp
       // (a deterministic-render no-no).
       { cache: "no-cache" },

@@ -6,6 +6,7 @@ import { isRemoteAsset, type TimelineAssetKind } from "./timelineAssetDrop";
 import { roundToCenti } from "./rounding";
 import { studioApiFetch } from "./studioApiFetch";
 import { encodeUrlPath } from "@hyperframes/parsers";
+import { STUDIO_API } from "./studioApiBase";
 
 export interface EditingFile {
   path: string;
@@ -388,7 +389,7 @@ export async function resolveDroppedAssetDuration(
 }
 
 export function mediaMetadataUrl(projectId: string, assetPath: string): string {
-  return `/api/projects/${encodeURIComponent(projectId)}/media/metadata?path=${encodeURIComponent(assetPath)}`;
+  return `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/media/metadata?path=${encodeURIComponent(assetPath)}`;
 }
 
 /** Dropped video audio stream from the metadata endpoint. Failure answers false so the drop still lands muted. */

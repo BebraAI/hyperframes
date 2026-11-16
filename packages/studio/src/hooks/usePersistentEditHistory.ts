@@ -6,6 +6,7 @@ import { studioApiFetch } from "../utils/studioApiFetch";
 import { setStudioPendingEditClaimClock } from "../utils/studioPendingEdits";
 import type { RecordEditInput } from "../utils/studioFileHistory";
 import { generateId } from "../utils/generateId";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 interface ApplyCallbacks {
   readFile: (path: string) => Promise<string>;
@@ -120,7 +121,7 @@ function createOwnHistory() {
 const DEFAULT_COALESCE_MS = 300;
 
 function historyUrl(projectId: string, path = ""): string {
-  return `/api/projects/${encodeURIComponent(projectId)}/history${path}`;
+  return `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/history${path}`;
 }
 
 async function cantUndo(paths: string[] | undefined): Promise<ApplyResult> {

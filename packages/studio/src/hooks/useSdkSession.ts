@@ -7,6 +7,7 @@ import type { PublishSdkSession } from "../utils/sdkCutover";
 import { addExternalFileReloadListener } from "./externalFileReloadBus";
 import { whenPreviewBooted } from "../player/store/playerStore";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 /**
  * Why an optional project-file read produced no usable content. `stage: "read"`
@@ -196,7 +197,7 @@ async function readProjectFileOptional(
   const fetchStarted = performance.now();
   try {
     res = await studioApiFetch(
-      `/api/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(path)}?optional=1`,
+      `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(path)}?optional=1`,
     );
   } catch {
     return networkReadFailure(fetchStarted);

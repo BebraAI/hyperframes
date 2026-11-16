@@ -441,11 +441,11 @@ export const PREVIEW_BUNDLE_OPTIONS = {
   sceneParts: true,
 } as const satisfies BundleOptions;
 
-const previewBaseHref = (projectId: string) =>
-  `/api/projects/${encodeURIComponent(projectId)}/preview/`;
+const previewBaseHref = (apiBase: string | undefined, projectId: string) =>
+  `${apiBase ?? "/api"}/projects/${encodeURIComponent(projectId)}/preview/`;
 
-const withPreviewBase = (html: string, projectId: string) => {
-  const base = previewBaseHref(projectId);
+const withPreviewBase = (html: string, apiBase: string | undefined, projectId: string) => {
+  const base = previewBaseHref(apiBase, projectId);
   const mapped = withRootImportMap(withRootPathsRelative(html, base), base);
   return hasBaseElement(mapped) ? mapped : injectTagsAtHeadStart(mapped, `<base href="${base}">`);
 };
@@ -512,7 +512,10 @@ export function registerPreviewRoutes(api: Hono, adapter: PreviewApiAdapter): vo
         mainCompositionPath = diskMain.compositionPath;
       }
       // <base> and root paths under it, before the runtime adds the server's own root path
-      bundled = withPreviewRuntime(withPreviewBase(bundled, project.id), adapter.runtimeUrl);
+      bundled = withPreviewRuntime(
+        withPreviewBase(bundled, adapter.apiBase, project.id),
+        adapter.runtimeUrl,
+      );
       recordPreviewReferences(project.dir, bundled);
       recordPreviewBuilt(project.dir);
 
@@ -544,7 +547,7 @@ export function registerPreviewRoutes(api: Hono, adapter: PreviewApiAdapter): vo
       const fallback = resolveProjectMainHtml(project.dir, project.id);
       if (fallback) {
         const fallbackHtml = withPreviewRuntime(
-          withPreviewBase(ensureHfIds(fallback.html), project.id),
+          withPreviewBase(ensureHfIds(fallback.html), adapter.apiBase, project.id),
           adapter.runtimeUrl,
         );
         let fallbackAugmented = injectStudioPreviewAugmentations(
@@ -657,7 +660,7 @@ export function registerPreviewRoutes(api: Hono, adapter: PreviewApiAdapter): vo
     const stamped = pinSubCompHfIds(compFile, compPath);
     if (stamped === null) return c.text("not found", 404); // file removed between stat and read
 
-    const baseHref = previewBaseHref(project.id);
+    const baseHref = previewBaseHref(adapter.apiBase, project.id);
     let html = buildSubCompositionHtml(
       project.dir,
       compPath,
