@@ -8,18 +8,57 @@ function trimIdUnderscores(value: string): string {
   return value.slice(start, end);
 }
 
-export function buildTimelineAssetId(assetPath: string, existingIds: Iterable<string>): string {
-  const baseName = assetPath.slice(assetPath.lastIndexOf("/") + 1);
-  const normalized = baseName
-    .replace(/\.[^.]+$/, "")
-    .replace(/[^a-zA-Z0-9_-]+/g, "_")
-    .toLowerCase();
-  const baseId = trimIdUnderscores(normalized) || "asset";
+const KIND_WORDS: Record<string, string> = {
+  mp4: "video",
+  mov: "video",
+  webm: "video",
+  m4v: "video",
+  mp3: "audio",
+  wav: "audio",
+  m4a: "audio",
+  ogg: "audio",
+  aac: "audio",
+  png: "image",
+  jpg: "image",
+  jpeg: "image",
+  webp: "image",
+  gif: "image",
+  avif: "image",
+  svg: "image",
+};
+
+/** A name made by a machine (a UUID or a content hash), which says nothing to whoever reads the timeline. */
+const MACHINE_NAME =
+  /^(?:[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}|[0-9a-f]{24,})$/i;
+
+/**
+ * An id for a clip named `name` (a file's name without its extension, or a title), unique among `existingIds`. It
+ * never starts with a digit, which a CSS `#id` selector can't take, and `fallback` stands in for a machine-made name.
+ */
+export function timelineIdFromName(
+  name: string,
+  existingIds: Iterable<string>,
+  fallback = "asset",
+): string {
+  const readable = MACHINE_NAME.test(name.trim()) ? fallback : name;
+  const normalized = readable.replace(/[^a-zA-Z0-9_-]+/g, "_").toLowerCase();
+  const trimmed = trimIdUnderscores(normalized) || fallback;
+  const baseId = /^[0-9-]/.test(trimmed) ? `clip_${trimmed}` : trimmed;
   const ids = new Set(existingIds);
   if (!ids.has(baseId)) return baseId;
   let suffix = 2;
   while (ids.has(`${baseId}_${suffix}`)) suffix += 1;
   return `${baseId}_${suffix}`;
+}
+
+export function buildTimelineAssetId(assetPath: string, existingIds: Iterable<string>): string {
+  const baseName = assetPath.slice(assetPath.lastIndexOf("/") + 1);
+  const ext = /\.([^.]+)$/.exec(baseName)?.[1]?.toLowerCase() ?? "";
+  return timelineIdFromName(
+    baseName.replace(/\.[^.]+$/, ""),
+    existingIds,
+    KIND_WORDS[ext] ?? "asset",
+  );
 }
 
 function referenceChildren(element: Element): Iterable<Element> {

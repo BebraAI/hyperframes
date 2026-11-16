@@ -27,15 +27,27 @@ function mediaItem(item: unknown): PromptwiseMedia | null {
   return isHttp(thumb) ? { ...media, thumb } : media;
 }
 
+/** The names promptwise gave its media, by address: a clip placed from one is named after it, not its file. */
+const names = new Map<string, string>();
+
+/** The name promptwise gave the media at `url`, without a file extension; undefined for one it didn't send. */
+export function promptwiseMediaName(url: string): string | undefined {
+  return names
+    .get(url)
+    ?.replace(/\.(mp4|mov|webm|m4v|mp3|wav|m4a|ogg|aac|png|jpe?g|webp|gif|avif)$/i, "");
+}
+
 /** The project's media from promptwise's promptwise:media message; null for any other message. */
 export function promptwiseMedia(data: unknown): PromptwiseMedia[] | null {
   if (typeof data !== "object" || data === null) return null;
   const { type, items } = data as { type?: unknown; items?: unknown };
   if (type !== "promptwise:media" || !Array.isArray(items)) return null;
-  return items.flatMap((item: unknown) => {
-    const media = mediaItem(item);
-    return media ? [media] : [];
+  const media = items.flatMap((item: unknown) => {
+    const one = mediaItem(item);
+    return one ? [one] : [];
   });
+  for (const m of media) if (m.name !== m.kind) names.set(m.url, m.name);
+  return media;
 }
 
 /**

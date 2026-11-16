@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PromptwiseMediaView } from "../components/sidebar/PromptwiseMediaView";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
-import { promptwiseMedia, usePromptwiseMedia } from "./media";
+import { promptwiseMedia, promptwiseMediaName, usePromptwiseMedia } from "./media";
 
 vi.mock("./embed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./embed")>()),
@@ -106,5 +106,19 @@ describe("promptwise media", () => {
     expect([...host.querySelectorAll("[data-promptwise-media]")].map((c) => c.textContent)).toEqual(
       ["SoundMusic"],
     );
+  });
+});
+
+describe("promptwise media names", () => {
+  it("names a clip placed from promptwise's media after its title, not its UUID file", () => {
+    promptwiseMedia({
+      type: "promptwise:media",
+      items: [
+        { url: "https://media.test/02d44e15.mp4", name: "Beach take.mov", kind: "video" },
+        { url: "https://media.test/untitled.mp3", kind: "audio" },
+      ],
+    });
+    expect(promptwiseMediaName("https://media.test/02d44e15.mp4")).toBe("Beach take");
+    expect(promptwiseMediaName("https://media.test/untitled.mp3")).toBeUndefined();
   });
 });
