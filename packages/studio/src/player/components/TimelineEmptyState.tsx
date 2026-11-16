@@ -1,9 +1,13 @@
 import type { DragEventHandler } from "react";
 import { GUTTER, RULER_H } from "./timelineLayout";
+import { NewTrackAdd } from "./NewTrackAdd";
+import { UploadStatus } from "../../promptwise/uploads";
 
 interface TimelineEmptyStateProps {
   isDragOver: boolean;
   onFileDrop?: boolean;
+  /** Files from the computer onto the first track: the "+" here. */
+  onAddFiles?: (files: File[]) => void;
   onDragOver: DragEventHandler<HTMLDivElement>;
   onDragLeave: DragEventHandler<HTMLDivElement>;
   onDrop: DragEventHandler<HTMLDivElement>;
@@ -12,6 +16,7 @@ interface TimelineEmptyStateProps {
 export function TimelineEmptyState({
   isDragOver,
   onFileDrop,
+  onAddFiles,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -48,7 +53,7 @@ export function TimelineEmptyState({
       {/* Empty drop zone */}
       <div className="flex-1 flex items-center justify-center">
         <div
-          className={`flex items-center gap-3 px-6 py-3 border border-dashed rounded-lg transition-colors duration-150 ${
+          className={`relative flex items-center gap-3 px-6 py-3 border border-dashed rounded-lg transition-colors duration-150 ${
             isDragOver
               ? "border-studio-accent/60 bg-studio-accent/6"
               : "border-border-button-default"
@@ -75,28 +80,35 @@ export function TimelineEmptyState({
             </>
           ) : (
             <>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-text-tertiary shrink-0"
-              >
-                <rect x="2" y="2" width="20" height="20" rx="2" />
-                <path d="M7 2v20" />
-                <path d="M17 2v20" />
-                <path d="M2 7h20" />
-                <path d="M2 17h20" />
-              </svg>
-              <span className="text-[13px] text-text-tertiary">
-                {onFileDrop
-                  ? "Drop media here or describe your video to start"
-                  : "Describe your video to start creating"}
-              </span>
+              {onAddFiles && <NewTrackAdd onFiles={onAddFiles} className="relative" />}
+              <UploadStatus
+                idle={
+                  <>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-text-tertiary shrink-0"
+                    >
+                      <rect x="2" y="2" width="20" height="20" rx="2" />
+                      <path d="M7 2v20" />
+                      <path d="M17 2v20" />
+                      <path d="M2 7h20" />
+                      <path d="M2 17h20" />
+                    </svg>
+                    <span className="text-[13px] text-text-tertiary">
+                      {onFileDrop
+                        ? "Drop media here or describe your video to start"
+                        : "Describe your video to start creating"}
+                    </span>
+                  </>
+                }
+              />
             </>
           )}
         </div>

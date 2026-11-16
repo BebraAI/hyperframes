@@ -3,7 +3,7 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
-import { GhostLaneText, uploadProgress } from "./uploads";
+import { UploadStatus, uploadProgress } from "./uploads";
 
 vi.mock("./embed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./embed")>()),
@@ -26,7 +26,7 @@ const progress = (path: string, sent: number, total: number, done = false) => ({
 });
 
 it("shows what is uploading and how much is up, then the drop hint again once it's in", async () => {
-  const host = mountHost(<GhostLaneText acceptsMediaDrop />);
+  const host = mountHost(<UploadStatus idle="Drop media here" />);
   expect(host.textContent).toBe("Drop media here");
 
   await tell(progress("assets/photo.png", 0, 200));

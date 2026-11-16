@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { embeddedInPromptwise } from "./embed";
 
 /** How far one file Studio adds has got in promptwise: `sent` of `total` bytes in its storage. */
@@ -36,10 +36,10 @@ function usePromptwiseUploads(): { name: string; part: number } | null {
   return { name, part: total ? sent / total : 0 };
 }
 
-/** The empty lane's words: what is uploading, over a bar that fills as it goes up, or where to drop media. */
-export function GhostLaneText({ acceptsMediaDrop }: { acceptsMediaDrop: boolean }) {
+/** What is uploading, over a bar that fills as it goes up; `idle` while nothing is. */
+export function UploadStatus({ idle }: { idle: ReactNode }) {
   const uploading = usePromptwiseUploads();
-  if (!uploading) return acceptsMediaDrop ? <>Drop media here</> : null;
+  if (!uploading) return <>{idle}</>;
   const percent = Math.round(uploading.part * 100);
   return (
     <>

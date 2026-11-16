@@ -25,13 +25,19 @@ export function useAddFilesToNewTrack(
 }
 
 /** The empty lane's "+": media from promptwise's project (the Assets panel) or files from the computer. */
-export function NewTrackAdd({ onFiles }: { onFiles: (files: File[]) => void }) {
+export function NewTrackAdd({
+  onFiles,
+  className = "absolute left-1.5",
+}: {
+  onFiles: (files: File[]) => void;
+  className?: string;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const activatePanel = useDockLayoutStore((state) => state.activatePanel);
   return (
     // The lane lets pointers through to the timeline; the button takes its own, so a click doesn't seek or select.
     <div
-      className="pointer-events-auto absolute left-1.5"
+      className={`pointer-events-auto ${className}`}
       onPointerDown={(event) => event.stopPropagation()}
     >
       <Menu

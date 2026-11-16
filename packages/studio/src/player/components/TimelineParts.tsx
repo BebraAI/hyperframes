@@ -53,8 +53,8 @@ export function TimelineRazorGuide() {
 export { TimelineOverlays } from "./TimelineOverlays";
 
 export function TimelineEmptyStatePart() {
-  const { meta } = useTimelineContext();
-  return <TimelineEmptyState {...meta.emptyState} />;
+  const { meta, state } = useTimelineContext();
+  return <TimelineEmptyState {...meta.emptyState} onAddFiles={state.canvas.onAddFilesToNewTrack} />;
 }
 
 export function TimelineShortcutHint() {

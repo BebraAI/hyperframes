@@ -8,7 +8,7 @@ import { TimelineLanes } from "./TimelineLanes";
 import { TimelineGestureOverlay } from "./TimelineGestureOverlay";
 import { useTimelineContext } from "./TimelineProvider";
 import { NewTrackAdd } from "./NewTrackAdd";
-import { GhostLaneText } from "../../promptwise/uploads";
+import { UploadStatus } from "../../promptwise/uploads";
 
 // A dropped clip's length is unknown until it lands; the preview shows a default.
 const DROP_PREVIEW_SECONDS = 3;
@@ -97,7 +97,7 @@ export const TimelineCanvas = memo(function TimelineCanvas() {
           }}
         >
           {props.onAddFilesToNewTrack && <NewTrackAdd onFiles={props.onAddFilesToNewTrack} />}
-          <GhostLaneText acceptsMediaDrop={props.acceptsMediaDrop} />
+          <UploadStatus idle={props.acceptsMediaDrop && "Drop media here"} />
         </div>
       )}
 
