@@ -2,12 +2,15 @@
 // which reads and writes the folder through promptwise's studio/files routes. So Studio, and the compositions its
 // preview runs, never hold the user's session.
 
-/** A file in the folder: text has no url; a binary file is a link to its copy in promptwise's storage. */
-export type FolderFile = { path: string; sha1: string; url: string | null };
+/**
+ * A file in the folder: text has no url; a binary file is a link to its copy in promptwise's storage. A listing asked
+ * for with its content carries a text file's text too.
+ */
+export type FolderFile = { path: string; sha1: string; url: string | null; content?: string };
 
 /** One request to the tab, and what it answers. */
 export type FolderRequest =
-  | { op: "list" }
+  | { op: "list"; content?: boolean }
   | { op: "read"; path: string }
   | { op: "write"; path: string; content: string; base: string | null }
   | { op: "remove"; path: string; base: string }
@@ -32,7 +35,9 @@ export function folder(send: FolderTransport) {
     return reply;
   };
   return {
-    list: async () => (await ok({ op: "list" }))?.files ?? [],
+    /** With `content`, the text files come with their text, where the tab gives it (an older one doesn't). */
+    list: async (content = false) =>
+      (await ok(content ? { op: "list", content } : { op: "list" }))?.files ?? [],
     read: async (path: string) => (await ok({ op: "read", path }))?.content ?? "",
     write: async (path: string, content: string, base: string | null) =>
       (await ok({ op: "write", path, content, base }))?.sha1 ?? null,
