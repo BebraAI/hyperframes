@@ -25,13 +25,23 @@ export type FolderReply = {
 
 export type FolderTransport = (request: FolderRequest) => Promise<FolderReply>;
 
+/** What the user reads when promptwise turns a request down, instead of its status code. */
+export function refusal(status: number, op: FolderRequest["op"]): string {
+  if (status === 400 && op === "upload") return "this file type isn't supported";
+  if (status === 413) return "files can be up to 100 MB";
+  if (status === 401 || status === 403) return "you're signed out; reload the page";
+  if (status === 404) return "this timeline isn't there any more";
+  return op === "upload"
+    ? `the upload failed (${status}); try again`
+    : `couldn't save (${status}); try again`;
+}
+
 /** The folder over a transport. A write or delete over a version that changed meanwhile (412) gets null or false. */
 export function folder(send: FolderTransport) {
   const ok = async (request: FolderRequest) => {
     const reply = await send(request);
     if (reply.status === 412) return null;
-    if (reply.status >= 400)
-      throw new Error(`promptwise answered ${reply.status} to ${request.op}`);
+    if (reply.status >= 400) throw new Error(refusal(reply.status, request.op));
     return reply;
   };
   return {
