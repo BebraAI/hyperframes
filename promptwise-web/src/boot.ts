@@ -21,7 +21,10 @@ async function startWorker(): Promise<void> {
     const type = event.data?.type;
     // The request carries no session; the tab answers on the port it brings. The tab's origin isn't known here.
     if (type === "promptwise:folder") window.parent.postMessage(event.data, "*", [...event.ports]);
-    if (type === "promptwise:studio-error") window.parent.postMessage(event.data, "*");
+    if (type === "promptwise:studio-error") {
+      console.warn(`[promptwise] ${event.data.path}: ${event.data.message}`);
+      window.parent.postMessage(event.data, "*");
+    }
     // Studio's own file-change events, which it takes from this page rather than a stream held open on the worker.
     if (type === "promptwise:file-change") window.postMessage(event.data, location.origin);
   };
