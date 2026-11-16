@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>Starting Studio</title>
+<p>Starting Studio's in-browser backend…</p>
+<script type="module">
+await navigator.serviceWorker.register("/sw.js", { type: "module", scope: "/" });
+await navigator.serviceWorker.ready;
+location.replace("/#project/demo");
+</script>

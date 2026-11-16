@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Studio backend in the browser</title>
+<style>body{font:13px system-ui;margin:16px}td,th{padding:3px 8px;border-bottom:1px solid #ddd;text-align:left}.ok{color:#080}.bad{color:#b00}</style></head>
+<body><h3>Studio's API in the browser, over an in-memory folder</h3><table id="t"><tr><th>Request</th><th>Status</th><th>ms</th><th>Result</th></tr></table>
+<script type="module">
+import { createBackend } from "./dist/backend.js";
+const files = await (await fetch("./files.json")).json();
+const t0 = performance.now();
+const { api, vol } = createBackend("demo", files);
+const row = (name, status, ms, note) => { const tr = document.createElement("tr"); tr.innerHTML = `<td>${name}</td><td class="${status < 400 ? "ok" : "bad"}">${status}</td><td>${ms}</td><td>${note}</td>`; document.getElementById("t").append(tr); };
+row("create backend", 200, Math.round(performance.now() - t0), `${Object.keys(files).length} files in memory`);
+async function hit(method, path, body, headers = {}) {
+  const s = performance.now();
+  try {
+    const res = await api.fetch(new Request(`http://studio.local/api${path}`, { method, body, headers }));
+    const text = await res.text();
+    row(`${method} ${path}`, res.status, Math.round(performance.now() - s), text.slice(0, 160).replace(/</g, "&lt;"));
+    return { res, text };
+  } catch (e) { row(`${method} ${path}`, 599, Math.round(performance.now() - s), "THROWS: " + String(e.stack || e).slice(0, 300).replace(/</g, "&lt;")); return {}; }
+}
+await hit("GET", "/projects");
+await hit("GET", "/projects/demo");
+const f = await hit("GET", "/projects/demo/files/index.html");
+const pv = await hit("GET", "/projects/demo/preview");
+window.previewHtml = pv.text;
+await hit("GET", "/projects/demo/preview/compositions/title.html");
+await hit("GET", "/projects/demo/lint");
+await hit("GET", "/projects/demo/signature");
+await hit("GET", "/projects/demo/gsap-mutation-capabilities");
+const before = vol.readFileSync("/projects/main/index.html", "utf8");
+await hit("PUT", "/projects/demo/files/index.html", before.replace("</body>", "<!-- edited in the browser --></body>"));
+row("file in memory changed", vol.readFileSync("/projects/main/index.html", "utf8").includes("edited in the browser") ? 200 : 500, 0, "");
+await hit("GET", "/projects/demo/history");
+await hit("GET", "/projects/demo/waveform/assets/x.mp3");
+window.done = true;
+</script></body></html>
