@@ -4,6 +4,18 @@ import { Volume, createFsFromVolume } from "memfs";
 export const vol = new Volume();
 const fs = createFsFromVolume(vol);
 export default fs;
+// memfs gives a file's ctime as its birthtime, which moves on every change: Studio's history takes a folder whose
+// birthtime moved for another project. A file's birthtime here is when it was first looked at, then kept.
+const build = fs.Stats.build;
+fs.Stats.build = (node, bigint) => {
+  const stats = build(node, bigint);
+  node.birthtime ??= stats.birthtime;
+  stats.birthtime = node.birthtime;
+  const ms = node.birthtime.getTime();
+  stats.birthtimeMs = bigint ? BigInt(ms) : ms;
+  if (bigint) stats.birthtimeNs = BigInt(ms) * 1000000n;
+  return stats;
+};
 export const constants = fs.constants;
 export const promises = fs.promises;
 export const access = (...a) => fs.access(...a);

@@ -10,6 +10,7 @@ import { TIMELINE_VIEWPORT_BUDGETS } from "../lib/timelineViewportBudgets";
 import { ThumbnailTiles } from "./ThumbnailTiles";
 import { computeThumbnailStrip, probeImageAspect } from "./thumbnailUtils";
 import { studioApiFetch } from "../../utils/studioApiFetch";
+import { serverRendersThumbnails } from "../../hooks/promptwiseFileChangeChannel";
 
 interface CompositionThumbnailProps {
   previewUrl: string;
@@ -108,6 +109,8 @@ export function compositionThumbnailRequest(
 }
 
 async function loadCompositionImage(url: string, signal: AbortSignal) {
+  // Asking a server that can't render one only fills the console with 501s; the tile keeps its label.
+  if (!serverRendersThumbnails()) throw new Error("Composition thumbnails aren't rendered here");
   const response = await studioApiFetch(url, { signal });
   if (!response.ok) throw new Error(`Composition thumbnail failed (${response.status})`);
   const blob = await response.blob();

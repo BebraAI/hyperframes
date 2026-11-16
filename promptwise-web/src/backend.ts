@@ -9,6 +9,8 @@ import { dirname } from "node:path";
 import {
   createStudioApi,
   fileContentVersion,
+  historyCache,
+  openProjectHistory,
   PREVIEW_BUNDLE_OPTIONS,
 } from "../../packages/studio-server/src/index.ts";
 import { bundleToSingleHtml } from "../../packages/core/src/compiler/index.ts";
@@ -21,6 +23,9 @@ import type { Folder } from "./folder";
 
 /** Studio's own notes beside the project (backups, history) stay in the page. */
 const LOCAL = /^\.hyperframes\//;
+
+/** Studio's edit history (its Undo), in memory beside the folder: it lasts as long as the worker. */
+const HISTORY_ROOT = "/history";
 
 const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
 
@@ -76,6 +81,8 @@ export async function openProject({
         : String(vol.readFileSync(local(path), "utf8"));
     const version = text === null ? null : fileContentVersion(text);
     onChange?.({ path, version, projectId, affectsPreview: true, affectedCompositions: null });
+    // The history records a change made elsewhere (the agent's) as an outside change, as the CLI's watcher tells it.
+    void histories.peek(dir)?.then((history) => history?.noteChange(path));
   };
 
   /** Takes in what changed in promptwise since the last look. */
@@ -139,13 +146,29 @@ export async function openProject({
   let queue: Promise<unknown> = Promise.resolve();
   const serial = (fn: () => Promise<void>) => (queue = queue.then(fn, fn));
 
+  const histories = historyCache((projectDir) =>
+    openProjectHistory({
+      projectDir,
+      historyRoot: `${HISTORY_ROOT}/${projectId}`,
+      // One worker holds the folder: there is no other process to wait for.
+      ownerWaitMs: 0,
+      onError: (error) => onError?.("/history", String(error)),
+    }).catch((error: unknown) => {
+      onError?.("/history", `Studio's undo is off: ${String(error)}`);
+      histories.forget(projectDir);
+      return null;
+    }),
+  );
+
   vol.rmSync(dir, { recursive: true, force: true });
+  vol.rmSync(`${HISTORY_ROOT}/${projectId}`, { recursive: true, force: true });
   vol.mkdirSync(dir, { recursive: true });
   await pull();
   opened = true;
 
   const project = { id: projectId, dir };
   const adapter = {
+    history: () => histories.get(dir),
     listProjects: () => [project],
     resolveProject: (id: string) => (id === projectId ? project : null),
     async bundle(projectDir: string, options: object) {
@@ -239,6 +262,8 @@ export async function openProject({
     },
     /** Looks for changes made elsewhere: Studio's page asks every few seconds while it's open. */
     refresh: () => serial(pull),
+    /** Stops the history's timers and lets the folder go. */
+    close: () => histories.closeAll(),
   };
 }
 export type StudioBackend = Awaited<ReturnType<typeof openProject>>;

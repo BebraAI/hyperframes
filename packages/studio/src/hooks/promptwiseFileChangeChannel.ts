@@ -16,3 +16,6 @@ export function promptwiseFileChangeChannel(onDelivery: (delivery: unknown) => v
 /** Whether this page runs on promptwise-web's worker: its boot script says so before Studio loads. */
 export const onPromptwiseWorker = () =>
   (globalThis as { promptwiseWorkerFeed?: boolean }).promptwiseWorkerFeed === true;
+
+/** Whether Studio's server renders thumbnails: promptwise-web's worker has no browser to render them with (501). */
+export const serverRendersThumbnails = () => !onPromptwiseWorker();

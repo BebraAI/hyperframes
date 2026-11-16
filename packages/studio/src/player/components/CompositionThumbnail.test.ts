@@ -114,6 +114,28 @@ describe("CompositionThumbnail", () => {
     return probe;
   }
 
+  // promptwise-web's worker answers every thumbnail with 501: the console filled with them on each edit.
+  it("asks for no thumbnail on promptwise's browser backend, and keeps the label", async () => {
+    (globalThis as { promptwiseWorkerFeed?: boolean }).promptwiseWorkerFeed = true;
+    try {
+      root = createRoot(host);
+      await act(async () => {
+        root!.render(
+          React.createElement(CompositionThumbnail, {
+            previewUrl: "/api/projects/demo/preview",
+            label: "caption-word-pop",
+            labelColor: "#fff",
+          }),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+      expect(host.textContent).toContain("caption-word-pop");
+    } finally {
+      delete (globalThis as { promptwiseWorkerFeed?: boolean }).promptwiseWorkerFeed;
+    }
+  });
+
   it("renders visible tiles after the scheduled off-DOM probe loads", async () => {
     const probe = await renderThumbnail();
 

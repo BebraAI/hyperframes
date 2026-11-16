@@ -7,6 +7,7 @@ import {
 } from "../../player/lib/thumbnailScheduler";
 import type { PreviewCompositionSize } from "../../utils/previewCompositionSize";
 import { studioApiFetch } from "../../utils/studioApiFetch";
+import { serverRendersThumbnails } from "../../hooks/promptwiseFileChangeChannel";
 
 /** Frame 0 as the thumbnail route last rendered it; `cachedOnly` never starts a render. */
 function previewPosterUrl(projectId: string, cachedOnly: boolean): string {
@@ -83,7 +84,11 @@ export function usePreviewPoster(
     [visit, renderMissingPoster],
   );
   return {
-    mountPoster: !directUrl && (coverDoneFor !== visit || posterSettledFor !== visit),
+    // No poster where the server renders none: the live preview shows on its own, as with a direct URL.
+    mountPoster:
+      !directUrl &&
+      serverRendersThumbnails() &&
+      (coverDoneFor !== visit || posterSettledFor !== visit),
     hidePoster: coverDoneFor === visit,
     onLiveReadyToShowChange,
     onPreviewError: () => setCoverDoneFor(visit),

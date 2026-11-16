@@ -18,8 +18,11 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
   them to the page as Studio's own `file-change` events, by message. No request is held open on the worker: one that
   is keeps a new deploy from taking over, and Chrome stops it after five minutes, sending requests past the worker.
   `__pull` also says which build answers; when none does, the page reloads once, then the tab falls back to the
-  sandbox. Binary files are links to promptwise's copy; uploads, renders, thumbnails and the ffmpeg
-  routes stay with promptwise. The catalog comes from the fork's registry on GitHub, and an install writes into the
+  sandbox. Binary files are links to promptwise's copy; renders and the ffmpeg routes stay with promptwise.
+- Thumbnails aren't rendered here (no browser to render with): Studio asks for none on this backend
+  (`serverRendersThumbnails`), so tiles keep their label and the preview shows without a poster.
+- Studio's undo history (`openProjectHistory`) runs over the same memfs, under `/history/<docId>`: it lasts as long
+  as the worker, and a change from elsewhere is recorded as an outside change. The catalog comes from the fork's registry on GitHub, and an install writes into the
   folder (`packages/cli/src/server/studioCatalog.ts`, shared with the CLI).
 - `shims/` stand in for Node's built-ins (`node:fs` is memfs).
 
