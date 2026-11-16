@@ -1,7 +1,7 @@
 // fallow-ignore-file complexity
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type FileChange, openProject } from "./backend";
 import { folder, type FolderRequest, type FolderReply } from "./folder";
 
@@ -42,6 +42,7 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
 const HTML =
   '<!doctype html><html><body><div data-composition-id="main" data-width="1920" data-height="1080"><h1 id="title">Made to move fast.</h1></div></body></html>';
 let changes: FileChange[];
+let opened: Awaited<ReturnType<typeof openProject>>[] = [];
 const open = () =>
   openProject({
     prefix: "/studio/d1",
@@ -49,7 +50,7 @@ const open = () =>
     folder: folder(tab),
     runtimeUrl: "https://app.test/runtime.js",
     onChange: (change) => changes.push(change),
-  });
+  }).then((studio) => (opened.push(studio), studio));
 const at = (path: string, init?: RequestInit) =>
   new Request(`https://studio.test/studio/d1/api${path}`, init);
 
@@ -60,6 +61,10 @@ describe("Studio's API over a tab's folder", () => {
     uploads = new Map();
     extra = [];
     changes = [];
+  });
+  afterEach(async () => {
+    await Promise.all(opened.map((studio) => studio.close()));
+    opened = [];
   });
 
   it("serves the folder's files and a preview with its <base> under the page's folder", async () => {
@@ -190,6 +195,41 @@ describe("Studio's API over a tab's folder", () => {
       vi.unstubAllGlobals();
     }
   }, 30_000);
+
+  // Cmd+Z in Studio did nothing here: the browser backend had no history, so /history answered 404.
+  it("undoes Studio's own edit and sends the file back as it was", async () => {
+    const studio = await open();
+    const edited = HTML.replace("Made to move fast.", "Launch day is here");
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: edited,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    const claim = await studio.fetch(
+      at("/projects/d1/history/claim", {
+        method: "POST",
+        body: JSON.stringify({ label: "Edit title", paths: ["index.html"] }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const claimed = await claim.json();
+    expect(claimed.claimed).toEqual({ id: expect.any(String) });
+
+    const history = await (await studio.fetch(at("/projects/d1/history"))).json();
+    expect(history.back?.label).toBe("Edit title");
+    const step = await studio.fetch(
+      at("/projects/d1/history/step", {
+        method: "POST",
+        body: JSON.stringify({ direction: "back" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    expect((await step.json()).entry?.undoes).toBe(claimed.claimed.id);
+    expect(texts.get("index.html")).toBe(HTML);
+    expect([...texts.keys()].filter((path) => path.startsWith(".hyperframes/"))).toEqual([]);
+  });
 
   it("tells Studio about a clip added elsewhere, once", async () => {
     const studio = await open();

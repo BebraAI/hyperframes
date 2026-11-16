@@ -6,6 +6,9 @@ process.env ??= {};
 process.cwd ??= () => "/";
 process.platform ??= "linux";
 process.versions ??= { node: "22.0.0" };
+// Studio's history yields with setImmediate, which browsers don't have.
+globalThis.setImmediate ??= (fn, ...args) => setTimeout(fn, 0, ...args);
+globalThis.clearImmediate ??= (id) => clearTimeout(id);
 
 // The buffer polyfill has no base64url, which Node's Buffer has and Studio's backup journal uses.
 const toString = Buffer.prototype.toString;
