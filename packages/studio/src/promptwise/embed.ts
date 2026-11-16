@@ -1,7 +1,46 @@
 export const embeddedInPromptwise = typeof window !== "undefined" && window.parent !== window;
 
+/** What the user pointed at when they asked promptwise's agent from Studio. */
+export type PromptwiseAskContext =
+  | {
+      kind: "element";
+      handle: string;
+      file: string;
+      label: string;
+      tag: string;
+      time: number;
+      markup?: string;
+    }
+  | {
+      kind: "block";
+      name: string;
+      title: string;
+      description: string;
+      category: string;
+      webgl: boolean;
+      time: number;
+    }
+  | { kind: "range"; start: number; end: number; clips: { id: string; label: string }[] }
+  | {
+      kind: "lint";
+      findings: { code?: string; severity: string; message: string; file?: string }[];
+    }
+  /** An animation of the element selected in Studio. */
+  | { kind: "animation"; animationId: string; summary: string };
+
+/** promptwise's agent is its chat's: the request goes to its page, which sends it with what it's about. */
+export const PROMPTWISE_AGENT = "Wisey";
+
+/**
+ * Asks promptwise's agent instead of copying a prompt for an outside one: with `instruction` the page
+ * sends it at once; without, it opens its chat with the context waiting for the user's words.
+ */
+export function askPromptwise(ask: { instruction?: string; context?: PromptwiseAskContext } = {}) {
+  window.parent.postMessage({ type: "promptwise:ask-agent", ...ask }, "*");
+}
+
 export function askPromptwiseAgent() {
-  window.parent.postMessage({ type: "promptwise:ask-agent" }, "*");
+  askPromptwise();
 }
 
 /** Where a film opens in promptwise's tab: a second in, where its first shot has arrived, not its empty first frame. */

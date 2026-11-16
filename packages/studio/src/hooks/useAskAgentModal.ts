@@ -8,6 +8,8 @@ import { liveMarkupWithoutPreviewMarks } from "../utils/authoredSource";
 import { buildElementAgentPrompt, type DomEditSelection } from "../components/editor/domEditing";
 import { usePlayerStore } from "../player";
 import { studioApiFetch } from "../utils/studioApiFetch";
+import { askPromptwise, embeddedInPromptwise } from "../promptwise/embed";
+import { mintElementHandle, patchTargetAddress } from "../webmcp/handles";
 
 // ── Types ──
 
@@ -103,6 +105,26 @@ export function useAskAgentModal({
         sourceFilePath: toProjectAbsolutePath(projectDir, targetPath),
       });
 
+      if (embeddedInPromptwise) {
+        // promptwise's own agent gets the request with what it's about, by the handle its studio tool takes.
+        askPromptwise({
+          instruction: userInstruction,
+          context: {
+            kind: "element",
+            handle:
+              mintElementHandle(
+                patchTargetAddress(domEditSelection, activeCompPath, projectIdRef.current),
+              ) ?? "",
+            file: targetPath,
+            label: domEditSelection.label,
+            tag: domEditSelection.tagName.toLowerCase(),
+            time: usePlayerStore.getState().currentTime,
+            markup: tagSnippet.slice(0, 4000),
+          },
+        });
+        setAgentModalOpen(false);
+        return;
+      }
       const copied = await copyTextToClipboard(prompt);
       if (!copied) {
         showToast("Could not copy prompt to clipboard.", "error");
@@ -122,6 +144,7 @@ export function useAskAgentModal({
       agentPromptTagSnippet,
       domEditSelection,
       projectDir,
+      projectIdRef,
       showToast,
     ],
   );

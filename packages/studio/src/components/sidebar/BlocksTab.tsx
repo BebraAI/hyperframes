@@ -3,6 +3,7 @@ import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { SearchInput } from "../ui/SearchInput";
 import { PromptPreviewModal } from "./PromptPreviewModal";
+import { embeddedInPromptwise, type PromptwiseAskContext } from "../../promptwise/embed";
 import { useBlockCatalog } from "../../hooks/useBlockCatalog";
 import {
   BLOCK_CATEGORIES,
@@ -19,6 +20,13 @@ export interface BlockPreviewInfo {
   title: string;
 }
 
+/** What a card's "Ask agent" opens: the prompt to edit, and in promptwise the block it's about. */
+interface PromptRequest {
+  title: string;
+  prompt: string;
+  context?: PromptwiseAskContext;
+}
+
 interface BlocksTabProps {
   onAddBlock?: (blockName: string) => void | Promise<void>;
   onPreviewBlock?: (preview: BlockPreviewInfo | null) => void;
@@ -28,7 +36,7 @@ interface BlocksTabProps {
 export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }: BlocksTabProps) {
   const { loading, error, search, setSearch, category, setCategory, filteredBlocks } =
     useBlockCatalog();
-  const [promptModal, setPromptModal] = useState<{ title: string; prompt: string } | null>(null);
+  const [promptModal, setPromptModal] = useState<PromptRequest | null>(null);
 
   if (loading) {
     return (
@@ -126,6 +134,7 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
           <PromptPreviewModal
             title={promptModal.title}
             prompt={promptModal.prompt}
+            context={promptModal.context}
             onClose={() => setPromptModal(null)}
           />,
           document.body,
@@ -291,7 +300,7 @@ function BlockCard({
   posterUrl?: string;
   videoUrl?: string;
   onAdd?: () => void | Promise<void>;
-  onShowPrompt?: (info: { title: string; prompt: string }) => void;
+  onShowPrompt?: (info: PromptRequest) => void;
   onPreview?: (preview: BlockPreviewInfo | null) => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -358,6 +367,23 @@ function BlockCard({
         })),
         compositionDimensions: compositionDimensions ?? undefined,
       };
+      if (embeddedInPromptwise) {
+        // promptwise's agent gets the block as context and knows how to add it: the user only says what they want.
+        onShowPrompt?.({
+          title,
+          prompt: `Add "${title}" to my composition.`,
+          context: {
+            kind: "block",
+            name,
+            title,
+            description,
+            category,
+            webgl: needsWebGL === true,
+            time: context.currentTime,
+          },
+        });
+        return;
+      }
       const prompt = buildAgentPrompt(title, name, description, category, blockType, context);
       onShowPrompt?.({ title, prompt });
     },
@@ -370,6 +396,7 @@ function BlockCard({
       activeCompPath,
       compositionDimensions,
       onShowPrompt,
+      needsWebGL,
     ],
   );
 
