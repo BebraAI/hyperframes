@@ -13,7 +13,7 @@ export function uploadProgress(data: unknown): Progress | null {
 }
 
 /** The files going up now, as one line: "photo.png" or "3 files", and the share of their bytes that is up. */
-function usePromptwiseUploads(): { name: string; part: number } | null {
+export function usePromptwiseUploads(): { name: string; part: number } | null {
   const [uploads, setUploads] = useState<Record<string, Progress>>({});
   // eslint-disable-next-line no-restricted-syntax
   useEffect(() => {
@@ -40,6 +40,11 @@ function usePromptwiseUploads(): { name: string; part: number } | null {
 export function GhostLaneText({ acceptsMediaDrop }: { acceptsMediaDrop: boolean }) {
   const uploading = usePromptwiseUploads();
   if (!uploading) return acceptsMediaDrop ? <>Drop media here</> : null;
+  return <UploadingText uploading={uploading} />;
+}
+
+/** "Uploading photo.png · 42%" over a bar that fills as it goes up; the parent is `relative`. */
+export function UploadingText({ uploading }: { uploading: { name: string; part: number } }) {
   const percent = Math.round(uploading.part * 100);
   return (
     <>

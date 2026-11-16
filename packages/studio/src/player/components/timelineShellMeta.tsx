@@ -20,6 +20,7 @@ type ViewportHandlers = Pick<
 export interface TimelineShellMetaInputs {
   isDragOver: boolean;
   hasFileDrop: boolean;
+  addFiles?: (files: File[]) => void;
   drop: Pick<ViewportHandlers, "onDragOver" | "onDragLeave" | "onDrop">;
   pointer: Pick<ViewportHandlers, "onPointerMove" | "onPointerUp" | "onPointerCancel"> & {
     onPointerDown: TimelineViewportProps["onPointerDown"];
@@ -49,7 +50,12 @@ export interface TimelineShellMetaInputs {
 export function buildTimelineShellMeta(input: TimelineShellMetaInputs): TimelineMeta {
   const { drop, pointer, razor, theme, activeTool } = input;
   return buildTimelineMeta({
-    emptyState: { isDragOver: input.isDragOver, onFileDrop: input.hasFileDrop, ...drop },
+    emptyState: {
+      isDragOver: input.isDragOver,
+      onFileDrop: input.hasFileDrop,
+      onAddFiles: input.addFiles,
+      ...drop,
+    },
     container: {
       ref: input.setContainerRef,
       "aria-label": "Timeline track view",

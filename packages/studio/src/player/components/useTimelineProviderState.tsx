@@ -552,6 +552,7 @@ export function useTimelineProviderState({
   const timelineMeta = buildTimelineShellMeta({
     isDragOver: assetDrop.isDragOver,
     hasFileDrop: !!onFileDrop && !readOnlyPress,
+    addFiles,
     drop: {
       onDragOver: assetDrop.handleAssetDragOver,
       onDragLeave: assetDrop.handleAssetDragLeave,
