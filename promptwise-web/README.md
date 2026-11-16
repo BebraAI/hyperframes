@@ -14,7 +14,9 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
 - The folder comes from the tab, never from promptwise directly (`folder.ts`): Studio and the compositions its
   preview runs hold no session. Serve it from an origin of its own.
 - Studio's writes go back over the version they read (sha1); one that lost to a change made elsewhere takes that
-  change. Every 5 seconds Studio's page asks the worker (`__pull`) to look for changes made elsewhere; the worker sends
+  change. The page asks the worker to open the folder as soon as the worker runs, while Studio's code (preloaded by
+  `index.html`) downloads: one listing that carries the text files' text (`list` with `content`; a tab that leaves the
+  text out gets a read per file). Until Studio renders, `#root` shows a loader. Every 5 seconds Studio's page asks the worker (`__pull`) to look for changes made elsewhere; the worker sends
   them to the page as Studio's own `file-change` events, by message. No request is held open on the worker: one that
   is keeps a new deploy from taking over, and Chrome stops it after five minutes, sending requests past the worker.
   `__pull` also says which build answers; when none does, the page reloads once, then the tab falls back to the

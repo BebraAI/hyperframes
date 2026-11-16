@@ -81,10 +81,14 @@ function project(docId: string): Promise<StudioBackend> {
   return opened;
 }
 
-/** Studio's page asks every few seconds (boot.ts): look for changes made elsewhere, and say this worker answers. */
+/**
+ * Studio's page asks every few seconds (boot.ts): look for changes made elsewhere, and say this worker answers. Its
+ * first ask, made before Studio's own code has loaded, opens the folder, so Studio finds it read.
+ */
 async function pull(docId: string): Promise<Response> {
+  const opening = !projects.has(docId);
   await project(docId)
-    .then((backend) => backend.refresh())
+    .then((backend) => (opening ? undefined : backend.refresh()))
     .catch(() => {});
   return new Response("ok", {
     headers: { "x-promptwise-worker": STUDIO_BUILD, "cache-control": "no-store" },

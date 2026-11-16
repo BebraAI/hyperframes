@@ -12,10 +12,24 @@ let texts: Map<string, string>;
 let asked: string[];
 let uploads: Map<string, string>;
 let extra: { path: string; sha1: string; url: string }[];
+/** Whether the tab gives the text with a listing that asks for it, as promptwise does; an older one doesn't. */
+let givesContent: boolean;
 const tab = async (request: FolderRequest): Promise<FolderReply> => {
-  asked.push(request.op === "list" ? "list" : `${request.op} ${request.path}`);
+  asked.push(
+    request.op === "list"
+      ? request.content
+        ? "list with content"
+        : "list"
+      : `${request.op} ${request.path}`,
+  );
   if (request.op === "list") {
-    const files = [...texts].map(([path, text]) => ({ path, sha1: sha1(text), url: null }));
+    const withText = request.content && givesContent;
+    const files = [...texts].map(([path, text]) => ({
+      path,
+      sha1: sha1(text),
+      url: null,
+      ...(withText ? { content: text } : {}),
+    }));
     return {
       status: 200,
       files: [
@@ -60,6 +74,28 @@ describe("Studio's API over a tab's folder", () => {
     uploads = new Map();
     extra = [];
     changes = [];
+    givesContent = true;
+  });
+
+  it("opens the folder in one request, and reads each text file where the tab doesn't give the text with it", async () => {
+    texts.set("compositions/intro.html", HTML);
+    const studio = await open();
+    expect(asked).toEqual(["list with content"]);
+    expect(
+      await (await studio.fetch(at("/projects/d1/files/compositions/intro.html"))).text(),
+    ).toContain("Made to move fast.");
+    // A later look asks only for the versions.
+    await studio.refresh();
+    expect(asked).toEqual(["list with content", "list"]);
+
+    asked = [];
+    givesContent = false;
+    await open();
+    expect(asked.sort()).toEqual([
+      "list with content",
+      "read compositions/intro.html",
+      "read index.html",
+    ]);
   });
 
   it("serves the folder's files and a preview with its <base> under the page's folder", async () => {

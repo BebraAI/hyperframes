@@ -78,9 +78,9 @@ export async function openProject({
     onChange?.({ path, version, projectId, affectsPreview: true, affectedCompositions: null });
   };
 
-  /** Takes in what changed in promptwise since the last look. */
+  /** Takes in what changed in promptwise since the last look; the first look asks for the text with the listing. */
   async function pull() {
-    const files = await folder.list();
+    const files = await folder.list(!opened);
     const there = new Set(files.map((f) => f.path));
     // A clip or picture added elsewhere (the agent's sandbox) shows in Studio's assets without a reload.
     for (const file of files.filter((f) => f.url && media.get(f.path) !== f.url)) {
@@ -88,9 +88,10 @@ export async function openProject({
       media.set(file.path, file.url!);
       changed(file.path);
     }
-    // Read at once: each read is a trip through the tab, and a folder has a dozen files or more.
+    // Text the listing didn't carry is read at once: each read is a trip through the tab, and a folder has a dozen
+    // files or more.
     const stale = files.filter((f) => !f.url && known.get(f.path) !== f.sha1);
-    const texts = await Promise.all(stale.map((f) => folder.read(f.path)));
+    const texts = await Promise.all(stale.map((f) => f.content ?? folder.read(f.path)));
     stale.forEach((file, i) => {
       place(file.path, texts[i]!);
       known.set(file.path, file.sha1);

@@ -1,5 +1,5 @@
-import { memo, useCallback, type ReactNode } from "react";
-import { SourceEditor } from "./editor/SourceEditor";
+import { lazy, memo, Suspense, useCallback, type ComponentProps, type ReactNode } from "react";
+import type { SourceEditor as SourceEditorComponent } from "./editor/SourceEditor";
 import { FileTree } from "./editor/FileTree";
 import { MediaPreview } from "./MediaPreview";
 import { AssetsTab } from "./sidebar/AssetsTab";
@@ -12,6 +12,11 @@ import { isMediaFile } from "../utils/mediaTypes";
 import { useStudioShellContext } from "../contexts/StudioContext";
 import { useFileManagerContext } from "../contexts/FileManagerContext";
 import { getPersistedRenderSettings } from "./renders/renderSettings";
+
+// The code editor (CodeMirror, about 0.6 MB) loads when a file is first opened in it, not with Studio.
+const SourceEditor = lazy(() =>
+  import("./editor/SourceEditor").then((m) => ({ default: m.SourceEditor })),
+);
 
 interface StudioLeftPanelsProps {
   onSelectComposition: (comp: string) => void;
@@ -169,7 +174,7 @@ function CodeBody({
 }: {
   projectId: string;
   editingFile: { path: string; content: string | null } | null;
-  revealOffset: React.ComponentProps<typeof SourceEditor>["revealOffset"];
+  revealOffset: ComponentProps<typeof SourceEditorComponent>["revealOffset"];
   onChange: (content: string) => void;
 }) {
   if (!editingFile) {
@@ -192,11 +197,19 @@ function CodeBody({
     );
   }
   return (
-    <SourceEditor
-      content={editingFile.content}
-      filePath={editingFile.path}
-      onChange={onChange}
-      revealOffset={revealOffset}
-    />
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-caption-2-regular text-text-tertiary">
+          Loading {editingFile.path}…
+        </div>
+      }
+    >
+      <SourceEditor
+        content={editingFile.content}
+        filePath={editingFile.path}
+        onChange={onChange}
+        revealOffset={revealOffset}
+      />
+    </Suspense>
   );
 }

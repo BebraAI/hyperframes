@@ -43,6 +43,10 @@ try {
   document.body.textContent = "Studio can't start in this browser.";
   throw err;
 }
+// The worker opens the tab's folder now, while Studio's code loads (index.html preloads it), not on Studio's first
+// request once it has.
+const pullUrl = new URL("./api/__pull", import.meta.url);
+void fetch(pullUrl, { cache: "no-store" }).catch(() => {});
 // Studio listens for changes by message here, not on /api/events.
 (globalThis as { promptwiseWorkerFeed?: boolean }).promptwiseWorkerFeed = true;
 await import(new URL(STUDIO_MAIN, import.meta.url).href);
@@ -59,9 +63,7 @@ void workers
 const RELOADED = "promptwise:reloaded";
 let reported = false;
 setInterval(async () => {
-  const reply = await fetch(new URL("./api/__pull", import.meta.url), { cache: "no-store" }).catch(
-    () => null,
-  );
+  const reply = await fetch(pullUrl, { cache: "no-store" }).catch(() => null);
   const build = reply?.headers.get("x-promptwise-worker");
   if (build) {
     if (!reported) window.parent.postMessage({ type: "promptwise:studio-ready", build }, "*");

@@ -45,7 +45,7 @@ addEventListener("message", async (event) => {
   if (event.origin !== "http://localhost:4111" || event.data?.type !== "promptwise:folder") return;
   const r = event.data.request, port = event.ports[0];
   asked.push(r.op + " " + (r.path ?? "")); console.log("tab asked", r.op, r.path ?? "");
-  if (r.op === "list") return port.postMessage({ status: 200, files: await Promise.all([...files].map(async ([path, t]) => ({ path, sha1: await sha1(t), url: null }))) });
+  if (r.op === "list") return port.postMessage({ status: 200, files: await Promise.all([...files].map(async ([path, t]) => ({ path, sha1: await sha1(t), url: null, ...(r.content ? { content: t } : {}) }))) });
   const t = files.get(r.path);
   if (r.op === "read") return port.postMessage(t === undefined ? { status: 404 } : { status: 200, content: t });
   if ((t === undefined ? null : await sha1(t)) !== r.base) return port.postMessage({ status: 412 });
