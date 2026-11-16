@@ -16,7 +16,9 @@ import {
   isRemoteAsset,
   resolveTimelineAssetCompositionSize,
   resolveTimelineAssetSrc,
+  timelineIdFromName,
 } from "../utils/timelineAssetDrop";
+import { promptwiseMediaName } from "../promptwise/media";
 import { generateId } from "../utils/generateId";
 import { saveProjectFilesWithHistory, type RecordEditInput } from "../utils/studioFileHistory";
 import {
@@ -154,7 +156,11 @@ export function useTimelineAssetDropOps({
         let track = 0;
         let start = normalizedStart;
         const insertAsset = (originalContent: string) => {
-          newId = buildTimelineAssetId(assetPath, collectHtmlIds(originalContent));
+          // Media from promptwise is named after its title there; its file is named by a UUID.
+          const named = isRemoteAsset(assetPath) ? promptwiseMediaName(assetPath) : undefined;
+          newId = named
+            ? timelineIdFromName(named, collectHtmlIds(originalContent), kind)
+            : buildTimelineAssetId(assetPath, collectHtmlIds(originalContent));
           const resolved = resolveDropTrack({
             source: originalContent,
             // Rows and insertRow count the rows the timeline shows; a track this drop opened has no others.

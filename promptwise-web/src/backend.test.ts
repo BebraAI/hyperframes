@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type FileChange, openProject } from "./backend";
-import { folder, type FolderRequest, type FolderReply } from "./folder";
+import { folder, refusal, type FolderRequest, type FolderReply } from "./folder";
 
 // promptwise is the outside world here: a fake tab over a folder that takes writes only over the version it has, as
 // the studio/files routes do, and records what it was asked.
@@ -282,6 +282,18 @@ describe("Studio's API over a tab's folder", () => {
     expect([...texts.keys()].filter((path) => path.startsWith(".hyperframes/"))).toEqual([]);
   });
 
+  it("names the agent's edit in Undo, not a change from outside the app", async () => {
+    const studio = await open();
+    // Studio's history starts with its first request.
+    await studio.fetch(at("/projects/d1/history"));
+    texts.set("index.html", HTML.replace("Made to move fast.", "The agent's title"));
+    await studio.refresh();
+    await vi.waitFor(async () => {
+      const history = await (await studio.fetch(at("/projects/d1/history"))).json();
+      expect(history.back?.label).toBe("Agent's edit");
+    });
+  });
+
   it("tells Studio about a clip added elsewhere, once", async () => {
     const studio = await open();
     extra = [{ path: "assets/new.mp4", sha1: "c".repeat(40), url: "https://media.test/new.mp4" }];
@@ -295,22 +307,22 @@ describe("Studio's API over a tab's folder", () => {
   it("shows a file it just uploaded from the page, a clip in the ranges it's read in", async () => {
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["picture bytes"], "photo.png", { type: "image/png" }));
-    form.append("file", new File(["clip bytes"], "clip.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000picture bytes"], "photo.png", { type: "image/png" }));
+    form.append("file", new File(["\u0000clip bytes"], "clip.mp4", { type: "video/mp4" }));
     await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
 
     const photo = await studio.fetch(at("/projects/d1/preview/photo.png"));
     expect([photo.status, photo.headers.get("content-type"), await photo.text()]).toEqual([
       200,
       "image/png",
-      "picture bytes",
+      "\u0000picture bytes",
     ]);
     const part = await studio.fetch(
-      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=5-" } }),
+      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=6-" } }),
     );
     expect([part.status, part.headers.get("content-range"), await part.text()]).toEqual([
       206,
-      "bytes 5-9/10",
+      "bytes 6-10/11",
       "bytes",
     ]);
     const tail = await studio.fetch(
@@ -322,8 +334,9 @@ describe("Studio's API over a tab's folder", () => {
   it("uploads Studio's files through the tab under a free name, and turns down the rest at once", async () => {
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["new clip"], "clip.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000new clip"], "clip.mp4", { type: "video/mp4" }));
     form.append("file", new File(["text"], "notes.txt", { type: "text/plain" }));
+    form.append("file", new File(["hello, I am a text file"], "fake.mp4", { type: "video/mp4" }));
     const res = await studio.fetch(
       at("/projects/d1/upload?dir=assets", { method: "POST", body: form }),
     );
@@ -331,9 +344,10 @@ describe("Studio's API over a tab's folder", () => {
     expect([res.status, body.files]).toEqual([201, ["assets/clip (2).mp4"]]);
     expect(body.invalid).toEqual([
       { name: "notes.txt", reason: "only pictures, clips, sounds and fonts are uploaded" },
+      { name: "fake.mp4", reason: "the file is damaged or isn't really a picture, clip or sound" },
     ]);
     await studio.settled();
-    expect(uploads.get("assets/clip (2).mp4")).toBe("new clip");
+    expect(uploads.get("assets/clip (2).mp4")).toBe("\u0000new clip");
     expect(states).toEqual(["assets/clip (2).mp4 uploading", "assets/clip (2).mp4 done"]);
   });
 
@@ -342,7 +356,7 @@ describe("Studio's API over a tab's folder", () => {
     gate = new Promise((resolve) => (release = resolve));
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
     const res = await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
     expect((await res.json()).files).toEqual(["drop.mp4"]);
     expect(uploads.has("drop.mp4")).toBe(false);
@@ -362,7 +376,7 @@ describe("Studio's API over a tab's folder", () => {
     release();
     await studio.settled();
     await vi.waitFor(() => expect(texts.get("index.html")).toBe(withClip));
-    expect(uploads.get("drop.mp4")).toBe("clip bytes");
+    expect(uploads.get("drop.mp4")).toBe("\u0000clip bytes");
     expect(texts.has("drop.mp4")).toBe(false);
   });
 
@@ -370,7 +384,7 @@ describe("Studio's API over a tab's folder", () => {
     failing = true;
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
     await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
     const withClip = HTML.replace("</h1>", '</h1><video src="drop.mp4"></video>');
     await studio.fetch(
@@ -398,7 +412,7 @@ describe("Studio's API over a tab's folder", () => {
     failing = true;
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
     await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
     await studio.settled();
     const edited = HTML.replace("Made to move fast.", "No clip after all");
@@ -412,6 +426,16 @@ describe("Studio's API over a tab's folder", () => {
     expect(texts.get("index.html")).toBe(edited);
     const gone = await studio.fetch(at("/projects/d1/preview/drop.mp4"));
     expect(gone.status).toBe(404);
+  });
+});
+
+describe("promptwise turning a request down", () => {
+  it("says why in words, never with its status code alone", () => {
+    expect(refusal(400, "upload")).toBe("this file type isn't supported");
+    expect(refusal(413, "upload")).toBe("files can be up to 100 MB");
+    expect(refusal(401, "write")).toBe("you're signed out; reload the page");
+    expect(refusal(502, "upload")).toBe("the upload failed (502); try again");
+    expect(refusal(500, "write")).not.toContain("promptwise");
   });
 });
 

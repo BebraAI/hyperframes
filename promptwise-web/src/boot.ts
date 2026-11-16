@@ -72,7 +72,17 @@ void workers
 // ago didn't, the tab opens Studio in the sandbox instead.
 const RELOADED = "promptwise:reloaded";
 let reported = false;
+// The tab says when the agent has just saved the folder, so its edit shows now rather than on the next look.
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent || event.data?.type !== "promptwise:pull-now") return;
+  void fetch(pullUrl, { cache: "no-store" }).catch(() => {});
+});
+// A hidden tab doesn't look every few seconds; it looks once when it's shown again.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) void fetch(pullUrl, { cache: "no-store" }).catch(() => {});
+});
 setInterval(async () => {
+  if (document.hidden) return;
   const reply = await fetch(pullUrl, { cache: "no-store" }).catch(() => null);
   const build = reply?.headers.get("x-promptwise-worker");
   if (build) {

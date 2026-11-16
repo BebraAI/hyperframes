@@ -62,6 +62,32 @@ element around it. Runs in sub-composition files too.
 **Fix:** Give the clip a `data-start` inside its parent's window, in composition time, or move it out of the
 parent.
 
+## Timeline shape
+
+Source: `packages/lint/src/rules/timelineShape.ts`. Root composition only. Each of these renders, so each is a warning;
+each is what an edit looks like after a cut or a move went wrong.
+
+### `root_duration_past_last_clip`
+
+**Warning.** Every clip has a known end, and the root `data-duration` runs past the last one, so the video ends on
+seconds of nothing and the timeline keeps showing the old length.
+
+**Fix:** Set the root `data-duration` to the end of the last clip.
+
+### `main_track_gap`
+
+**Warning.** Two videos or images on track 0 leave a hole between them, so the video goes black there. Holes on other
+tracks are left alone.
+
+**Fix:** Move the later clip back to where the one before it ends, or ripple-delete the gap.
+
+### `empty_clip_spans_composition`
+
+**Warning.** A clip that is not media covers at least 90% of the video, holds no text or elements, paints nothing in
+its inline style, and no script or stylesheet names its id: it shows on the timeline and does nothing.
+
+**Fix:** Delete it, or give it what it was meant to show. A transition belongs at a cut, not over the whole video.
+
 ## Composition contract
 
 Source: `packages/lint/src/rules/composition.ts`.

@@ -20,6 +20,7 @@ import {
   listStudioCatalog,
 } from "../../packages/cli/src/server/studioCatalog.ts";
 import type { Folder } from "./folder";
+import { AGENT_EDIT_LABEL } from "../../packages/studio/src/promptwise/agentEdit.ts";
 
 /** Studio's own notes beside the project (backups, history) stay in the page. */
 const LOCAL = /^\.hyperframes\//;
@@ -33,6 +34,25 @@ const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
 const STORED =
   /^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm|quicktime)|audio\/(mpeg|wav|mp4|ogg|webm)|font\/(woff2?|ttf|otf))$/;
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+
+/**
+ * Whether a file's first bytes are only text: a real picture, clip, sound or font has binary bytes in its header, so a
+ * text file renamed to .mp4 is turned down here instead of becoming a clip that never plays.
+ */
+export async function looksLikeText(file: Blob): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 512).arrayBuffer());
+  if (!head.length) return true;
+  // Tab, newline, carriage return and the printable range; bytes from 0x80 up are UTF-8 text when they decode as it.
+  if (head.some((b) => b < 0x20 && b !== 9 && b !== 10 && b !== 13)) return false;
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(
+      head.length === 512 ? head.slice(0, 508) : head,
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** Where one file Studio added has got: going up to promptwise's storage, there, or failed (Studio offers a retry). */
 type UploadState = "uploading" | "done" | "failed";
@@ -261,6 +281,8 @@ export async function openProject({
       historyRoot: `${HISTORY_ROOT}/${projectId}`,
       // One worker holds the folder: there is no other process to wait for.
       ownerWaitMs: 0,
+      // What changes the folder outside Studio here is promptwise's agent, so Undo names it.
+      outsideLabel: AGENT_EDIT_LABEL,
       onError: (error) => onError?.("/history", String(error)),
     }).catch((error: unknown) => {
       onError?.("/history", `Studio's undo is off: ${String(error)}`);
@@ -352,6 +374,13 @@ export async function openProject({
       }
       if (value.size <= 0 || value.size > MAX_UPLOAD_BYTES) {
         invalid.push({ name, reason: "files can be up to 100 MB" });
+        continue;
+      }
+      if (!value.type.startsWith("font/") && (await looksLikeText(value))) {
+        invalid.push({
+          name,
+          reason: "the file is damaged or isn't really a picture, clip or sound",
+        });
         continue;
       }
       const path = free(dir ? `${dir}/${name}` : name);

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { filename } from "./assetHelpers";
 import { menuClasses } from "../ui/menuStyle";
 
@@ -97,7 +98,9 @@ export function ContextMenu({
 
   const itemCls = `${menuClasses.row} ${menuClasses.rowEnabled} active:bg-background-primary-active transition-colors`;
 
-  return (
+  // On the page's body, not in the sidebar: the sidebar's stacking context put the drawer's resize edge
+  // ("Resize the media") over the menu's first item, which then took no clicks.
+  return createPortal(
     <div
       className="fixed inset-0 z-200"
       onClick={onClose}
@@ -203,7 +206,8 @@ export function ContextMenu({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
