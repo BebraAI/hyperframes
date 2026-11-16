@@ -333,6 +333,8 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
 
         player.setAttribute("shader-capture-scale", "1");
         player.setAttribute("shader-loading", "player");
+        // Studio shows the frame while images, video and fonts load, never the "Loading assets" card over it.
+        player.setAttribute("assets-loading-ui", "none");
         player.setAttribute("low-power-idle", "");
         player.toggleAttribute("no-load-timeout", noLoadTimeout === true);
         player.setAttribute("width", String(portrait ? 1080 : 1920));
