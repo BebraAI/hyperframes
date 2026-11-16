@@ -10,6 +10,7 @@ import { folder, type FolderRequest, type FolderReply } from "./folder";
 const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
 let texts: Map<string, string>;
 let asked: string[];
+let uploads: Map<string, string>;
 const tab = async (request: FolderRequest): Promise<FolderReply> => {
   asked.push(request.op === "list" ? "list" : `${request.op} ${request.path}`);
   if (request.op === "list") {
@@ -21,6 +22,11 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
         { path: "assets/clip.mp4", sha1: "a".repeat(40), url: "https://media.test/clip.mp4" },
       ],
     };
+  }
+  if (request.op === "upload") {
+    if (request.contentType !== "video/mp4") return { status: 400 };
+    uploads.set(request.path, new TextDecoder().decode(request.bytes));
+    return { status: 200, sha1: "b".repeat(40), url: `https://media.test/${request.path}` };
   }
   const text = texts.get(request.path);
   if (request.op === "read")
@@ -49,6 +55,7 @@ describe("Studio's API over a tab's folder", () => {
   beforeEach(() => {
     texts = new Map([["index.html", HTML]]);
     asked = [];
+    uploads = new Map();
     changes = [];
   });
 
@@ -181,11 +188,22 @@ describe("Studio's API over a tab's folder", () => {
     }
   }, 30_000);
 
-  it("refuses uploads, which go through promptwise's media", async () => {
+  it("uploads Studio's files through the tab and links them, under a free name", async () => {
     const studio = await open();
-    expect(
-      (await studio.fetch(at("/projects/d1/upload", { method: "POST", body: "x" }))).status,
-    ).toBe(501);
+    const form = new FormData();
+    form.append("file", new File(["new clip"], "clip.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["text"], "notes.txt", { type: "text/plain" }));
+    const res = await studio.fetch(
+      at("/projects/d1/upload?dir=assets", { method: "POST", body: form }),
+    );
+    const body = await res.json();
+    expect([res.status, body.files]).toEqual([201, ["assets/clip (2).mp4"]]);
+    expect(body.invalid).toEqual([
+      { name: "notes.txt", reason: "promptwise answered 400 to upload" },
+    ]);
+    expect(uploads.get("assets/clip (2).mp4")).toBe("new clip");
+    const clip = await studio.fetch(at("/projects/d1/preview/assets/clip%20(2).mp4"));
+    expect(clip.headers.get("location")).toBe("https://media.test/assets/clip%20(2).mp4");
   });
 });
 

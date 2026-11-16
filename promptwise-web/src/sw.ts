@@ -18,6 +18,8 @@ const scope = new URL(self.registration.scope).pathname;
 const API = new RegExp(`^${scope}([0-9a-f-]{36})/api(?:/|$)`);
 /** How long the tab has to answer one folder request. */
 const ANSWER_MS = 20_000;
+/** An upload carries the file up to promptwise's storage first. */
+const UPLOAD_MS = 600_000;
 const projects = new Map<string, Promise<StudioBackend>>();
 
 /** The docId's Studio pages inside the tab: one opened on its own has nobody to answer. */
@@ -44,7 +46,10 @@ async function ask(docId: string, request: FolderRequest): Promise<FolderReply> 
       async () => (await self.clients.get(page.id)) ?? done({ status: 503 }),
       1000,
     );
-    const timer = setTimeout(() => done({ status: 504 }), ANSWER_MS);
+    const timer = setTimeout(
+      () => done({ status: 504 }),
+      request.op === "upload" ? UPLOAD_MS : ANSWER_MS,
+    );
     function done(reply: FolderReply) {
       clearInterval(gone);
       clearTimeout(timer);

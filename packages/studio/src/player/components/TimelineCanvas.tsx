@@ -7,6 +7,7 @@ import { getTimelinePlayheadTransform } from "./timelinePlayheadTransform";
 import { TimelineLanes } from "./TimelineLanes";
 import { TimelineGestureOverlay } from "./TimelineGestureOverlay";
 import { useTimelineContext } from "./TimelineProvider";
+import { NewTrackAdd } from "./NewTrackAdd";
 
 // A dropped clip's length is unknown until it lands; the preview shows a default.
 const DROP_PREVIEW_SECONDS = 3;
@@ -95,6 +96,7 @@ export const TimelineCanvas = memo(function TimelineCanvas() {
             height: TRACK_H - CLIP_Y * 2,
           }}
         >
+          {props.onAddFilesToNewTrack && <NewTrackAdd onFiles={props.onAddFilesToNewTrack} />}
           {props.acceptsMediaDrop && "Drop media here"}
         </div>
       )}

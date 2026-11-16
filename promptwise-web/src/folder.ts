@@ -10,8 +10,15 @@ export type FolderRequest =
   | { op: "list" }
   | { op: "read"; path: string }
   | { op: "write"; path: string; content: string; base: string | null }
-  | { op: "remove"; path: string; base: string };
-export type FolderReply = { status: number; files?: FolderFile[]; content?: string; sha1?: string };
+  | { op: "remove"; path: string; base: string }
+  | { op: "upload"; path: string; bytes: ArrayBuffer; contentType: string };
+export type FolderReply = {
+  status: number;
+  files?: FolderFile[];
+  content?: string;
+  sha1?: string;
+  url?: string;
+};
 
 export type FolderTransport = (request: FolderRequest) => Promise<FolderReply>;
 
@@ -30,6 +37,11 @@ export function folder(send: FolderTransport) {
     write: async (path: string, content: string, base: string | null) =>
       (await ok({ op: "write", path, content, base }))?.sha1 ?? null,
     remove: async (path: string, base: string) => (await ok({ op: "remove", path, base })) !== null,
+    /** A new binary file: promptwise stores it and answers its link, or null when the path was taken meanwhile. */
+    upload: async (path: string, bytes: ArrayBuffer, contentType: string) => {
+      const reply = await ok({ op: "upload", path, bytes, contentType });
+      return reply?.url ? { sha1: reply.sha1!, url: reply.url } : null;
+    },
   };
 }
 export type Folder = ReturnType<typeof folder>;

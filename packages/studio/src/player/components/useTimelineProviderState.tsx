@@ -1,3 +1,4 @@
+// fallow-ignore-file complexity -- wires the timeline's hooks together; the logic is in each hook and tested there
 import { useRef, useMemo, useCallback, useState } from "react";
 import { useAdjustedBeatAnalysis, useMusicBeatAnalysis } from "../../hooks/useMusicBeatAnalysis";
 import { usePlayerStore } from "../store/playerStore";
@@ -16,6 +17,7 @@ import { useTimelineStackingSync } from "./useTimelineStackingSync";
 import { useTimelineGeometry } from "./useTimelineGeometry";
 import { useAutoExpandKeyframedClips } from "./useAutoExpandKeyframedClips";
 import { GUTTER } from "./timelineLayout";
+import { useAddFilesToNewTrack } from "./NewTrackAdd";
 import { useTimelineLabelColumn } from "./useTimelineLabelColumn";
 import { useTimelineKeyframeData } from "./useTimelineKeyframeData";
 import { useTimelineScrollViewport } from "./useTimelineScrollViewport";
@@ -244,6 +246,7 @@ export function useTimelineProviderState({
     sessionEpoch,
     readOnlyPress,
   });
+  const addFiles = useAddFilesToNewTrack(pinnedOnFileDrop, trackOrderRef, !!readOnlyPress);
   const displayLayout = useTimelineDisplayLayout(draggedClip, trackOrder, rowGeometry);
   const { resizingElementIds, getPreviewElement, draggedElement, multiDragPreview, snapGuide } =
     useTimelineDragPreviewState(draggedClip, resizingClip, selectedElementIds, timelineElements);
@@ -466,6 +469,7 @@ export function useTimelineProviderState({
     laneGapStrips,
     dropPreview: assetDrop.dropPreview,
     acceptsMediaDrop: !!(onFileDrop || onAssetDrop),
+    onAddFilesToNewTrack: addFiles,
     theme,
     showAudioEffects,
     displayTrackOrder: displayLayout.displayTrackOrder,
