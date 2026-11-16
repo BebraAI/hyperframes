@@ -2,6 +2,7 @@ import type {
   BackgroundRemovalProgress,
   BackgroundRemovalResult,
 } from "./editor/propertyPanelTypes";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 const MEDIA_JOB_RECONNECT_TIMEOUT_MS = 15_000;
 const ABSOLUTE_OR_ROOT_SOURCE_RE = /^(?:[a-z][a-z0-9+.-]*:|\/)/i;
@@ -66,7 +67,9 @@ export function waitForMediaJob(
       reject(new DOMException("Background removal was cancelled", "AbortError"));
       return;
     }
-    const events = new EventSource(`/api/media-jobs/${encodeURIComponent(jobId)}/progress`);
+    const events = new EventSource(
+      `${STUDIO_API}/media-jobs/${encodeURIComponent(jobId)}/progress`,
+    );
     let settled = false;
     let reconnectTimer: number | null = null;
 

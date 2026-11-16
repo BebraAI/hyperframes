@@ -7,7 +7,9 @@ export type { ClipFact } from "@hyperframes/core/clip-facts";
 
 /** The store holds preview URLs; the agent edits project files, so drop the origin and preview prefix. */
 function projectRelativeSrc(src: string): string {
-  return src.replace(/^https?:\/\/[^/]+/, "").replace(/^\/api\/projects\/[^/]+\/preview\//, "");
+  return src
+    .replace(/^https?:\/\/[^/]+/, "")
+    .replace(/^(?:\/[^/]+)*?\/api\/projects\/[^/]+\/preview\//, "");
 }
 
 export function describeClip(element: TimelineElement): ClipFact {

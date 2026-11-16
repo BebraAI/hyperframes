@@ -31,13 +31,14 @@ import {
 } from "../utils/studioFileMutationCoordinator";
 import { studioApiFetch } from "../utils/studioApiFetch";
 import { moveLiveTweens } from "../utils/gsapLiveRetime";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 export async function readFileContent(projectId: string, targetPath: string): Promise<string> {
   if (targetPath.includes("\0") || targetPath.includes("..")) {
     throw new Error(`Unsafe path: ${targetPath}`);
   }
   const response = await studioApiFetch(
-    `/api/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(targetPath)}`,
+    `${STUDIO_API}/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(targetPath)}`,
   );
   if (!response.ok) {
     throw new Error(`Failed to read ${targetPath}`);

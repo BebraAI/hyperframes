@@ -10,6 +10,7 @@ import { useEditorSave } from "./useEditorSave";
 import { useProjectFileWriter } from "./useProjectFileWriter";
 import { studioApiFetch } from "../utils/studioApiFetch";
 import { encodeUrlPath } from "@hyperframes/parsers";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 // ── Types ──
 
@@ -135,7 +136,9 @@ export function useFileManager({
         setEditingFile({ path, content: null });
         return;
       }
-      studioApiFetch(`/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`)
+      studioApiFetch(
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`,
+      )
         .then((r) => {
           if (!r.ok) throw new Error(`Failed to load ${path} (${r.status})`);
           return r.json();
@@ -170,7 +173,7 @@ export function useFileManager({
       const controller = new AbortController();
       revealAbortRef.current = controller;
       studioApiFetch(
-        `/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(sourceFile)}`,
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(sourceFile)}`,
         {
           signal: controller.signal,
         },
@@ -205,10 +208,13 @@ export function useFileManager({
 
       const qs = dir ? `?dir=${encodeURIComponent(dir)}` : "";
       try {
-        const res = await studioApiFetch(`/api/projects/${encodeURIComponent(pid)}/upload${qs}`, {
-          method: "POST",
-          body: formData,
-        });
+        const res = await studioApiFetch(
+          `${STUDIO_API}/projects/${encodeURIComponent(pid)}/upload${qs}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           if (data.skipped?.length) {
@@ -252,7 +258,7 @@ export function useFileManager({
           '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n</head>\n<body>\n\n</body>\n</html>\n';
       }
       const res = await studioApiFetch(
-        `/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`,
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`,
         {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
@@ -276,7 +282,7 @@ export function useFileManager({
       const pid = projectIdRef.current;
       if (!pid) return;
       const res = await studioApiFetch(
-        `/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path + "/.gitkeep")}`,
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path + "/.gitkeep")}`,
         {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
@@ -299,7 +305,7 @@ export function useFileManager({
       const pid = projectIdRef.current;
       if (!pid) return;
       const res = await studioApiFetch(
-        `/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`,
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(path)}`,
         {
           method: "DELETE",
         },
@@ -321,7 +327,7 @@ export function useFileManager({
       const pid = projectIdRef.current;
       if (!pid) return;
       const res = await studioApiFetch(
-        `/api/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(oldPath)}`,
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/files/${encodeURIComponent(oldPath)}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -347,11 +353,14 @@ export function useFileManager({
     async (path: string) => {
       const pid = projectIdRef.current;
       if (!pid) return;
-      const res = await studioApiFetch(`/api/projects/${encodeURIComponent(pid)}/duplicate-file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path }),
-      });
+      const res = await studioApiFetch(
+        `${STUDIO_API}/projects/${encodeURIComponent(pid)}/duplicate-file`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path }),
+        },
+      );
       if (res.ok) {
         const data = await res.json();
         await refreshFileTree();
@@ -387,7 +396,7 @@ export function useFileManager({
         .map((asset) => ({
           family: fontFamilyFromAssetPath(asset),
           path: asset,
-          url: `/api/projects/${encodeURIComponent(pid)}/preview/${encodeUrlPath(asset)}`,
+          url: `${STUDIO_API}/projects/${encodeURIComponent(pid)}/preview/${encodeUrlPath(asset)}`,
         }));
       importedFontAssetsRef.current = [
         ...imported,

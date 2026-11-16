@@ -15,11 +15,12 @@ import {
 } from "./DesktopGuideCard";
 import { FrameyGlyph } from "./FrameyGlyph";
 import { Button, Popover, cn } from "./ui";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 // "Install the desktop app": the preview server (`/api/open-in-desktop`) says whether to show it, whether the app is
 // here and whether it takes the project. With the app ready a press opens the project in it; otherwise the press
 // opens a card where Framey walks through download, install and open.
-const ROUTE = "/api/open-in-desktop";
+const ROUTE = `${STUDIO_API}/open-in-desktop`;
 /** How far the pupils travel towards the pointer, in the glyph's own units. */
 const GAZE = 2.2;
 /** Long enough for the flight to finish before the label comes back. */

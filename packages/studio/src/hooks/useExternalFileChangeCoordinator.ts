@@ -11,6 +11,8 @@ import type { ExternalConflictSnapshot } from "../utils/externalConflictStorage"
 import { isSelfWriteEcho } from "./sdkSelfWriteRegistry";
 import { consumeStudioWriteToken } from "../utils/studioFileVersion";
 import { logReload } from "../utils/reloadDebug";
+import { onPromptwiseWorker, promptwiseFileChangeChannel } from "./promptwiseFileChangeChannel";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 type ExternalChangeDrainResult =
   | { status: "clean" }
@@ -129,7 +131,7 @@ export function sseFileChangeChannel(
   onDelivery: (delivery: unknown) => void,
   onReconnect: () => void,
 ): () => void {
-  const eventSource = new EventSource("/api/events");
+  const eventSource = new EventSource(`${STUDIO_API}/events`);
   eventSource.addEventListener("file-change", onDelivery);
   // Reopening the stream does not replay changes missed during a disconnect.
   let opened = false;
@@ -487,6 +489,7 @@ export function useExternalFileChangeCoordinator({
       import.meta.hot.on("hf:file-change", handler);
       return () => import.meta.hot?.off?.("hf:file-change", handler);
     }
+    if (onPromptwiseWorker()) return promptwiseFileChangeChannel(handler);
     const catchUp = () => processChangeRef.current({ path: "." });
     return sseFileChangeChannel(handler, catchUp);
   }, []);

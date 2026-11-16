@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { studioApiFetch } from "../utils/studioApiFetch";
 import { Button } from "./ui";
 import { Banner } from "./ui/Dialog";
+import { STUDIO_API } from "../utils/studioApiBase";
 
 interface ServedProject {
   id: string;
@@ -37,7 +38,7 @@ export function ProjectUnreachableBanner({ projectId }: ProjectUnreachableBanner
     // A list we could not read is not evidence of anything, so a failed fetch
     // leaves `served` empty and the banner falls back to the vague wording
     // rather than claiming this Studio serves nothing.
-    studioApiFetch("/api/projects")
+    studioApiFetch(`${STUDIO_API}/projects`)
       .then((res) => (res.ok ? res.json() : { projects: [] }))
       .then((data: { projects?: ServedProject[] }) => {
         if (!cancelled) setServed(data.projects ?? []);

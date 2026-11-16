@@ -49,7 +49,7 @@ function normalizeSrc(src: string): string {
     // Not an absolute URL — leave as-is
   }
   s = s
-    .replace(/^\/api\/projects\/[^/]+\/preview\//, "")
+    .replace(/^(?:\/[^/]+)*?\/api\/projects\/[^/]+\/preview\//, "")
     .replace(/^\.?\//, "")
     .split(/[?#]/)[0];
   try {

@@ -85,7 +85,7 @@ export function deriveUsedPaths(elements: Array<{ src?: string }>): Set<string> 
     }
 
     s = s
-      .replace(/^\/api\/projects\/[^/]+\/preview\//, "") // strip the dev serve prefix
+      .replace(/^(?:\/[^/]+)*?\/api\/projects\/[^/]+\/preview\//, "") // strip the dev serve prefix
       .replace(/^\.?\//, "") // strip leading ./ or /
       .split(/[?#]/)[0]; // drop query / hash
 
