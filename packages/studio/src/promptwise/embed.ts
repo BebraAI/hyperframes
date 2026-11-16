@@ -42,10 +42,6 @@ export function askPromptwise(
   window.parent.postMessage({ type: "promptwise:ask-agent", ...ask }, "*");
 }
 
-export function askPromptwiseAgent() {
-  askPromptwise();
-}
-
 /** Where a film opens in promptwise's tab: a second in, where its first shot has arrived, not its empty first frame. */
 export function openingTime(duration: number): number {
   return Math.min(1, duration / 2);

@@ -23,12 +23,13 @@ function renderInto(node: React.ReactElement) {
 }
 
 describe("PropertyPanelEmptyState — flat empty", () => {
-  it("shows the cursor glyph, headline, and the gesture row", () => {
+  it("shows the headline and hint, and no actions", () => {
     const { host, root } = renderInto(<PropertyPanelEmptyState flat multiSelectCount={0} />);
     expect(host.textContent).toContain("Nothing selected");
-    expect(host.textContent).toContain("Record a gesture");
-    // The agent chip only shows inside promptwise, whose chat it opens.
-    expect(host.textContent).not.toContain("Ask the agent");
+    expect(host.textContent).toContain("Click any element on the canvas");
+    // Recording and asking the agent need a selected element; their controls
+    // live in the inspector's footer once there is one.
+    expect(host.querySelector("button")).toBeNull();
     act(() => root.unmount());
   });
 });
