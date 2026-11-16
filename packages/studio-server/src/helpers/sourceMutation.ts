@@ -455,6 +455,10 @@ export function splitElementInHtml(
     start = fallbackTiming.start;
     duration = fallbackTiming.duration;
   }
+  // The cut lands on the centisecond grid Studio's move and trim write on (formatTimelineAttributeNumber): cut at
+  // 13.094, the second half moved by ripple was written back at 13.09 and overlapped the first by 4 ms, so the
+  // timeline put it on a row of its own.
+  splitTime = Math.round(splitTime * 100) / 100;
   if (duration <= 0 || splitTime <= start || splitTime >= start + duration) {
     return { html: source, matched: false, newId: null };
   }
