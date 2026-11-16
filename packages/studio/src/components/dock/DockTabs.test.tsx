@@ -158,6 +158,30 @@ describe("dock strip actions", () => {
     await activate("assets");
     expect(groupsWithActions()).toEqual([groupOf("assets")]);
   });
+
+  it("show on a group that shows when the narrow layout starts with both sides closed, and on a side that comes out", async () => {
+    await act(async () => {
+      root?.render(
+        <Dock.Root projectId="narrow" dockWidth={() => 640}>
+          {PANEL_IDS.map((id) => (
+            <Dock.Panel key={id} id={id}>
+              <div>{id}</div>
+            </Dock.Panel>
+          ))}
+        </Dock.Root>,
+      );
+    });
+    const visible = (group: Element | null) =>
+      group?.closest(".dv-view")?.classList.contains("visible");
+    expect(groupsWithActions()).toHaveLength(1);
+    expect(visible(groupsWithActions()[0]!)).toBe(true);
+    expect(groupsWithActions()).toEqual([groupOf("preview")]);
+
+    await act(async () => useDockLayoutStore.getState().setZoneVisible("right", true));
+    expect(groupsWithActions()).toEqual([groupOf("design")]);
+    await act(async () => useDockLayoutStore.getState().setZoneVisible("right", false));
+    expect(groupsWithActions()).toEqual([groupOf("preview")]);
+  });
 });
 
 describe("dock tab fill", () => {

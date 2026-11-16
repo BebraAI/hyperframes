@@ -143,18 +143,14 @@ describe("buildEditLayout on a narrow dock", () => {
     document.body.innerHTML = "";
   });
 
-  it("puts the preview over the timeline and one hidden side group beside it, as in promptwise's tab", () => {
+  it("puts the preview over the timeline with both side groups closed, as drawers in promptwise's tab", () => {
     api.layout(640, 820);
     buildEditLayout(api, 640);
-    const side = api.getPanel("design")!.group;
-    expect(side.panels.map((panel) => panel.id)).toEqual([
-      "design",
-      "layers",
-      "renders",
-      "compositions",
-      "assets",
-    ]);
-    expect(side.api.isVisible).toBe(false);
+    const right = api.getPanel("design")!.group;
+    const left = api.getPanel("assets")!.group;
+    expect(right.panels.map((panel) => panel.id)).toEqual(["design", "layers", "renders"]);
+    expect(left.panels.map((panel) => panel.id)).toEqual(["assets", "compositions"]);
+    expect([left.api.isVisible, right.api.isVisible]).toEqual([false, false]);
     expect(api.getPanel("preview")!.group.api.isVisible).toBe(true);
     expect(api.getPanel("preview")!.group.width).toBe(640);
     expect(api.getPanel("timeline")!.group.width).toBe(640);
