@@ -486,7 +486,7 @@ describe("Timeline readOnly with a host edit context", () => {
 
   it("says nothing about dropping media on an empty timeline", () => {
     const t = mount({ readOnly: true, onReadOnlyPress: vi.fn() }, []);
-    expect(t.host.textContent).not.toContain("Drop media");
+    expect(t.host.textContent).not.toContain("media");
   });
 });
 
@@ -524,7 +524,7 @@ describe("Timeline without readOnly (unchanged)", () => {
     expect(t.host.querySelector('[role="slider"]')).not.toBeNull();
     act(() => root!.unmount());
     root = null;
-    expect(mount({}, []).host.textContent).toContain("Drop media");
+    expect(mount({}, []).host.textContent).toContain("Drop or upload media");
   });
 
   it("draws the trim handles on a selected clip", () => {
