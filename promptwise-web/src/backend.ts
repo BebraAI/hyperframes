@@ -485,7 +485,7 @@ function catalogItem(value: unknown): value is RegistryItem {
 }
 
 /** The catalog file build.mjs wrote, fetched once per worker; undefined when it is missing or not a catalog. */
-export function bundledCatalog(url: string): Promise<RegistryItem[] | undefined> {
+function bundledCatalog(url: string): Promise<RegistryItem[] | undefined> {
   let loading = bundled.get(url);
   if (!loading) {
     loading = fetch(url)
