@@ -7,16 +7,15 @@ import { usePlayerStore } from "../store/playerStore";
 import { getDefaultDroppedTrack } from "./timelineLayout";
 import type { TimelineDropCallbacks } from "./timelineCallbacks";
 
-/** Files from the computer onto a new track at the playhead; none where the timeline takes no files. */
+/** Files from the computer onto a new track at `start` (the playhead by default); none where the timeline takes no files. */
 export function useAddFilesToNewTrack(
   onFileDrop: TimelineDropCallbacks["onFileDrop"],
   trackOrderRef: RefObject<number[]>,
   readOnly: boolean,
 ) {
   const add = useCallback(
-    (files: File[]) => {
+    (files: File[], start = usePlayerStore.getState().currentTime) => {
       const order = trackOrderRef.current;
-      const start = usePlayerStore.getState().currentTime;
       void onFileDrop?.(files, { start, track: getDefaultDroppedTrack(order, order.length) });
     },
     [onFileDrop, trackOrderRef],

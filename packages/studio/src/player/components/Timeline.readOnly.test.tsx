@@ -527,6 +527,16 @@ describe("Timeline without readOnly (unchanged)", () => {
     expect(mount({}, []).host.textContent).toContain("Drop or upload media");
   });
 
+  it("puts media picked from the empty timeline at 0:00, wherever the playhead is", async () => {
+    const t = mount({}, []);
+    act(() => usePlayerStore.setState({ currentTime: 1.5 }));
+    const input = t.host.querySelector<HTMLInputElement>('[data-testid="new-track-files"]')!;
+    const photo = new File(["x"], "photo.png", { type: "image/png" });
+    Object.defineProperty(input, "files", { value: [photo], configurable: true });
+    await act(async () => input.dispatchEvent(new Event("change", { bubbles: true })));
+    expect(t.onFileDrop).toHaveBeenCalledWith([photo], expect.objectContaining({ start: 0 }));
+  });
+
   it("draws the trim handles on a selected clip", () => {
     const t = mount({});
     act(() => t.clip("a")!.click());

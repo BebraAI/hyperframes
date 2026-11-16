@@ -20,7 +20,7 @@ type ViewportHandlers = Pick<
 export interface TimelineShellMetaInputs {
   isDragOver: boolean;
   hasFileDrop: boolean;
-  addFiles?: (files: File[]) => void;
+  addFiles?: (files: File[], start?: number) => void;
   drop: Pick<ViewportHandlers, "onDragOver" | "onDragLeave" | "onDrop">;
   pointer: Pick<ViewportHandlers, "onPointerMove" | "onPointerUp" | "onPointerCancel"> & {
     onPointerDown: TimelineViewportProps["onPointerDown"];
@@ -48,12 +48,13 @@ export interface TimelineShellMetaInputs {
 
 /** The timeline shell's container and scroll viewport props: drop, pointer, scroll and razor wiring. */
 export function buildTimelineShellMeta(input: TimelineShellMetaInputs): TimelineMeta {
-  const { drop, pointer, razor, theme, activeTool } = input;
+  const { drop, pointer, razor, theme, activeTool, addFiles } = input;
   return buildTimelineMeta({
     emptyState: {
       isDragOver: input.isDragOver,
       onFileDrop: input.hasFileDrop,
-      onAddFiles: input.addFiles,
+      // An empty timeline starts at 0:00, as a drop there does, wherever the playhead is.
+      onAddFiles: addFiles && ((files: File[]) => addFiles(files, 0)),
       ...drop,
     },
     container: {
