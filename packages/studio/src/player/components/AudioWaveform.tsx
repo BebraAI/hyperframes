@@ -114,16 +114,22 @@ function extractPeaks(channelData: Float32Array, barCount: number): number[] {
   return peaks.map((peak) => peak / maxPeak);
 }
 
-async function loadWaveform(
+export async function loadWaveform(
   audioUrl: string,
   waveformUrl: string | undefined,
   signal: AbortSignal,
 ): Promise<number[]> {
   // Failures propagate: authors trim and beat-align against this, so made-up peaks beat no gap.
   // The scheduler caches the failure (metadataFailureTtlMs): no refetch loop, no stuck state.
-  return waveformUrl
-    ? await fetchWaveformPeaks(waveformUrl, signal)
-    : await decodeWaveformPeaks(audioUrl, signal);
+  if (!waveformUrl) return decodeWaveformPeaks(audioUrl, signal);
+  try {
+    return await fetchWaveformPeaks(waveformUrl, signal);
+  } catch (error) {
+    // A server without ffmpeg (Studio in the browser, over a service worker) can't draw peaks: the page decodes
+    // the sound itself instead of showing "waveform unavailable" on every clip.
+    if (signal.aborted) throw error;
+    return decodeWaveformPeaks(audioUrl, signal);
+  }
 }
 
 async function fetchWaveformPeaks(url: string, signal: AbortSignal): Promise<number[]> {
