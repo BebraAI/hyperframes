@@ -3,14 +3,22 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
-import { GhostLaneText, uploadProgress } from "./uploads";
+import {
+  GhostLaneText,
+  resetPromptwiseUploads,
+  uploadProgress,
+  usePromptwiseUploadMap,
+} from "./uploads";
 
 vi.mock("./embed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./embed")>()),
   embeddedInPromptwise: true,
 }));
 
-afterEach(cleanupMounted);
+afterEach(() => {
+  cleanupMounted();
+  resetPromptwiseUploads();
+});
 
 // promptwise is this page's parent; in the test the page is its own.
 const tell = (data: object) =>
@@ -52,4 +60,40 @@ it("takes only promptwise's upload messages", () => {
   expect(uploadProgress({ type: "promptwise:upload-progress", path: "a.png" })).toBeNull();
   expect(uploadProgress({ type: "promptwise:media", path: "a.png", sent: 1, total: 2 })).toBeNull();
   expect(uploadProgress(null)).toBeNull();
+});
+
+// The worker is this page's own: it tells the page, which posts to itself.
+const worker = (path: string, state: string) =>
+  act(async () =>
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "promptwise:upload-state", path, state },
+        source: window,
+      }),
+    ),
+  );
+
+function Uploads() {
+  const map = usePromptwiseUploadMap();
+  return (
+    <>
+      {[...map]
+        .map(([path, u]) => `${path}:${u.failed ? "failed" : `${u.sent}/${u.total}`}`)
+        .join(",")}
+    </>
+  );
+}
+
+it("keeps a file that failed to go up, whichever word comes first, until the worker has it", async () => {
+  const host = mountHost(<Uploads />);
+  await worker("clip.mp4", "uploading");
+  await tell(progress("clip.mp4", 40, 100));
+  expect(host.textContent).toBe("clip.mp4:40/100");
+  // The tab is done with it before the worker says it failed.
+  await tell(progress("clip.mp4", 100, 100, true));
+  await worker("clip.mp4", "failed");
+  expect(host.textContent).toBe("clip.mp4:failed");
+  await worker("clip.mp4", "uploading");
+  await worker("clip.mp4", "done");
+  expect(host.textContent).toBe("");
 });

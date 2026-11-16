@@ -56,7 +56,9 @@ async function ask(docId: string, request: FolderRequest): Promise<FolderReply> 
       resolve(reply);
     }
     channel.port1.onmessage = (event) => done(event.data as FolderReply);
-    page.postMessage({ type: "promptwise:folder", request }, [channel.port2]);
+    // A file's bytes move to the tab rather than being copied: the worker keeps the file itself.
+    const moved = request.op === "upload" ? [request.bytes] : [];
+    page.postMessage({ type: "promptwise:folder", request }, [channel.port2, ...moved]);
   });
 }
 
@@ -73,6 +75,8 @@ function project(docId: string): Promise<StudioBackend> {
       // Studio only says "failed"; the tab logs why, which is all there is to see of a worker in a cross-site frame.
       onError: (path, message) =>
         void tell(docId, { type: "promptwise:studio-error", path, message }),
+      // Where each file Studio added has got, which Studio shows on its clip.
+      onUpload: (path, state) => void tell(docId, { type: "promptwise:upload-state", path, state }),
     });
     // A folder that failed to open (the tab wasn't there yet) is tried again on the next request.
     opened.catch(() => projects.delete(docId));
@@ -102,11 +106,14 @@ self.addEventListener("fetch", (event) => {
   const docId = url.origin === location.origin ? API.exec(url.pathname)?.[1] : undefined;
   if (!docId) return;
   if (url.pathname.endsWith("/api/__pull")) return event.respondWith(pull(docId));
+  const opened = project(docId);
   event.respondWith(
-    project(docId).then(
+    opened.then(
       (backend) => backend.fetch(event.request),
       (err: unknown) =>
         new Response(`Studio couldn't open this tab's files: ${String(err)}`, { status: 502 }),
     ),
   );
+  // Studio has its answer before a file it added is up: the worker stays up until it is.
+  event.waitUntil(opened.then((backend) => backend.settled()).catch(() => {}));
 });

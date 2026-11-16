@@ -20,13 +20,20 @@ async function startWorker(): Promise<void> {
   workers.onmessage = (event) => {
     const type = event.data?.type;
     // The request carries no session; the tab answers on the port it brings. The tab's origin isn't known here.
-    if (type === "promptwise:folder") window.parent.postMessage(event.data, "*", [...event.ports]);
+    if (type === "promptwise:folder") {
+      // An upload's bytes move on to the tab, as they came from the worker: no copy here.
+      const bytes = event.data.request?.bytes;
+      const moved = bytes instanceof ArrayBuffer ? [bytes] : [];
+      window.parent.postMessage(event.data, "*", [...event.ports, ...moved]);
+    }
     if (type === "promptwise:studio-error") {
       console.warn(`[promptwise] ${event.data.path}: ${event.data.message}`);
       window.parent.postMessage(event.data, "*");
     }
     // Studio's own file-change events, which it takes from this page rather than a stream held open on the worker.
     if (type === "promptwise:file-change") window.postMessage(event.data, location.origin);
+    // Where each file Studio added has got: Studio shows it on the clip.
+    if (type === "promptwise:upload-state") window.postMessage(event.data, location.origin);
   };
   await workers.register(new URL("sw.js", scope), { scope: scope.pathname });
   await workers.ready;

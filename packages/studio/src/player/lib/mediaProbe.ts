@@ -82,6 +82,35 @@ async function probeOne(url: string): Promise<MediaProbeResult | null> {
   }
 }
 
+/**
+ * A file the user just dropped, read where it is: its length and whether it has sound are known before it's uploaded,
+ * rather than read back from storage once it's there.
+ */
+export async function probeMediaFile(file: Blob): Promise<MediaProbeResult | null> {
+  const mb = await loadMediabunny();
+  if (!mb) return null;
+  const input = new mb.Input({ source: new mb.BlobSource(file), formats: mb.ALL_FORMATS });
+  // A file it can't read isn't disposed: mediabunny's dispose leaves that failure unhandled.
+  if (!(await input.getFormat().then(Boolean, () => false))) return null;
+  try {
+    const duration = (await input.getDurationFromMetadata()) ?? (await input.computeDuration());
+    if (!Number.isFinite(duration) || duration <= 0) return null;
+    const videoTrack = await input.getPrimaryVideoTrack();
+    const audioTracks = await input.getAudioTracks();
+    return {
+      duration,
+      width: videoTrack?.displayWidth,
+      height: videoTrack?.displayHeight,
+      hasVideo: videoTrack != null,
+      hasAudio: audioTracks.length > 0,
+    };
+  } catch {
+    return null;
+  } finally {
+    input.dispose();
+  }
+}
+
 function getCachedProbe(url: string): MediaProbeResult | undefined {
   const cached = cache.get(normalizeUrl(url));
   if (cached) cached.lastAccess = ++accessSequence;

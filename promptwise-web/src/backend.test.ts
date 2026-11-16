@@ -14,6 +14,9 @@ let uploads: Map<string, string>;
 let extra: { path: string; sha1: string; url: string }[];
 /** Whether the tab gives the text with a listing that asks for it, as promptwise does; an older one doesn't. */
 let givesContent: boolean;
+/** Holds the tab's uploads until the test lets them through, and fails them while `failing`. */
+let gate: Promise<void>;
+let failing: boolean;
 const tab = async (request: FolderRequest): Promise<FolderReply> => {
   asked.push(
     request.op === "list"
@@ -40,7 +43,8 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
     };
   }
   if (request.op === "upload") {
-    if (!["video/mp4", "image/png"].includes(request.contentType)) return { status: 400 };
+    await gate;
+    if (failing) return { status: 502 };
     uploads.set(request.path, new TextDecoder().decode(request.bytes));
     return { status: 200, sha1: "b".repeat(40), url: `https://media.test/${request.path}` };
   }
@@ -57,6 +61,7 @@ const HTML =
   '<!doctype html><html><body><div data-composition-id="main" data-width="1920" data-height="1080"><h1 id="title">Made to move fast.</h1></div></body></html>';
 let changes: FileChange[];
 let errors: string[];
+let states: string[];
 let opened: Awaited<ReturnType<typeof openProject>>[] = [];
 const open = () =>
   openProject({
@@ -66,6 +71,7 @@ const open = () =>
     runtimeUrl: "https://app.test/runtime.js",
     onChange: (change) => changes.push(change),
     onError: (path, message) => errors.push(`${path}: ${message}`),
+    onUpload: (path, state) => states.push(`${path} ${state}`),
   }).then((studio) => (opened.push(studio), studio));
 const at = (path: string, init?: RequestInit) =>
   new Request(`https://studio.test/studio/d1/api${path}`, init);
@@ -78,7 +84,10 @@ describe("Studio's API over a tab's folder", () => {
     extra = [];
     changes = [];
     errors = [];
+    states = [];
     givesContent = true;
+    gate = Promise.resolve();
+    failing = false;
   });
 
   it("opens the folder in one request, and reads each text file where the tab doesn't give the text with it", async () => {
@@ -283,7 +292,7 @@ describe("Studio's API over a tab's folder", () => {
     expect(clip.headers.get("location")).toBe("https://media.test/new.mp4");
   });
 
-  it("shows a picture it just uploaded from the page, and a clip from its storage", async () => {
+  it("shows a file it just uploaded from the page, a clip in the ranges it's read in", async () => {
     const studio = await open();
     const form = new FormData();
     form.append("file", new File(["picture bytes"], "photo.png", { type: "image/png" }));
@@ -296,14 +305,21 @@ describe("Studio's API over a tab's folder", () => {
       "image/png",
       "picture bytes",
     ]);
-    const clip = await studio.fetch(at("/projects/d1/preview/clip.mp4"));
-    expect([clip.status, clip.headers.get("location")]).toEqual([
-      302,
-      "https://media.test/clip.mp4",
+    const part = await studio.fetch(
+      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=5-" } }),
+    );
+    expect([part.status, part.headers.get("content-range"), await part.text()]).toEqual([
+      206,
+      "bytes 5-9/10",
+      "bytes",
     ]);
+    const tail = await studio.fetch(
+      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=-4" } }),
+    );
+    expect(await tail.text()).toBe("ytes");
   });
 
-  it("uploads Studio's files through the tab and links them, under a free name", async () => {
+  it("uploads Studio's files through the tab under a free name, and turns down the rest at once", async () => {
     const studio = await open();
     const form = new FormData();
     form.append("file", new File(["new clip"], "clip.mp4", { type: "video/mp4" }));
@@ -314,11 +330,88 @@ describe("Studio's API over a tab's folder", () => {
     const body = await res.json();
     expect([res.status, body.files]).toEqual([201, ["assets/clip (2).mp4"]]);
     expect(body.invalid).toEqual([
-      { name: "notes.txt", reason: "promptwise answered 400 to upload" },
+      { name: "notes.txt", reason: "only pictures, clips, sounds and fonts are uploaded" },
     ]);
+    await studio.settled();
     expect(uploads.get("assets/clip (2).mp4")).toBe("new clip");
-    const clip = await studio.fetch(at("/projects/d1/preview/assets/clip%20(2).mp4"));
-    expect(clip.headers.get("location")).toBe("https://media.test/assets/clip%20(2).mp4");
+    expect(states).toEqual(["assets/clip (2).mp4 uploading", "assets/clip (2).mp4 done"]);
+  });
+
+  it("answers the upload before the file is up, and sends the clip's composition once it is", async () => {
+    let release!: () => void;
+    gate = new Promise((resolve) => (release = resolve));
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    const res = await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    expect((await res.json()).files).toEqual(["drop.mp4"]);
+    expect(uploads.has("drop.mp4")).toBe(false);
+
+    const withClip = HTML.replace("</h1>", '</h1><video src="drop.mp4"></video>');
+    const write = await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: withClip,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    // Studio's write is taken here at once; promptwise doesn't get it while the clip isn't in its storage.
+    expect(write.status).toBeLessThan(300);
+    expect(texts.get("index.html")).toBe(HTML);
+
+    release();
+    await studio.settled();
+    await vi.waitFor(() => expect(texts.get("index.html")).toBe(withClip));
+    expect(uploads.get("drop.mp4")).toBe("clip bytes");
+    expect(texts.has("drop.mp4")).toBe(false);
+  });
+
+  it("holds the composition back while a failed file is on it, and sends it after a retry", async () => {
+    failing = true;
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    const withClip = HTML.replace("</h1>", '</h1><video src="drop.mp4"></video>');
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: withClip,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    await studio.settled();
+    expect(states).toEqual(["drop.mp4 uploading", "drop.mp4 failed"]);
+    expect(texts.get("index.html")).toBe(HTML);
+
+    failing = false;
+    const retry = await studio.fetch(
+      at("/projects/d1/upload-retry?path=drop.mp4", { method: "POST" }),
+    );
+    expect(retry.status).toBe(202);
+    await studio.settled();
+    await vi.waitFor(() => expect(texts.get("index.html")).toBe(withClip));
+    expect(states.at(-1)).toBe("drop.mp4 done");
+  });
+
+  it("lets a failed file go once its clip is deleted, and sends the rest", async () => {
+    failing = true;
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    await studio.settled();
+    const edited = HTML.replace("Made to move fast.", "No clip after all");
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: edited,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    expect(texts.get("index.html")).toBe(edited);
+    const gone = await studio.fetch(at("/projects/d1/preview/drop.mp4"));
+    expect(gone.status).toBe(404);
   });
 });
 

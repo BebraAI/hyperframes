@@ -29,6 +29,45 @@ const HISTORY_ROOT = "/history";
 
 const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
 
+/** The files promptwise's storage takes (its studio/upload route), up to its 100 MB: the rest are turned down here, at once. */
+const STORED =
+  /^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm|quicktime)|audio\/(mpeg|wav|mp4|ogg|webm)|font\/(woff2?|ttf|otf))$/;
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+
+/** Where one file Studio added has got: going up to promptwise's storage, there, or failed (Studio offers a retry). */
+type UploadState = "uploading" | "done" | "failed";
+
+/** A file from this page, answered from memory, with the ranges a clip or sound is read in. */
+function serveBlob(request: Request, blob: Blob): Response {
+  const headers = {
+    "content-type": blob.type,
+    "accept-ranges": "bytes",
+    "cache-control": "no-store",
+  };
+  const range = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") ?? "");
+  const body = request.method === "HEAD" ? null : blob;
+  if (!range || (!range[1] && !range[2]))
+    return new Response(body, { headers: { ...headers, "content-length": String(blob.size) } });
+  const size = blob.size;
+  // "bytes=-500" is the last 500 bytes; "bytes=100-" runs to the end.
+  const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+  const end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+  if (start >= size || start > end)
+    return new Response(null, {
+      status: 416,
+      headers: { ...headers, "content-range": `bytes */${size}` },
+    });
+  const part = blob.slice(start, end + 1, blob.type);
+  return new Response(request.method === "HEAD" ? null : part, {
+    status: 206,
+    headers: {
+      ...headers,
+      "content-length": String(part.size),
+      "content-range": `bytes ${start}-${end}/${size}`,
+    },
+  });
+}
+
 /** One file changed elsewhere, as the CLI's file watcher tells Studio. */
 export type FileChange = {
   path: string;
@@ -49,6 +88,8 @@ type Options = {
   onError?: (path: string, message: string) => void;
   /** Hears about each file a refresh found changed elsewhere, to tell Studio. */
   onChange?: (change: FileChange) => void;
+  /** Hears where each file Studio added has got, for Studio to show on its clip. */
+  onUpload?: (path: string, state: UploadState) => void;
 };
 
 export async function openProject({
@@ -58,6 +99,7 @@ export async function openProject({
   runtimeUrl,
   onError,
   onChange,
+  onUpload,
 }: Options) {
   const dir = `/projects/${projectId}`;
   const apiBase = `${prefix}/api`;
@@ -65,8 +107,13 @@ export async function openProject({
   const known = new Map<string, string>();
   /** Binary files: a link to promptwise's copy, and an empty file here so Studio sees them. */
   const media = new Map<string, string>();
-  /** Pictures uploaded from this page: shown from here, not fetched back from the storage they just went to. */
+  /** Files uploaded from this page: shown from here, not fetched back from the storage they just went to. */
   const fresh = new Map<string, Blob>();
+  /**
+   * Files Studio added that aren't in promptwise's storage yet: going up (`done` settles when they're in the folder),
+   * or failed. Studio has them at once; promptwise gets the compositions that use them only once they're there.
+   */
+  const uploading = new Map<string, { done: Promise<void>; failed: boolean }>();
 
   const local = (path: string) => `${dir}/${path}`;
   const place = (path: string, text: string) => {
@@ -92,7 +139,10 @@ export async function openProject({
     const files = await folder.list(!opened);
     const there = new Set(files.map((f) => f.path));
     // A clip or picture added elsewhere (the agent's sandbox) shows in Studio's assets without a reload.
-    for (const file of files.filter((f) => f.url && media.get(f.path) !== f.url)) {
+    // A file of this page's still going up is taken in by its upload, which holds the copy here.
+    for (const file of files.filter(
+      (f) => f.url && media.get(f.path) !== f.url && !uploading.has(f.path),
+    )) {
       if (!media.has(file.path)) place(file.path, "");
       media.set(file.path, file.url!);
       fresh.delete(file.path);
@@ -121,7 +171,11 @@ export async function openProject({
     Object.entries(files).flatMap(([abs, text]) => {
       const path = abs.slice(dir.length + 1);
       const skip =
-        text === null || LOCAL.test(path) || media.has(path) || known.get(path) === sha1(text);
+        text === null ||
+        LOCAL.test(path) ||
+        media.has(path) ||
+        uploading.has(path) ||
+        known.get(path) === sha1(text);
       return skip ? [] : [{ path, text: text! }];
     });
 
@@ -152,6 +206,54 @@ export async function openProject({
   // One look or send at a time, in order.
   let queue: Promise<unknown> = Promise.resolve();
   const serial = (fn: () => Promise<void>) => (queue = queue.then(fn, fn));
+
+  /** Whether any composition here still names the file (a clip Studio deleted doesn't). */
+  const named = (path: string) => {
+    const name = path.split("/").pop()!;
+    const names = [name, encodeURI(name), encodeURIComponent(name)];
+    return Object.entries(vol.toJSON(dir)).some(
+      ([abs, text]) => abs.endsWith(".html") && names.some((n) => text?.includes(n)),
+    );
+  };
+
+  /**
+   * What holds Studio's edits back from promptwise: a file still going up, or one that failed and a composition still
+   * names. promptwise (and the agent) never get a composition naming a file its storage doesn't have. A failed file no
+   * composition names any more (its clip was deleted) is let go.
+   */
+  function held(): Promise<void>[] | null {
+    const going: Promise<void>[] = [];
+    for (const [path, upload] of uploading) {
+      if (!upload.failed) going.push(upload.done);
+      else if (named(path)) return null;
+      else forget(path);
+    }
+    return going;
+  }
+
+  function forget(path: string) {
+    uploading.delete(path);
+    fresh.delete(path);
+    vol.rmSync(local(path), { force: true });
+  }
+
+  /** Sends Studio's changes once nothing holds them back; a send that waits is reported as it goes, not awaited. */
+  let waiting = false;
+  function save(path: string): Promise<void> {
+    const going = held();
+    const report = (error: unknown) =>
+      onError?.(path, `not saved to promptwise: ${error instanceof Error ? error.message : error}`);
+    if (going && !going.length) return serial(push);
+    // One send waits for the uploads; it sends everything Studio changed meanwhile.
+    if (going && !waiting) {
+      waiting = true;
+      void Promise.all(going).then(() => {
+        waiting = false;
+        return save(path).catch(report);
+      });
+    }
+    return Promise.resolve();
+  }
 
   const histories = historyCache((projectDir) =>
     openProjectHistory({
@@ -208,7 +310,34 @@ export async function openProject({
     return next;
   }
 
-  /** Studio's upload (a drop, Upload from computer): each file goes up through the tab, and comes back as a link. */
+  /** Takes one file up to promptwise's storage, then into the folder; a failed one waits for Studio's retry. */
+  function sendUp(path: string, file: Blob) {
+    onUpload?.(path, "uploading");
+    const done = (async () => {
+      try {
+        const saved = await folder.upload(path, await file.arrayBuffer(), file.type);
+        if (!saved) throw new Error("another file took its name");
+        // After any look in flight, which wouldn't have seen it yet.
+        await serial(async () => {
+          media.set(path, saved.url);
+          uploading.delete(path);
+        });
+        onUpload?.(path, "done");
+      } catch (error) {
+        const upload = uploading.get(path);
+        if (upload) upload.failed = true;
+        onError?.(path, `upload failed: ${error instanceof Error ? error.message : error}`);
+        onUpload?.(path, "failed");
+      }
+    })();
+    uploading.set(path, { done, failed: false });
+    return done;
+  }
+
+  /**
+   * Studio's upload (a drop, Upload from computer): each file is in the folder at once, shown from this page, and goes
+   * up to promptwise's storage through the tab meanwhile. Studio places its clip without waiting for that.
+   */
   async function upload(request: Request): Promise<Response> {
     const dir = new URL(request.url).searchParams.get("dir")?.replace(/^\/+|\/+$/g, "");
     const files: string[] = [];
@@ -217,37 +346,47 @@ export async function openProject({
       if (typeof value === "string") continue;
       const name = value.name.split(/[\\/]/).pop() ?? "";
       if (!name || name.includes("..") || dir?.includes("..")) continue;
-      const path = free(dir ? `${dir}/${name}` : name);
-      try {
-        const bytes = await value.arrayBuffer();
-        const saved = await folder.upload(path, bytes, value.type);
-        if (!saved) throw new Error("another file took its name");
-        // A video or sound is read in ranges as it plays, which its storage answers; a picture is read whole.
-        if (value.type.startsWith("image/"))
-          fresh.set(path, new Blob([bytes], { type: value.type }));
-        // After any look in flight, which wouldn't have seen it yet.
-        await serial(async () => {
-          place(path, "");
-          media.set(path, saved.url);
-        });
-        files.push(path);
-      } catch (error) {
-        invalid.push({ name, reason: error instanceof Error ? error.message : String(error) });
+      if (!STORED.test(value.type)) {
+        invalid.push({ name, reason: "only pictures, clips, sounds and fonts are uploaded" });
+        continue;
       }
+      if (value.size <= 0 || value.size > MAX_UPLOAD_BYTES) {
+        invalid.push({ name, reason: "files can be up to 100 MB" });
+        continue;
+      }
+      const path = free(dir ? `${dir}/${name}` : name);
+      place(path, "");
+      fresh.set(path, value);
+      void sendUp(path, value);
+      files.push(path);
     }
     return Response.json({ ok: true, files, skipped: [], invalid, unchecked: [] }, { status: 201 });
+  }
+
+  /** Studio's retry of a file that failed to go up. */
+  function retry(request: Request): Response {
+    const path = new URL(request.url).searchParams.get("path") ?? "";
+    const file = fresh.get(path);
+    const upload = uploading.get(path);
+    if (!file || !upload?.failed)
+      return Response.json({ error: "nothing to retry" }, { status: 404 });
+    // The edits it held back go once it's up.
+    void sendUp(path, file).then(() => (uploading.has(path) ? undefined : save(path)));
+    return Response.json({ ok: true }, { status: 202 });
   }
 
   /** What the worker answers itself rather than Studio's API. */
   function own(request: Request, path: string): Response | Promise<Response> | undefined {
     if (path === "/runtime.js") return fetch(runtimeUrl);
     const file = decodeURIComponent(/^\/projects\/[^/]+\/preview\/(.+)$/.exec(path)?.[1] ?? "");
-    const held = fresh.get(file);
-    if (held) return new Response(held, { headers: { "content-type": held.type } });
+    const blob = fresh.get(file);
+    if (blob) return serveBlob(request, blob);
     const link = media.get(file);
     if (link) return Response.redirect(link, 302);
     if (request.method === "POST" && /^\/projects\/[^/]+\/upload$/.test(path))
       return upload(request);
+    if (request.method === "POST" && /^\/projects\/[^/]+\/upload-retry$/.test(path))
+      return retry(request);
   }
 
   /** Studio's API, at its root as the CLI mounts it; a request that changes something is sent on before it's answered. */
@@ -260,7 +399,7 @@ export async function openProject({
       new Request(url, { method: request.method, headers: request.headers, body }),
     );
     if (!reads)
-      await serial(push).catch((error: unknown) => {
+      await save(path).catch((error: unknown) => {
         onError?.(
           path,
           `not saved to promptwise: ${error instanceof Error ? error.message : error}`,
@@ -281,6 +420,9 @@ export async function openProject({
     },
     /** Looks for changes made elsewhere: Studio's page asks every few seconds while it's open. */
     refresh: () => serial(pull),
+    /** Settles once no file is going up: the worker stays up for it. */
+    settled: () =>
+      Promise.all([...uploading.values()].map((upload) => upload.done)).then(() => undefined),
     /** Stops the history's timers and lets the folder go. */
     close: () => histories.closeAll(),
   };
