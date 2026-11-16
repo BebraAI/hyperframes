@@ -40,6 +40,7 @@ const files = new Map(Object.entries(await (await fetch("/files.json")).json()))
 const sha1 = async (t) => [...new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, "0")).join("");
 window.tabFiles = files; window.asked = [];
 addEventListener("message", async (event) => {
+  if (event.origin === "http://localhost:4111" && event.data?.type === "promptwise:studio-unavailable") return console.log("studio unavailable:", event.data.reason);
   if (event.origin !== "http://localhost:4111" || event.data?.type !== "promptwise:folder") return;
   const r = event.data.request, port = event.ports[0];
   asked.push(r.op + " " + (r.path ?? "")); console.log("tab asked", r.op, r.path ?? "");
