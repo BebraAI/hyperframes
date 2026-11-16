@@ -101,18 +101,36 @@ function snapshot(api: DockviewApi): DockSnapshot {
     return isPanelId(id) ? [id] : [];
   });
   const active = api.activePanel?.id;
-  const sides: DockSnapshot["sides"] = {};
-  for (const side of ["left", "right"] as const) {
-    const group = sideGroup(api, side);
-    if (group) sides[side] = { open: group.api.isVisible, width: group.width };
-  }
   return {
     openPanels,
     visiblePanels,
     activePanel: isPanelId(active) ? active : null,
     groupActivePanels,
-    sides,
+    sides: sideColumns(api),
   };
+}
+
+/** Each side column: whether it shows, its width, and the row its edge spans. */
+function sideColumns(api: DockviewApi): DockSnapshot["sides"] {
+  const sides: DockSnapshot["sides"] = {};
+  const preview = api.getPanel("preview")?.group;
+  for (const side of ["left", "right"] as const) {
+    const group = sideGroup(api, side);
+    if (!group) continue;
+    // The edge spans its column's row (beside the preview), not the timeline under it: an open column's own
+    // height, a closed one's (it has none) the preview's.
+    const band = verticalBand(group.api.isVisible ? group.element : preview?.element);
+    sides[side] = { open: group.api.isVisible, width: group.width, ...band };
+  }
+  return sides;
+}
+
+/** Where an element sits vertically in the dock: its top and height, in px from the dock's top. */
+function verticalBand(element: HTMLElement | undefined): { top?: number; height?: number } {
+  const dock = element?.closest(".hf-dock")?.getBoundingClientRect();
+  const rect = element?.getBoundingClientRect();
+  if (!dock || !rect || rect.height === 0) return {};
+  return { top: rect.top - dock.top, height: rect.height };
 }
 
 interface DockOptions {

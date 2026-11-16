@@ -30,7 +30,10 @@ export interface DockSnapshot {
   /** The tab each group shows, so a restored layout still records what every side column last showed. */
   groupActivePanels?: readonly PanelId[];
   /** Each side column there is: whether it shows, and its width. */
-  sides?: Partial<Record<"left" | "right", { open: boolean; width: number }>>;
+  /** `top` and `height`: the row the column's edge spans, in px from the dock's top; the whole dock when unknown. */
+  sides?: Partial<
+    Record<"left" | "right", { open: boolean; width: number; top?: number; height?: number }>
+  >;
 }
 
 type LastActive = Partial<Record<PanelZone, PanelId>>;
