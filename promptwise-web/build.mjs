@@ -43,6 +43,8 @@ const alias = {
   assert: shim("assert.js"),
   "node:assert": shim("assert.js"),
   tty: shim("os.js"),
+  dns: shim("dns.js"),
+  "node:dns": shim("dns.js"),
   "node:tty": shim("os.js"),
 };
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
@@ -65,15 +67,28 @@ writeFileSync(
   page.replace(entry[0], '<script type="module" src="./boot.js"></script>'),
 );
 
+// `add` reports to the CLI's telemetry and colors its terminal output, which pull in the render engine: neither
+// means anything in the browser.
+const noTelemetry = {
+  name: "no-telemetry",
+  setup: (b) => {
+    b.onResolve({ filter: /telemetry\/events\.js$/ }, () => ({
+      path: shim("telemetry-events.js"),
+    }));
+    b.onResolve({ filter: /ui\/colors\.js$/ }, () => ({ path: shim("colors.js") }));
+  },
+};
 const common = {
   bundle: true,
   platform: "browser",
   target: "es2022",
   alias,
   logLevel: "error",
+  color: false,
   metafile: true,
   conditions: ["import"],
   mainFields: ["browser", "module", "main"],
+  plugins: [noTelemetry],
 };
 const worker = await build({
   ...common,
@@ -81,7 +96,10 @@ const worker = await build({
   format: "iife",
   minify: true,
   outfile: `${dist}/sw.js`,
-  define: { "process.env.NODE_ENV": '"production"' },
+  define: {
+    "process.env.NODE_ENV": '"production"',
+    STUDIO_BUILD: JSON.stringify(new Date().toISOString()),
+  },
 });
 await build({
   ...common,

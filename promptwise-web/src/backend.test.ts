@@ -1,7 +1,8 @@
 // fallow-ignore-file complexity
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FEED_MS, openProject, PULL_MS } from "./backend";
+import { type FileChange, openProject } from "./backend";
 import { folder, type FolderRequest, type FolderReply } from "./folder";
 
 // promptwise is the outside world here: a fake tab over a folder that takes writes only over the version it has, as
@@ -32,12 +33,14 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
 
 const HTML =
   '<!doctype html><html><body><div data-composition-id="main" data-width="1920" data-height="1080"><h1 id="title">Made to move fast.</h1></div></body></html>';
+let changes: FileChange[];
 const open = () =>
   openProject({
     prefix: "/studio/d1",
     projectId: "d1",
     folder: folder(tab),
     runtimeUrl: "https://app.test/runtime.js",
+    onChange: (change) => changes.push(change),
   });
 const at = (path: string, init?: RequestInit) =>
   new Request(`https://studio.test/studio/d1/api${path}`, init);
@@ -46,6 +49,7 @@ describe("Studio's API over a tab's folder", () => {
   beforeEach(() => {
     texts = new Map([["index.html", HTML]]);
     asked = [];
+    changes = [];
   });
 
   it("serves the folder's files and a preview with its <base> under the page's folder", async () => {
@@ -85,8 +89,6 @@ describe("Studio's API over a tab's folder", () => {
 
   it("takes promptwise's copy when the agent changed the file meanwhile, and tells Studio", async () => {
     const studio = await open();
-    const feed = (await studio.fetch(at("/events"))).body!.getReader();
-    await feed.read(); // "retry: 500", ": open"
     const version = await versionOf(studio);
     texts.set("index.html", HTML.replace("Made to move fast.", "The agent's line"));
     await studio.fetch(
@@ -101,11 +103,15 @@ describe("Studio's API over a tab's folder", () => {
     expect(await (await studio.fetch(at("/projects/d1/files/index.html"))).text()).toContain(
       "The agent's line",
     );
-    const event = new TextDecoder().decode((await feed.read()).value);
-    expect(event).toMatch(
-      /^event: file-change\ndata: \{"path":"index.html","version":"\\"sha256:[0-9a-f]{64}\\"","projectId":"d1"/,
-    );
-    await feed.cancel();
+    expect(changes).toEqual([
+      {
+        path: "index.html",
+        version: expect.stringMatching(/^"sha256:[0-9a-f]{64}"$/),
+        projectId: "d1",
+        affectsPreview: true,
+        affectedCompositions: null,
+      },
+    ]);
   });
 
   it("takes in the agent's changes on a refresh: new, changed and deleted files", async () => {
@@ -122,38 +128,58 @@ describe("Studio's API over a tab's folder", () => {
       (await (await studio.fetch(at("/projects/d1/files/scenes/new.html"))).json()).content,
     ).toBe("<p>new</p>");
     expect((await studio.fetch(at("/projects/d1/files/old.html"))).status).toBe(404);
+    expect(changes.map((c) => [c.path, c.version === null])).toEqual([
+      ["index.html", false],
+      ["scenes/new.html", false],
+      ["old.html", true],
+    ]);
   });
 
-  it("looks for changes once every PULL_MS however many streams Studio opens, and stops when they close", async () => {
-    vi.useFakeTimers();
+  // A change feed held open on the worker kept new deploys from taking over and was stopped by Chrome after five
+  // minutes, after which Studio's requests went past the worker to the host: the backend serves no stream now.
+  it("holds no request open: Studio's events route isn't the worker's", async () => {
     const studio = await open();
-    const feeds = await Promise.all(
-      [1, 2, 3].map(async () => (await studio.fetch(at("/events"))).body!.getReader()),
-    );
-    asked.length = 0;
-    await vi.advanceTimersByTimeAsync(PULL_MS * 2);
-    expect(asked).toEqual(["list", "list"]);
-    await Promise.all(feeds.map((feed) => feed.cancel()));
-    await vi.advanceTimersByTimeAsync(PULL_MS * 2);
-    expect(asked).toEqual(["list", "list"]);
-    vi.useRealTimers();
+    const res = await studio.fetch(at("/events"));
+    expect(res.headers.get("content-type") ?? "").not.toContain("text/event-stream");
   });
 
-  // Chrome stops a worker whose one event runs past five minutes, streaming or not, and a request caught in that
-  // stop went to the host instead: Wisey's move of a clip failed with the host's 404.
-  it("ends each change feed before Chrome's five-minute limit, and stops looking once it has", async () => {
-    vi.useFakeTimers();
-    const studio = await open();
-    const feed = (await studio.fetch(at("/events"))).body!.getReader();
-    expect(new TextDecoder().decode((await feed.read()).value)).toBe("retry: 500\n: open\n\n");
-    await vi.advanceTimersByTimeAsync(FEED_MS);
-    expect((await feed.read()).done).toBe(true);
-    expect(FEED_MS).toBeLessThan(5 * 60_000);
-    asked.length = 0;
-    await vi.advanceTimersByTimeAsync(PULL_MS * 2);
-    expect(asked).toEqual([]);
-    vi.useRealTimers();
-  });
+  // Studio's catalog said "Failed to load catalog": the browser backend had no registry at all.
+  it("lists the registry's blocks and installs one into the folder, which goes back to the tab", async () => {
+    // The registry over HTTPS is the outside world: answered from the fork's own registry/ folder on disk
+    // (Node's own fs, since this file's fs is the in-memory one).
+    const disk = createRequire(import.meta.url)("fs") as typeof import("node:fs");
+    const root = new URL("../../registry/", import.meta.url);
+    vi.stubGlobal("fetch", async (url: string) => {
+      const path = new URL(url).pathname.split("/registry/")[1]!;
+      const file = new URL(path, root);
+      return disk.existsSync(file)
+        ? new Response(disk.readFileSync(file))
+        : new Response("not found", { status: 404 });
+    });
+    try {
+      const studio = await open();
+      const catalog = (await (await studio.fetch(at("/registry/blocks"))).json()) as {
+        name: string;
+      }[];
+      expect(catalog.length).toBeGreaterThan(100);
+      expect(catalog.map((b) => b.name)).toContain("lt-color-block");
+
+      const res = await studio.fetch(
+        at("/projects/d1/registry/install", {
+          method: "POST",
+          body: JSON.stringify({ blockName: "lt-color-block" }),
+          headers: { "content-type": "application/json" },
+        }),
+      );
+      const body = await res.json();
+      expect([res.status, body.error]).toEqual([200, undefined]);
+      expect(body.written[0]).toBe("compositions/lt-color-block.html");
+      expect(texts.get("compositions/lt-color-block.html")).toContain("<");
+      expect(texts.get("hyperframes.json")).toContain("lt-color-block");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }, 30_000);
 
   it("refuses uploads, which go through promptwise's media", async () => {
     const studio = await open();

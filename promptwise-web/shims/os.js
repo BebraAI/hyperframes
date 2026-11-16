@@ -5,5 +5,18 @@ export const availableParallelism = () => 1,
   totalmem = () => 4e9,
   uptime = () => 0,
   cpus = () => [{}],
+  release = () => "",
+  freemem = () => 2e9,
   EOL = "\n";
-export default { availableParallelism, homedir, platform, tmpdir, totalmem, uptime, cpus, EOL };
+export default {
+  availableParallelism,
+  homedir,
+  platform,
+  tmpdir,
+  totalmem,
+  uptime,
+  cpus,
+  release,
+  freemem,
+  EOL,
+};

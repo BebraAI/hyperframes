@@ -6,5 +6,6 @@ export const execFile = none,
   execFileSync = none,
   spawn = none,
   spawnSync = none,
+  execSync = none,
   exec = none;
-export default { execFile, execFileSync, spawn, spawnSync, exec };
+export default { execFile, execFileSync, spawn, spawnSync, execSync, exec };

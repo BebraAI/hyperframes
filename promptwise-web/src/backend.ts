@@ -1,7 +1,7 @@
 // fallow-ignore-file complexity -- covered by backend.test.ts through openProject, which the CRAP estimate doesn't follow
 // Studio's own API (createStudioApi) over a Timeline tab's folder held in memory: no Node server, no sandbox. Each
 // write Studio makes goes back to promptwise over the version it read; changes made elsewhere (the agent's sandbox)
-// come in as Studio's own file-change events.
+// come in on a refresh, which Studio's page asks for, and go out as Studio's own file-change events.
 import "../shims/globals.js";
 import { vol } from "../shims/fs.js";
 import { createHash } from "node:crypto";
@@ -13,21 +13,25 @@ import {
 } from "../../packages/studio-server/src/index.ts";
 import { bundleToSingleHtml } from "../../packages/core/src/compiler/index.ts";
 import { lintHyperframeHtml, lintProject } from "../../packages/core/src/lint/index.ts";
+import {
+  installStudioBlock,
+  listStudioCatalog,
+} from "../../packages/cli/src/server/studioCatalog.ts";
 import type { Folder } from "./folder";
 
-/** How often a project with Studio open looks for changes made elsewhere. */
-export const PULL_MS = 5000;
-/**
- * How long one change feed stays open. Chrome stops a Service Worker whose one event runs past five minutes, a
- * streaming response included, and a request caught in that stop goes to the network instead (a 404 from the host).
- * Closed sooner, the feed ends cleanly and Studio's EventSource opens the next one at once.
- */
-export const FEED_MS = 4 * 60_000;
 /** Studio's own notes beside the project (backups, history) stay in the page. */
 const LOCAL = /^\.hyperframes\//;
 
 const sha1 = (text: string) => createHash("sha1").update(text).digest("hex");
-const encoder = new TextEncoder();
+
+/** One file changed elsewhere, as the CLI's file watcher tells Studio. */
+export type FileChange = {
+  path: string;
+  version: string | null;
+  projectId: string;
+  affectsPreview: true;
+  affectedCompositions: null;
+};
 
 type Options = {
   /** Studio's page folder: the API is under `<prefix>/api`. */
@@ -36,23 +40,43 @@ type Options = {
   folder: Folder;
   /** Where the runtime the preview loads is. */
   runtimeUrl: string;
+  /** Hears about each of Studio's requests that failed on this side (a 5xx), for the tab to log. */
+  onError?: (path: string, message: string) => void;
+  /** Hears about each file a refresh found changed elsewhere, to tell Studio. */
+  onChange?: (change: FileChange) => void;
 };
 
-export async function openProject({ prefix, projectId, folder, runtimeUrl }: Options) {
+export async function openProject({
+  prefix,
+  projectId,
+  folder,
+  runtimeUrl,
+  onError,
+  onChange,
+}: Options) {
   const dir = `/projects/${projectId}`;
   const apiBase = `${prefix}/api`;
   /** The text promptwise has, by its sha1: what each write says it replaces. */
   const known = new Map<string, string>();
   /** Binary files: a link to promptwise's copy, and an empty file here so Studio sees them. */
   const media = new Map<string, string>();
-  const listeners = new Set<(path: string) => void>();
 
   const local = (path: string) => `${dir}/${path}`;
   const place = (path: string, text: string) => {
     vol.mkdirSync(dirname(local(path)), { recursive: true });
     vol.writeFileSync(local(path), text);
   };
-  const changed = (path: string) => listeners.forEach((send) => send(path));
+  // The first look fills the folder: nothing has changed for Studio yet.
+  let opened = false;
+  const changed = (path: string) => {
+    if (!opened) return;
+    const text =
+      media.has(path) || !vol.existsSync(local(path))
+        ? null
+        : String(vol.readFileSync(local(path), "utf8"));
+    const version = text === null ? null : fileContentVersion(text);
+    onChange?.({ path, version, projectId, affectsPreview: true, affectedCompositions: null });
+  };
 
   /** Takes in what changed in promptwise since the last look. */
   async function pull() {
@@ -116,6 +140,7 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
   vol.rmSync(dir, { recursive: true, force: true });
   vol.mkdirSync(dir, { recursive: true });
   await pull();
+  opened = true;
 
   const project = { id: projectId, dir };
   const adapter = {
@@ -132,6 +157,10 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
     lintProject: (projectDir: string) => lintProject(projectDir, undefined, { host: "studio" }),
     runtimeUrl: `${apiBase}/runtime.js`,
     apiBase,
+    // The catalog from the fork's registry on GitHub; an install writes into the folder, which goes back as any write.
+    listRegistryCatalog: () => listStudioCatalog(dir),
+    installRegistryBlock: (opts: { project: { dir: string }; blockName: string }) =>
+      installStudioBlock(opts.project.dir, opts.blockName),
     rendersDir: () => "/renders",
     startRender: () => {
       throw new Error("Export from promptwise's Timeline tab");
@@ -139,61 +168,8 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
   };
   const api = createStudioApi(adapter as never);
 
-  // While Studio listens for changes, look for them every PULL_MS: one look for all its streams.
-  let timer: ReturnType<typeof setInterval> | undefined;
-  const listen = (send: (path: string) => void) => {
-    listeners.add(send);
-    timer ??= setInterval(() => void serial(pull).catch(() => {}), PULL_MS);
-  };
-  const unlisten = (send: (path: string) => void) => {
-    listeners.delete(send);
-    if (!listeners.size) timer = void clearInterval(timer);
-  };
-
-  /** Studio's change feed: what changed elsewhere, as the CLI's file watcher tells it. */
-  function events(): Response {
-    let send: (path: string) => void;
-    let end: ReturnType<typeof setTimeout>;
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        send = (path) => {
-          const text = media.has(path)
-            ? null
-            : vol.existsSync(local(path))
-              ? String(vol.readFileSync(local(path), "utf8"))
-              : null;
-          const data = {
-            path,
-            version: text === null ? null : fileContentVersion(text),
-            projectId,
-            affectsPreview: true,
-            affectedCompositions: null,
-          };
-          controller.enqueue(
-            encoder.encode(`event: file-change\ndata: ${JSON.stringify(data)}\n\n`),
-          );
-        };
-        listen(send);
-        // Reopen after half a second rather than EventSource's default three.
-        controller.enqueue(encoder.encode("retry: 500\n: open\n\n"));
-        end = setTimeout(() => {
-          unlisten(send);
-          controller.close();
-        }, FEED_MS);
-      },
-      cancel: () => {
-        clearTimeout(end);
-        unlisten(send);
-      },
-    });
-    return new Response(stream, {
-      headers: { "content-type": "text/event-stream", "cache-control": "no-cache" },
-    });
-  }
-
   /** What the worker answers itself rather than Studio's API. */
   function own(path: string): Response | Promise<Response> | undefined {
-    if (path === "/events") return events();
     if (path === "/runtime.js") return fetch(runtimeUrl);
     const link = media.get(
       decodeURIComponent(/^\/projects\/[^/]+\/preview\/(.+)$/.exec(path)?.[1] ?? ""),
@@ -213,6 +189,9 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
       new Request(url, { method: request.method, headers: request.headers, body }),
     );
     if (!reads) await serial(push);
+    // 501 is what isn't in the browser yet (thumbnails, renders, ffmpeg), which the tab needn't hear about each time.
+    if (response.status >= 500 && response.status !== 501)
+      onError?.(path, (await response.clone().text()).slice(0, 500));
     return response;
   }
 
@@ -222,7 +201,7 @@ export async function openProject({ prefix, projectId, folder, runtimeUrl }: Opt
       const path = new URL(request.url).pathname.slice(apiBase.length);
       return Promise.resolve(own(path) ?? answer(request, path));
     },
-    /** Looks for changes made elsewhere now, as when the tab says the agent saved some. */
+    /** Looks for changes made elsewhere: Studio's page asks every few seconds while it's open. */
     refresh: () => serial(pull),
   };
 }

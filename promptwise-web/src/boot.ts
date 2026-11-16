@@ -1,3 +1,4 @@
+// fallow-ignore-file complexity -- runs only in a browser (a page and its Service Worker); checked with check.mjs and on staging, not in vitest
 // Studio's page in promptwise. Starts the Service Worker that answers Studio's API (sw.ts), passes the folder
 // requests it makes to the tab that holds this page, then loads Studio. Served as `<scope><docId>/boot.js`.
 // Where the worker can't start (Brave's Shields, Firefox blocking every cross-site cookie, a private window), the
@@ -8,15 +9,21 @@ declare const STUDIO_MAIN: string;
 
 /** How long the worker has to take the page before Studio gives up on it. */
 const START_MS = 15_000;
+/** How often the page asks the worker to look for changes made elsewhere (the agent's sandbox). */
+const PULL_MS = 5000;
 
 const scope = new URL("../", import.meta.url);
+const workers = navigator.serviceWorker;
 
-async function startWorker(workers: ServiceWorkerContainer | undefined): Promise<void> {
+async function startWorker(): Promise<void> {
   if (!workers) throw new Error("no Service Workers here");
-  // The request carries no session; the tab answers on the port it brings. The tab's origin isn't known here.
   workers.onmessage = (event) => {
-    if (event.data?.type === "promptwise:folder")
-      window.parent.postMessage(event.data, "*", [...event.ports]);
+    const type = event.data?.type;
+    // The request carries no session; the tab answers on the port it brings. The tab's origin isn't known here.
+    if (type === "promptwise:folder") window.parent.postMessage(event.data, "*", [...event.ports]);
+    if (type === "promptwise:studio-error") window.parent.postMessage(event.data, "*");
+    // Studio's own file-change events, which it takes from this page rather than a stream held open on the worker.
+    if (type === "promptwise:file-change") window.postMessage(event.data, location.origin);
   };
   await workers.register(new URL("sw.js", scope), { scope: scope.pathname });
   await workers.ready;
@@ -30,10 +37,46 @@ const timeout = new Promise<never>((_, reject) =>
   setTimeout(() => reject(new Error("the Service Worker didn't start")), START_MS),
 );
 try {
-  await Promise.race([startWorker(navigator.serviceWorker), timeout]);
+  await Promise.race([startWorker(), timeout]);
 } catch (err) {
   window.parent.postMessage({ type: "promptwise:studio-unavailable", reason: String(err) }, "*");
   document.body.textContent = "Studio can't start in this browser.";
   throw err;
 }
+// Studio listens for changes by message here, not on /api/events.
+(globalThis as { promptwiseWorkerFeed?: boolean }).promptwiseWorkerFeed = true;
 await import(new URL(STUDIO_MAIN, import.meta.url).href);
+
+// A newer deploy takes over between requests; look for one now rather than on the next navigation.
+void workers
+  .getRegistration(scope.pathname)
+  .then((registration) => registration?.update())
+  .catch(() => {});
+
+// Ask the worker to look for changes every few seconds; its answer also says it still serves this page. When it
+// doesn't (requests going past it to the host were seen on Chrome), a reload brings it back; when a reload a minute
+// ago didn't, the tab opens Studio in the sandbox instead.
+const RELOADED = "promptwise:reloaded";
+let reported = false;
+setInterval(async () => {
+  const reply = await fetch(new URL("./api/__pull", import.meta.url), { cache: "no-store" }).catch(
+    () => null,
+  );
+  const build = reply?.headers.get("x-promptwise-worker");
+  if (build) {
+    if (!reported) window.parent.postMessage({ type: "promptwise:studio-ready", build }, "*");
+    reported = true;
+    return;
+  }
+  const last = Number(sessionStorage.getItem(RELOADED) ?? 0);
+  if (Date.now() - last < 60_000) {
+    const registration = await workers.getRegistration(scope.pathname);
+    const state = (w: ServiceWorker | null | undefined) => w?.state ?? "none";
+    const workersNow = `active ${state(registration?.active)}, waiting ${state(registration?.waiting)}, installing ${state(registration?.installing)}, controller ${workers.controller ? "yes" : "no"}`;
+    const reason = `the worker stopped answering (pull ${reply?.status ?? "failed"}; ${workersNow})`;
+    window.parent.postMessage({ type: "promptwise:studio-unavailable", reason }, "*");
+    return;
+  }
+  sessionStorage.setItem(RELOADED, String(Date.now()));
+  location.reload();
+}, PULL_MS);

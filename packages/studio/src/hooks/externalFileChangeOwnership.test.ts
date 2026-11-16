@@ -74,4 +74,14 @@ describe("external file-change subscription ownership", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it("uses the message channel only on promptwise's worker, and the SSE stream everywhere else", () => {
+    const coordinator = readFileSync(
+      new URL("./useExternalFileChangeCoordinator.ts", import.meta.url),
+      "utf8",
+    );
+    expect(coordinator).toContain(
+      "if (onPromptwiseWorker()) return promptwiseFileChangeChannel(handler);",
+    );
+  });
 });

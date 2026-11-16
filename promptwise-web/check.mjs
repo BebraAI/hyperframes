@@ -1,3 +1,4 @@
+// fallow-ignore-file complexity -- a hand-run check server, not shipped
 // Checks the build in a real browser on two origins, as promptwise runs it: the "tab" (http://localhost:4110) holds
 // a folder in memory and answers Studio's folder requests; Studio (4111) is dist/ at /studio/, with
 // /studio/<uuid>/... rewritten to /studio/.... Use Chrome: some embedded browsers can't register Service Workers.

@@ -1,3 +1,4 @@
+// fallow-ignore-file complexity -- Node's fs over memfs for the browser build; exercised through backend.test.ts
 // node:fs over one in-memory volume (memfs), which the backend fills with the project files. Generated.
 import { Volume, createFsFromVolume } from "memfs";
 export const vol = new Volume();
@@ -72,6 +73,8 @@ export const rmSync = (...a) => fs.rmSync(...a);
 export const rmdir = (...a) => fs.rmdir(...a);
 export const rmdirSync = (...a) => fs.rmdirSync(...a);
 export const stat = (...a) => fs.stat(...a);
+// memfs has no statfs; the CLI only reads it for telemetry.
+export const statfsSync = () => ({ bavail: 0, bsize: 0, blocks: 0 });
 export const statSync = (...a) => fs.statSync(...a);
 export const symlink = (...a) => fs.symlink(...a);
 export const symlinkSync = (...a) => fs.symlinkSync(...a);
@@ -91,7 +94,13 @@ export const watch = () => ({
 export const watchFile = (...a) => fs.watchFile(...a);
 export const write = (...a) => fs.write(...a);
 export const writeFile = (...a) => fs.writeFile(...a);
-export const writeFileSync = (...a) => fs.writeFileSync(...a);
+// Node takes `mode: undefined` as the default; memfs refuses it ("mode must be an int"), as the core's atomic write passes it.
+const withoutUndefinedMode = (options) =>
+  options && typeof options === "object" && "mode" in options && options.mode === undefined
+    ? Object.fromEntries(Object.entries(options).filter(([key]) => key !== "mode"))
+    : options;
+export const writeFileSync = (path, data, options) =>
+  fs.writeFileSync(path, data, withoutUndefinedMode(options));
 export const writeSync = (...a) => fs.writeSync(...a);
 export const writev = (...a) => fs.writev(...a);
 export const writevSync = (...a) => fs.writevSync(...a);

@@ -11,6 +11,7 @@ import type { ExternalConflictSnapshot } from "../utils/externalConflictStorage"
 import { isSelfWriteEcho } from "./sdkSelfWriteRegistry";
 import { consumeStudioWriteToken } from "../utils/studioFileVersion";
 import { logReload } from "../utils/reloadDebug";
+import { onPromptwiseWorker, promptwiseFileChangeChannel } from "./promptwiseFileChangeChannel";
 import { STUDIO_API } from "../utils/studioApiBase";
 
 type ExternalChangeDrainResult =
@@ -488,6 +489,7 @@ export function useExternalFileChangeCoordinator({
       import.meta.hot.on("hf:file-change", handler);
       return () => import.meta.hot?.off?.("hf:file-change", handler);
     }
+    if (onPromptwiseWorker()) return promptwiseFileChangeChannel(handler);
     const catchUp = () => processChangeRef.current({ path: "." });
     return sseFileChangeChannel(handler, catchUp);
   }, []);
