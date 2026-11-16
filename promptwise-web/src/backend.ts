@@ -65,6 +65,8 @@ export async function openProject({
   const known = new Map<string, string>();
   /** Binary files: a link to promptwise's copy, and an empty file here so Studio sees them. */
   const media = new Map<string, string>();
+  /** Pictures uploaded from this page: shown from here, not fetched back from the storage they just went to. */
+  const fresh = new Map<string, Blob>();
 
   const local = (path: string) => `${dir}/${path}`;
   const place = (path: string, text: string) => {
@@ -93,6 +95,7 @@ export async function openProject({
     for (const file of files.filter((f) => f.url && media.get(f.path) !== f.url)) {
       if (!media.has(file.path)) place(file.path, "");
       media.set(file.path, file.url!);
+      fresh.delete(file.path);
       changed(file.path);
     }
     // Text the listing didn't carry is read at once: each read is a trip through the tab, and a folder has a dozen
@@ -108,6 +111,7 @@ export async function openProject({
       vol.rmSync(local(path), { force: true });
       known.delete(path);
       media.delete(path);
+      fresh.delete(path);
       changed(path);
     }
   }
@@ -215,8 +219,12 @@ export async function openProject({
       if (!name || name.includes("..") || dir?.includes("..")) continue;
       const path = free(dir ? `${dir}/${name}` : name);
       try {
-        const saved = await folder.upload(path, await value.arrayBuffer(), value.type);
+        const bytes = await value.arrayBuffer();
+        const saved = await folder.upload(path, bytes, value.type);
         if (!saved) throw new Error("another file took its name");
+        // A video or sound is read in ranges as it plays, which its storage answers; a picture is read whole.
+        if (value.type.startsWith("image/"))
+          fresh.set(path, new Blob([bytes], { type: value.type }));
         // After any look in flight, which wouldn't have seen it yet.
         await serial(async () => {
           place(path, "");
@@ -233,9 +241,10 @@ export async function openProject({
   /** What the worker answers itself rather than Studio's API. */
   function own(request: Request, path: string): Response | Promise<Response> | undefined {
     if (path === "/runtime.js") return fetch(runtimeUrl);
-    const link = media.get(
-      decodeURIComponent(/^\/projects\/[^/]+\/preview\/(.+)$/.exec(path)?.[1] ?? ""),
-    );
+    const file = decodeURIComponent(/^\/projects\/[^/]+\/preview\/(.+)$/.exec(path)?.[1] ?? "");
+    const held = fresh.get(file);
+    if (held) return new Response(held, { headers: { "content-type": held.type } });
+    const link = media.get(file);
     if (link) return Response.redirect(link, 302);
     if (request.method === "POST" && /^\/projects\/[^/]+\/upload$/.test(path))
       return upload(request);

@@ -40,7 +40,7 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
     };
   }
   if (request.op === "upload") {
-    if (request.contentType !== "video/mp4") return { status: 400 };
+    if (!["video/mp4", "image/png"].includes(request.contentType)) return { status: 400 };
     uploads.set(request.path, new TextDecoder().decode(request.bytes));
     return { status: 200, sha1: "b".repeat(40), url: `https://media.test/${request.path}` };
   }
@@ -281,6 +281,26 @@ describe("Studio's API over a tab's folder", () => {
     expect(changes.map((change) => change.path)).toEqual(["assets/new.mp4"]);
     const clip = await studio.fetch(at("/projects/d1/preview/assets/new.mp4"));
     expect(clip.headers.get("location")).toBe("https://media.test/new.mp4");
+  });
+
+  it("shows a picture it just uploaded from the page, and a clip from its storage", async () => {
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["picture bytes"], "photo.png", { type: "image/png" }));
+    form.append("file", new File(["clip bytes"], "clip.mp4", { type: "video/mp4" }));
+    await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+
+    const photo = await studio.fetch(at("/projects/d1/preview/photo.png"));
+    expect([photo.status, photo.headers.get("content-type"), await photo.text()]).toEqual([
+      200,
+      "image/png",
+      "picture bytes",
+    ]);
+    const clip = await studio.fetch(at("/projects/d1/preview/clip.mp4"));
+    expect([clip.status, clip.headers.get("location")]).toEqual([
+      302,
+      "https://media.test/clip.mp4",
+    ]);
   });
 
   it("uploads Studio's files through the tab and links them, under a free name", async () => {
