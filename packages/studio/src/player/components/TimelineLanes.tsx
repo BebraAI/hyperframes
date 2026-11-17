@@ -8,7 +8,7 @@ import { TimelineAutomationLaneSlot } from "./TimelineAutomationLaneSlot";
 import { useAutomationLanes } from "./useAutomationLanes";
 import { useAutomationSelectionKeyboard } from "../../hooks/useAutomationSelectionKeyboard";
 import { TimelineTrackHeader } from "./TimelineTrackHeader";
-import { trackEnd } from "./NewTrackAdd";
+import { trackEnd, type AddedMedia } from "./NewTrackAdd";
 import { TimelineGroupRow } from "./TimelineGroupRow";
 import { useTimelineLaneRowIndexes, useTimelineGroupDisclosure } from "./useTimelineLaneRowIndexes";
 import { useTimelineClipDisclosure } from "./useTimelineClipDisclosure";
@@ -54,7 +54,7 @@ function trackAdder(
   elements: readonly TimelineElement[],
 ) {
   if (!onAddFiles) return undefined;
-  return (files: File[]) => onAddFiles(files, { track, start: trackEnd(elements) });
+  return (media: AddedMedia) => onAddFiles(media, { track, start: trackEnd(elements) });
 }
 
 // fallow-ignore-next-line complexity

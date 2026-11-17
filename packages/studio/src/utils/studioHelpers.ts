@@ -15,7 +15,8 @@ export interface EditingFile {
 
 export interface AppToast {
   message: string;
-  tone: "error" | "info";
+  /** "undo" is an info toast for an edit that Undo takes back: it carries an Undo button. */
+  tone: "error" | "info" | "undo";
 }
 
 export type RightPanelTab =
@@ -121,9 +122,11 @@ export function shouldIgnoreHistoryShortcut(target: EventTarget | null): boolean
   return isTypingTarget(target);
 }
 
-function getHistoryShortcutLabel(action: "undo" | "redo"): string {
+/** Undo's or Redo's shortcut: "Cmd+Z", or with `symbols` the "⌘Z" a Mac menu shows ("Ctrl+Z" elsewhere). */
+export function historyShortcut(action: "undo" | "redo", symbols = false): string {
   const isMac =
     typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+  if (symbols && isMac) return action === "undo" ? "⌘Z" : "⇧⌘Z";
   const modifier = isMac ? "Cmd" : "Ctrl";
   return action === "undo" ? `${modifier}+Z` : `${modifier}+Shift+Z`;
 }
@@ -133,7 +136,7 @@ export function historyTooltipLabel(
   action: "undo" | "redo",
   lastAction: string | null | undefined,
 ): string {
-  const shortcut = getHistoryShortcutLabel(action);
+  const shortcut = historyShortcut(action);
   const verb = action === "undo" ? "Undo" : "Redo";
   return lastAction ? `${verb} ${lastAction} (${shortcut})` : `${verb} (${shortcut})`;
 }

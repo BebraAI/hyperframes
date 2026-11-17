@@ -104,7 +104,7 @@ interface UseGestureCommitParams {
   projectId?: string | null;
   domEditSessionRef: React.MutableRefObject<GestureSessionRef>;
   previewIframeRef: React.RefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   isGestureRecordingRef: React.MutableRefObject<boolean>;
   readOnlyPreview: boolean;
 }

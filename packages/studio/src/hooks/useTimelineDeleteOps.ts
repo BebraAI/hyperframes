@@ -2,7 +2,7 @@ import { buildProjectApiPath } from "../utils/projectRouting";
 // Timeline clip deletion: the marquee/multi path and the single-clip wrapper
 // the context menu uses. Extracted verbatim from useTimelineEditing.ts to keep
 // it under the studio 600-line cap, following useTimelineAssetDropOps.
-import { useCallback, useRef, type MutableRefObject, type RefObject } from "react";
+import { useCallback, type MutableRefObject, type RefObject } from "react";
 import type { TimelineElement } from "../player";
 import { usePlayerStore } from "../player";
 import { saveServerRewriteWithHistory, type RecordEditInput } from "../utils/studioFileHistory";
@@ -43,7 +43,7 @@ interface UseTimelineDeleteOpsOptions {
   projectIdRef: MutableRefObject<string | null>;
   activeCompPath: string | null;
   timelineElements: TimelineElement[];
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   recordEdit: (input: RecordEditInput) => Promise<void>;
   reloadPreview: () => void;
@@ -80,7 +80,6 @@ export function useTimelineDeleteOps({
   // First-use-per-session notice for the ripple. Plain info toast: Studio's
   // toast system has no action buttons, so Undo and the toggle location are
   // named in words instead.
-  const rippleNoticeShownRef = useRef(false);
   // fallow-ignore-next-line complexity
   const handleTimelineElementsDelete = useCallback(
     // fallow-ignore-next-line complexity
@@ -206,19 +205,11 @@ export function useTimelineDeleteOps({
         forceReloadSdkSession?.();
         reloadPreview();
         // A failed ripple already showed its own toast above; the user did one
-        // thing (delete), so they get one message, not this generic follow-up too.
+        // thing (delete), so they get one message, whose Undo also takes back the gap Ripple closed.
         if (!rippleFailed) {
           showToast(
-            `Deleted ${label}. Use Undo to restore ${sameFile.length === 1 ? "it" : "them"}.`,
-            "info",
-          );
-        }
-        if (rippleChanges && !rippleFailed && !rippleNoticeShownRef.current) {
-          rippleNoticeShownRef.current = true;
-          showToast(
-            "Ripple closed the gap on the main track. Undo (⌘Z) restores it, or turn off " +
-              "Ripple in the timeline toolbar.",
-            "info",
+            rippleChanges ? `Deleted ${label}, Ripple closed the gap` : `Deleted ${label}`,
+            "undo",
           );
         }
       } catch (error) {

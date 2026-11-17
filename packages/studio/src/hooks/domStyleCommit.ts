@@ -32,7 +32,7 @@ export interface DomStyleCommitContext {
   activeCompPath: string | null;
   previewIframeRef: React.RefObject<HTMLIFrameElement | null>;
   persistDomEditOperations: PersistDomEditOperations;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   /** Latest-commit versions per target and property set; keep one map per caller. */
   versions: Map<string, symbol>;
   resolveImportedFontAsset?: (fontFamilyValue: string) => ImportedFontAsset | null;

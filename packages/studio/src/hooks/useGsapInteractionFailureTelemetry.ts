@@ -11,7 +11,7 @@ function failureToast(error: unknown, toast: boolean): string | null {
 
 export function useGsapInteractionFailureTelemetry(
   activeCompPath: string | null,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ) {
   return useCallback(
     (

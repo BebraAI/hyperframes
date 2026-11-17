@@ -129,7 +129,7 @@ describe("promptwise media", () => {
       />,
     );
     expect([...host.querySelectorAll("[data-promptwise-media]")].map((c) => c.textContent)).toEqual(
-      ["SoundMusic"],
+      ["Music"],
     );
   });
 });

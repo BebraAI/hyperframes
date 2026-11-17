@@ -15,7 +15,7 @@ export type TimelineEditOutcome =
 export function projectForTimelineSave(
   isRecording: boolean | undefined,
   projectId: string | null,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ): string | TimelineEditOutcome {
   if (isRecording) {
     showToast("Cannot edit timeline while recording", "error");
@@ -26,7 +26,7 @@ export function projectForTimelineSave(
 
 export function failedTimelineSave(
   reason: string,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ): TimelineEditOutcome {
   showToast(reason);
   return { status: "failed", reason };
@@ -49,7 +49,7 @@ function timelineEditRefusal(
  */
 export function useTimelineEditRefusal(
   canEdit: CanEditTimelineElement | undefined,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ) {
   return useCallback(
     (targets: readonly TimelineElement[]): string | null => {
@@ -63,7 +63,7 @@ export function useTimelineEditRefusal(
 
 export function useTimelineEditGate(
   canEdit: CanEditTimelineElement | undefined,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ) {
   const refuse = useTimelineEditRefusal(canEdit, showToast);
   return useCallback(

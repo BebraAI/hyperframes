@@ -25,7 +25,7 @@ export interface ElementOffsetStagerDeps {
     patches: PatchOperation[],
     options: { label: string; coalesceKey: string; coalesceMs?: number },
   ) => Promise<DomEditPersistOutcome | undefined>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   readOnlyPreview?: boolean;
 }
 

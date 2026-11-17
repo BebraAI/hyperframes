@@ -120,7 +120,7 @@ export function useGsapSelectionHandlers({
     sel: DomEditSelection,
   ) => Promise<void | import("./domEditCommitTypes").DomEditPersistOutcome>;
   selectedGsapAnimations: GsapAnimation[];
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
 }) {
   const lastSelectionRef = useRef<DomEditSelection | null>(null);
   if (domEditSelection) lastSelectionRef.current = domEditSelection;

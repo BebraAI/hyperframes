@@ -7,7 +7,7 @@ import { studioApiFetch } from "../utils/studioApiFetch";
 interface UseFrameCaptureParams {
   projectId: string | null;
   activeCompPath: string | null;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   waitForPendingDomEditSaves: () => Promise<void>;
 }
 

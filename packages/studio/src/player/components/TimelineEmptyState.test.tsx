@@ -3,7 +3,6 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../../components/ui/mountHost.testHelpers";
-import { useDockLayoutStore } from "../../components/dock/dockLayoutStore";
 import { TimelineEmptyState } from "./TimelineEmptyState";
 
 vi.mock("../../promptwise/embed", async (importOriginal) => ({
@@ -15,29 +14,37 @@ afterEach(cleanupMounted);
 
 const noop = () => {};
 const drop = { isDragOver: false, onDragOver: noop, onDragLeave: noop, onDrop: noop };
-const items = () => [...document.querySelectorAll('[role="menuitem"]')];
+const button = (host: HTMLElement, name: string) =>
+  [...host.querySelectorAll("button")].find((b) => b.textContent === name)!;
 
-it("uploads from the computer or opens the gallery from the empty timeline's drop zone", async () => {
+it("offers the gallery and an upload as buttons on the empty timeline", async () => {
   const onAddFiles = vi.fn();
-  const activatePanel = vi.fn();
-  useDockLayoutStore.setState({ activatePanel });
   const host = mountHost(<TimelineEmptyState {...drop} onFileDrop onAddFiles={onAddFiles} />);
 
-  const zone = host.querySelector<HTMLButtonElement>("button")!;
-  expect(zone.textContent).toBe("Drop or upload media, or describe your video to start");
-  await act(async () => zone.click());
-  expect(items().map((item) => item.querySelector(".text-body-2-medium")?.textContent)).toEqual([
-    "From gallery",
-    "Upload from computer",
-  ]);
-  await act(async () => (items()[0] as HTMLElement).click());
-  expect(activatePanel).toHaveBeenCalledWith("assets");
+  expect(host.textContent).toContain("Your timeline is empty");
+  await act(async () => button(host, "From gallery").click());
+  // The gallery opens where the button was, not in the Assets panel.
+  expect(document.querySelector('[role="dialog"]')?.getAttribute("aria-label")).toBe(
+    "Add media to a new track",
+  );
+  await act(async () =>
+    document.querySelector<HTMLButtonElement>('[role="dialog"] [aria-label="Close"]')!.click(),
+  );
 
   const input = host.querySelector<HTMLInputElement>('[data-testid="new-track-files"]')!;
+  const pick = vi.spyOn(input, "click");
+  await act(async () => button(host, "Upload").click());
+  expect(pick).toHaveBeenCalledOnce();
   const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });
   Object.defineProperty(input, "files", { value: [clip], configurable: true });
   await act(async () => input.dispatchEvent(new Event("change", { bubbles: true })));
   expect(onAddFiles).toHaveBeenCalledWith([clip]);
+});
+
+it("draws the tracks' skeleton while the composition loads, not the empty state", () => {
+  const host = mountHost(<TimelineEmptyState {...drop} onFileDrop onAddFiles={noop} loading />);
+  expect(host.querySelector('[aria-label="Loading timeline"]')).not.toBeNull();
+  expect(host.textContent).not.toContain("empty");
 });
 
 it("shows the upload's progress in the drop zone until the file is in", async () => {
@@ -52,7 +59,7 @@ it("shows the upload's progress in the drop zone until the file is in", async ()
   expect(host.textContent).toContain("Uploading photo.png · 25%");
   expect(host.querySelector("button")).toBeNull();
   await tell({ ...message, sent: 200, done: true });
-  expect(host.querySelector("button")?.textContent).toContain("Drop or upload media");
+  expect(host.textContent).toContain("Your timeline is empty");
 });
 
 it("is only a hint where the timeline can't take files", () => {

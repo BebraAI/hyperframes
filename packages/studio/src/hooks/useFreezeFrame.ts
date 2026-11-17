@@ -83,7 +83,7 @@ export async function requestFreezeFrame(input: {
 interface UseFreezeFrameOptions {
   projectId: string | null;
   activeCompPath: string | null;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: ProjectFileWriter;
   observeProjectFileVersion?: (path: string, version: string | null) => void;
   recordEdit: (input: RecordEditInput) => Promise<void>;

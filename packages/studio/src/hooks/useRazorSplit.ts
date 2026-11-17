@@ -14,7 +14,7 @@ interface UseRazorSplitOptions {
   projectId: string | null;
   // fallow-ignore-next-line code-duplication
   activeCompPath: string | null;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   observeProjectFileVersion?: (path: string, version: string | null) => void;
   recordEdit: (input: RecordEditInput) => Promise<void>;

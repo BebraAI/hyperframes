@@ -65,7 +65,7 @@ interface UseTimelineTrackVisibilityEditingInput extends Omit<
 > {
   projectIdRef: ReadonlyRef<string | null>;
   previewIframeRef: ReadonlyRef<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   isRecordingRef?: ReadonlyRef<boolean>;
   forceReloadSdkSession?: () => void;
 }
@@ -76,7 +76,7 @@ export interface UseTimelineElementVisibilityEditingInput extends Omit<
 > {
   projectIdRef: ReadonlyRef<string | null>;
   previewIframeRef: ReadonlyRef<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   isRecordingRef?: ReadonlyRef<boolean>;
   forceReloadSdkSession?: () => void;
 }

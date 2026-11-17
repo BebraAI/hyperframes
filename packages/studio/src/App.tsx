@@ -96,7 +96,7 @@ export function StudioApp({ readOnlyPreview = false, readOnlyPreviewReason }: St
     timelineDuration,
     timelineElements,
   );
-  const { toasts, showToast, dismissToast } = useToast();
+  const { toasts, showToast, dismissToast, holdToast } = useToast();
   const panelLayout = usePanelLayout({
     rightCollapsed: initialUrlStateRef.current.rightCollapsed,
     rightPanelTab: initialUrlStateRef.current.rightPanelTab,
@@ -583,6 +583,7 @@ export function StudioApp({ readOnlyPreview = false, readOnlyPreviewReason }: St
                   activeCompPath={activeCompPath}
                   toasts={toasts}
                   dismissToast={dismissToast}
+                  holdToast={holdToast}
                 />
               </div>
             </DomEditProvider>

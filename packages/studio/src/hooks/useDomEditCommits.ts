@@ -28,7 +28,7 @@ import { encodeUrlPath } from "@hyperframes/parsers";
 export interface UseDomEditCommitsParams {
   activeCompPath: string | null;
   previewIframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   queueDomEditSave: <T>(save: () => Promise<T>) => Promise<T>;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   editHistory: { recordEdit: (entry: RecordEditInput) => Promise<void> };

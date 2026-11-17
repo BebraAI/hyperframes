@@ -51,7 +51,7 @@ export interface HotkeyCallbacks extends LinkShortcutCallbacks {
   onGroupSelection?: () => void;
   onUngroupSelection?: () => void;
   domEditSelectionRef: React.MutableRefObject<DomEditSelection | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   readOnlyPreview: boolean;
 }
 

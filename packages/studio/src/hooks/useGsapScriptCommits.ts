@@ -60,7 +60,7 @@ async function mutateGsapScript(
   return result;
 }
 
-type ShowToast = (message: string, tone?: "error" | "info") => void;
+type ShowToast = (message: string, tone?: "error" | "info" | "undo") => void;
 
 function showUnchangedMutationFeedback(
   mutations: Record<string, unknown>[],

@@ -43,7 +43,7 @@ export interface UseEditHistoryActionsOptions {
   readOptionalProjectFile: (path: string) => Promise<string>;
   readProjectFile: (path: string) => Promise<string>;
   writeProjectFile: (path: string, content: string) => Promise<void>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   syncHistoryPreviewAfterApply: (restore: Pick<HistoryResult, "paths" | "files">) => Promise<void>;
   showHistoryRestoreNow?: (files: RestoreFiles) => (() => void) | null;
   waitForPendingDomEditSaves: () => Promise<void>;

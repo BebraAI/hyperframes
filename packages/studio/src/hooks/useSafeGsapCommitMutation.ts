@@ -35,7 +35,7 @@ export function useGsapSaveFailureTelemetry(activeCompPath: string | null): Trac
 export function useSafeGsapCommitMutation(
   commitMutation: CommitMutation,
   trackGsapSaveFailure: TrackGsapSaveFailure,
-  showToast?: (message: string, tone?: "error" | "info") => void,
+  showToast?: (message: string, tone?: "error" | "info" | "undo") => void,
 ) {
   return useCallback(
     (

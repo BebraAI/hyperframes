@@ -34,7 +34,7 @@ import type { ResolveDomSelectionOptions } from "./useDomSelectionTypes";
 export interface UseDomEditTextCommitsParams {
   activeCompPath: string | null;
   previewIframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   domEditSelection: DomEditSelection | null;
   applyDomSelection: (
     selection: DomEditSelection | null,

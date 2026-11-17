@@ -20,7 +20,7 @@ const operations: PatchOperation[] = [{ type: "inline-style", property: "color",
 
 describe("reportDomEditPersistFailure", () => {
   it("toasts with the selected label and underlying error detail", () => {
-    const showToast = vi.fn<(message: string, tone?: "error" | "info") => void>();
+    const showToast = vi.fn<(message: string, tone?: "error" | "info" | "undo") => void>();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     reportDomEditPersistFailure(selection, operations, new Error("network down"), showToast);
@@ -45,7 +45,7 @@ describe("reportDomEditPersistFailure", () => {
   });
 
   it("toasts StudioSaveHttpError and unmarked unsafe errors", () => {
-    const showToast = vi.fn<(message: string, tone?: "error" | "info") => void>();
+    const showToast = vi.fn<(message: string, tone?: "error" | "info" | "undo") => void>();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     reportDomEditPersistFailure(
@@ -76,7 +76,7 @@ describe("reportDomEditPersistFailure", () => {
   });
 
   it("does not toast errors explicitly marked as already toasted", () => {
-    const showToast = vi.fn<(message: string, tone?: "error" | "info") => void>();
+    const showToast = vi.fn<(message: string, tone?: "error" | "info" | "undo") => void>();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const error = new DomEditPersistUnsafeValueError(
       "DOM patch contains unsafe values: style.width",

@@ -22,7 +22,7 @@ interface UseEditorSaveOptions {
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   recordEdit: (input: RecordEditInput) => Promise<void>;
   setRefreshKey: React.Dispatch<React.SetStateAction<number>>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
 }
 
 export interface EditorSaveCandidate {

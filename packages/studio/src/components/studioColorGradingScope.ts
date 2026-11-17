@@ -7,7 +7,7 @@ export type ColorGradingScopeResult = { changedFiles: number; changedElements: n
 
 type ProjectFileReader = (path: string) => Promise<string>;
 type ProjectFileWriter = (path: string, content: string) => Promise<void>;
-type ShowToast = (message: string, tone?: "error" | "info") => void;
+type ShowToast = (message: string, tone?: "error" | "info" | "undo") => void;
 type RecordEdit = (entry: {
   label: string;
   files: Record<string, { before: string; after: string }>;

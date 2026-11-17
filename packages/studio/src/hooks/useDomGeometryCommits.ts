@@ -31,7 +31,7 @@ let boxSizeCommitCounter = 0;
 // ── Hook ──
 
 export interface UseDomGeometryCommitsParams {
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   commitPositionPatchToHtml: (
     selection: DomEditSelection,
     patches: PatchOperation[],

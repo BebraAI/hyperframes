@@ -50,7 +50,7 @@ export interface UseGsapAwareEditingParams {
   gsapCommitMutation: CommitMutation | null;
   activeCompPath?: string | null;
   previewIframeRef: React.RefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   bumpGsapCache: () => void;
   makeFetchFallback: (
     selection: DomEditSelection,

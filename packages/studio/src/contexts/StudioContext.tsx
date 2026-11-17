@@ -8,7 +8,7 @@ export interface StudioShellValue {
   projectId: string;
   activeCompPath: string | null;
   setActiveCompPath: (path: string | null) => void;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   previewIframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
   editHistory: {
     canUndo: boolean;

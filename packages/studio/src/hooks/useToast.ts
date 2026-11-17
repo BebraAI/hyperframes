@@ -9,18 +9,23 @@ interface ToastItem extends AppToast {
 }
 
 const AUTO_DISMISS_MS = 4000;
+/** Long enough to read the name and reach for Undo, as Gmail's and Material's snackbars allow. */
+const UNDO_DISMISS_MS = 6000;
 const EXIT_MS = 160;
 const MAX_TOASTS = 3;
 
 let nextToastId = 1;
 
 /**
- * Stacked toasts (max 3). Info toasts auto-dismiss after 4s; error toasts
- * persist until explicitly dismissed so failures can't silently vanish.
+ * Stacked toasts (max 3). Info toasts auto-dismiss after 4s, undo toasts after 6s, and neither
+ * while the pointer is on it; error toasts persist until explicitly dismissed so failures can't
+ * silently vanish.
  */
 export function useToast() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+  const toastsRef = useRef(toasts);
+  toastsRef.current = toasts;
 
   const clearTimer = useCallback((id: number) => {
     const timer = timersRef.current.get(id);
@@ -49,6 +54,18 @@ export function useToast() {
     [clearTimer, removeToast],
   );
 
+  const schedule = useCallback(
+    (id: number, tone: AppToast["tone"]) => {
+      clearTimer(id);
+      const wait = tone === "undo" ? UNDO_DISMISS_MS : AUTO_DISMISS_MS;
+      timersRef.current.set(
+        id,
+        setTimeout(() => dismissToast(id), wait),
+      );
+    },
+    [clearTimer, dismissToast],
+  );
+
   const showToast = useCallback(
     (message: string, tone: AppToast["tone"] = "error"): number => {
       const id = nextToastId++;
@@ -61,13 +78,21 @@ export function useToast() {
         }
         return next;
       });
-      if (tone !== "error") {
-        const timer = setTimeout(() => dismissToast(id), AUTO_DISMISS_MS);
-        timersRef.current.set(id, timer);
-      }
+      if (tone !== "error") schedule(id, tone);
       return id;
     },
-    [clearTimer, dismissToast],
+    [clearTimer, schedule],
+  );
+
+  /** Holds a toast while the pointer is on it; letting go gives it its full time again. */
+  const holdToast = useCallback(
+    (id: number, held: boolean) => {
+      const toast = toastsRef.current.find((t) => t.id === id);
+      if (!toast || toast.tone === "error" || toast.leaving) return;
+      if (held) clearTimer(id);
+      else schedule(id, toast.tone);
+    },
+    [clearTimer, schedule],
   );
 
   useMountEffect(() => () => {
@@ -75,5 +100,5 @@ export function useToast() {
     timersRef.current.clear();
   });
 
-  return { toasts, showToast, dismissToast };
+  return { toasts, showToast, dismissToast, holdToast };
 }

@@ -176,7 +176,7 @@ export interface PatchElementResponse {
   elementId?: string | null;
 }
 
-type ShowToast = (message: string, tone?: "error" | "info") => void;
+type ShowToast = (message: string, tone?: "error" | "info" | "undo") => void;
 
 export async function postPatchElement(
   projectId: string,
