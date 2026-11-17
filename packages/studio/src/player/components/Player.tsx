@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { isLottieAnimationLoaded } from "@hyperframes/core/runtime/lottie-readiness";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import { applyPreviewVariablesToUrl } from "../../hooks/previewVariablesStore";
-import { HyperframesLoader } from "../../components/ui";
+import { Skeleton } from "../../components/ui";
 import { usePlayerStore } from "../store/playerStore";
 import { announcePreviewDocumentLoaded } from "../sceneSwap";
 import type { IframeWindow } from "../lib/playbackTypes";
@@ -499,11 +499,12 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
             onMouseDown={(event) => event.preventDefault()}
             onPointerDown={(event) => event.preventDefault()}
           >
-            <HyperframesLoader
-              title="Loading composition"
-              detail="Preparing the Studio preview."
-              size={56}
-            />
+            {/* The frame's own shape, pulsing, where the film will appear: a logo and two lines of text
+                over the stage read as a page that hasn't started, not a frame that's about to. */}
+            <Skeleton className="absolute inset-0 rounded-none bg-white/6" />
+            <span role="status" className="sr-only">
+              Loading composition
+            </span>
           </div>
         )}
         {showAssetOverlay && (
@@ -519,12 +520,9 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
             onDragStart={(event) => event.preventDefault()}
             onMouseDown={(event) => event.preventDefault()}
           >
-            <div className="flex flex-col items-center gap-3">
-              <HyperframesLoader
-                title="Preparing preview assets"
-                detail="Waiting for media and motion assets before playback starts."
-                size={56}
-              />
+            <Skeleton className="absolute inset-0 rounded-none bg-white/6" />
+            <div role="status" className="relative flex flex-col items-center gap-3">
+              <p className="text-caption-1-regular text-white/60">Preparing preview assets…</p>
               {assetWaitLong && (
                 <button
                   type="button"

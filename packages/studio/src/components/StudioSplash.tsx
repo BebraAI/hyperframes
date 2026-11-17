@@ -1,7 +1,7 @@
 // While Studio opens, the shape it will have: the preview over the timeline, in pulsing blocks, so the panels land
 // where the eye already is instead of after a dot and "Connecting to project…" in an empty grey box.
 // promptwise-web's build puts the same markup in index.html, so the page shows it before any script has run.
-const BONE = "rounded-md bg-background-tertiary-default animate-pulse motion-reduce:animate-none";
+import { Skeleton } from "./ui/Skeleton";
 
 /** Clips on each skeleton row, as [left %, width %]: uneven, so it reads as a timeline and not a table. */
 const ROWS: ReadonlyArray<ReadonlyArray<readonly [number, number]>> = [
@@ -24,36 +24,38 @@ export function StudioSkeleton() {
     >
       <div className="flex min-h-0 flex-[3] flex-col gap-3 rounded-lg bg-background-primary-default p-3">
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <div className={`${BONE} aspect-video h-full max-w-full`} />
+          <Skeleton className="aspect-video h-full max-w-full" />
         </div>
-        <div className={`${BONE} h-1.5 w-full rounded-full`} />
+        <Skeleton className="h-1.5 w-full rounded-full" />
         <div className="flex items-center justify-between">
-          <div className={`${BONE} h-3 w-20`} />
-          <div className={`${BONE} h-4 w-4 rounded-full`} />
-          <div className={`${BONE} h-3 w-24`} />
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-4 w-4 rounded-full" />
+          <Skeleton className="h-3 w-24" />
         </div>
       </div>
       <div className="flex min-h-0 flex-[2] flex-col gap-2 rounded-lg bg-background-primary-default p-3">
         <div className="flex items-center gap-2">
-          <div className={`${BONE} h-4 w-4`} />
-          <div className={`${BONE} h-4 w-4`} />
-          <div className={`${BONE} h-4 w-4`} />
-          <div className={`${BONE} ml-auto h-1.5 w-28 rounded-full`} />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="ml-auto h-1.5 w-28 rounded-full" />
         </div>
         <div className="flex gap-3">
           <div className="w-24 shrink-0" />
-          <div className={`${BONE} h-2 flex-1`} />
+          <Skeleton className="h-2 flex-1" />
         </div>
         {ROWS.map((clips, row) => (
           <div key={row} className="flex min-h-0 flex-1 items-center gap-3">
-            <div className={`${BONE} h-3 w-24 shrink-0`} />
+            <Skeleton className="h-3 w-24 shrink-0" />
             <div className="relative h-full max-h-10 flex-1">
               {clips.map(([left, width]) => (
                 <div
                   key={left}
-                  className={`${BONE} absolute inset-y-0`}
+                  className="absolute inset-y-0"
                   style={{ left: `${left}%`, width: `${width}%` }}
-                />
+                >
+                  <Skeleton className="size-full" />
+                </div>
               ))}
             </div>
           </div>
