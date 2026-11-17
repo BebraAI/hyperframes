@@ -191,7 +191,10 @@ export const PlayerControls = memo(function PlayerControls({
     <div className="relative z-20">
       <PreviewSeekBar duration={duration} disabled={controlsDisabled} onSeek={onSeek} />
       <div
-        className="grid h-7 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-3"
+        // The right-hand buttons' column never goes below their width: with room to spare both side
+        // columns are equal and play sits in the middle; in a narrow pane play moves left and the time
+        // gives way, instead of the buttons spilling over play.
+        className="grid h-7 grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] items-center gap-x-1 px-3"
         aria-disabled={disabled || undefined}
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",
@@ -204,7 +207,7 @@ export const PlayerControls = memo(function PlayerControls({
             type="button"
             onClick={() => setTimeDisplayMode(timeDisplayMode === "time" ? "frame" : "time")}
             disabled={disabled}
-            className="min-w-0 justify-self-start whitespace-nowrap font-mono text-caption-2-regular tabular-nums text-text-secondary transition-colors hover:text-text-primary disabled:pointer-events-none"
+            className="min-w-0 max-w-full justify-self-start overflow-hidden text-ellipsis whitespace-nowrap font-mono text-caption-2-regular tabular-nums text-text-secondary transition-colors hover:text-text-primary disabled:pointer-events-none"
           >
             <span ref={timeDisplayRef}>{formatTime(0)}</span>
             {timeDisplayMode === "time" ? (
@@ -231,7 +234,7 @@ export const PlayerControls = memo(function PlayerControls({
           </button>
         </Tooltip>
 
-        <div className="flex min-w-0 items-center justify-self-end">
+        <div className="flex items-center justify-self-end">
           <VolumeControl
             audioMuted={audioMuted}
             audioVolume={audioVolume}
