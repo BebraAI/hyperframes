@@ -95,46 +95,24 @@ interface AddMediaMenuProps {
   trigger: (onClick?: () => void) => ReactElement;
 }
 
-/** Media from promptwise's gallery, picked in a dialog where the "+" was, or files from the computer. */
-export function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMediaMenuProps) {
+/**
+ * The two sources of media, for a control that offers them: `openGallery` opens promptwise's gallery
+ * in a dialog (inside promptwise only), `pickFiles` the computer's file picker. Render `sources`
+ * once beside the control: the dialog and the hidden file input.
+ */
+export function useMediaSources(onAdd: (media: AddedMedia) => void, target = "a new track") {
   const input = useRef<HTMLInputElement>(null);
   const [gallery, setGallery] = useState(false);
-  const pick = () => input.current?.click();
-  return (
-    // The menu and the gallery are portals, but React still bubbles their events through here: a
-    // track header's or a lane's pointer handlers would take an item's press as a seek or a select.
-    <span
-      className="contents"
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={(event) => event.stopPropagation()}
-    >
-      {embeddedInPromptwise ? (
-        <Menu aria-label="Add media" className="w-64 gap-0.5 p-1.5" trigger={trigger()}>
-          <MenuItem className={ROW} onClick={() => setGallery(true)}>
-            <AddMediaChoice
-              icon={<IconLibraryPhoto />}
-              title="From gallery"
-              detail="Project media and chats"
-            />
-          </MenuItem>
-          <MenuItem className={ROW} onClick={pick}>
-            <AddMediaChoice
-              icon={<IconUpload />}
-              title="Upload from computer"
-              detail="Video, image or sound"
-            />
-          </MenuItem>
-        </Menu>
-      ) : (
-        trigger(pick)
-      )}
+  const pickFiles = () => input.current?.click();
+  const sources = (
+    <>
       {gallery && (
         <MediaPickerDialog
           target={target}
           onPick={onAdd}
           onUpload={() => {
             setGallery(false);
-            pick();
+            pickFiles();
           }}
           onClose={() => setGallery(false)}
         />
@@ -152,7 +130,59 @@ export function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMedi
           if (files.length) onAdd(files);
         }}
       />
+    </>
+  );
+  return {
+    openGallery: embeddedInPromptwise ? () => setGallery(true) : undefined,
+    pickFiles,
+    sources,
+  };
+}
+
+/**
+ * Stops a press inside from reaching the timeline. The menu and the gallery are portals, but React
+ * still bubbles their events through here: a track header's or a lane's pointer handlers would take
+ * an item's press as a seek or a select.
+ */
+export function MediaSourcesScope({ children }: { children: ReactNode }) {
+  return (
+    <span
+      className="contents"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {children}
     </span>
+  );
+}
+
+/** Media from promptwise's gallery, picked in a dialog where the "+" was, or files from the computer. */
+function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMediaMenuProps) {
+  const { openGallery, pickFiles, sources } = useMediaSources(onAdd, target);
+  return (
+    <MediaSourcesScope>
+      {openGallery ? (
+        <Menu aria-label="Add media" className="w-64 gap-0.5 p-1.5" trigger={trigger()}>
+          <MenuItem className={ROW} onClick={openGallery}>
+            <AddMediaChoice
+              icon={<IconLibraryPhoto />}
+              title="From gallery"
+              detail="Project media and chats"
+            />
+          </MenuItem>
+          <MenuItem className={ROW} onClick={pickFiles}>
+            <AddMediaChoice
+              icon={<IconUpload />}
+              title="Upload from computer"
+              detail="Video, image or sound"
+            />
+          </MenuItem>
+        </Menu>
+      ) : (
+        trigger(pickFiles)
+      )}
+      {sources}
+    </MediaSourcesScope>
   );
 }
 

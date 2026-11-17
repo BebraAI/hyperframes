@@ -1,7 +1,9 @@
-import { forwardRef, type ComponentPropsWithoutRef, type DragEventHandler } from "react";
+import type { DragEventHandler } from "react";
 import { UploadingText, usePromptwiseUploads } from "../../promptwise/uploads";
-import { AddMediaMenu, type AddedMedia } from "./NewTrackAdd";
-import { GUTTER, RULER_H } from "./timelineLayout";
+import { IconLibraryPhoto, IconUpload } from "../../boardui/components/icons";
+import { Button, Skeleton } from "../../components/ui";
+import { MediaSourcesScope, useMediaSources, type AddedMedia } from "./NewTrackAdd";
+import { GUTTER, LANE_H, RULER_H } from "./timelineLayout";
 
 interface TimelineEmptyStateProps {
   isDragOver: boolean;
@@ -9,26 +11,45 @@ interface TimelineEmptyStateProps {
   onDragOver: DragEventHandler<HTMLDivElement>;
   onDragLeave: DragEventHandler<HTMLDivElement>;
   onDrop: DragEventHandler<HTMLDivElement>;
-  /** Files picked from the computer; the drop zone is then also a button that opens the picker. */
+  /** Media added from the gallery or the computer; the empty timeline then offers both as buttons. */
   onAddFiles?: (media: AddedMedia) => void;
+  /** The composition is still loading: show its tracks' skeleton, not "empty". */
+  loading?: boolean;
+}
+
+/**
+ * The empty timeline's start: what it is, and the two ways to fill it as buttons, as CapCut's and
+ * Clipchamp's empty timelines offer import right there. The lane around it still takes a drop.
+ */
+function EmptyTimelineStart({ onAdd }: { onAdd: (media: AddedMedia) => void }) {
+  const { openGallery, pickFiles, sources } = useMediaSources(onAdd);
+  return (
+    <MediaSourcesScope>
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-body-medium text-text-primary">Your timeline is empty</p>
+          <p className="text-caption-1-regular text-text-tertiary">
+            Drop media here, add it, or describe your video in the chat
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {openGallery && (
+            <Button size="md" icon={<IconLibraryPhoto />} onClick={openGallery}>
+              From gallery
+            </Button>
+          )}
+          <Button size="md" icon={<IconUpload />} onClick={pickFiles}>
+            Upload
+          </Button>
+        </div>
+      </div>
+      {sources}
+    </MediaSourcesScope>
+  );
 }
 
 const ZONE =
   "relative overflow-hidden flex items-center gap-3 px-6 py-3 border border-dashed rounded-lg transition-colors duration-150";
-
-/** The drop zone as a button: Base UI's menu trigger passes its props and ref through here. */
-const ZoneButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<"button">>(
-  function ZoneButton({ className, ...props }, ref) {
-    return (
-      <button
-        ref={ref}
-        type="button"
-        className={`${ZONE} border-border-button-default cursor-pointer hover:border-studio-accent/60 hover:bg-studio-accent/6 focus-visible:outline-2 focus-visible:outline-studio-accent ${className ?? ""}`}
-        {...props}
-      />
-    );
-  },
-);
 
 export function TimelineEmptyState({
   isDragOver,
@@ -37,6 +58,7 @@ export function TimelineEmptyState({
   onDragLeave,
   onDrop,
   onAddFiles,
+  loading,
 }: TimelineEmptyStateProps) {
   const uploading = usePromptwiseUploads();
   return (
@@ -70,38 +92,84 @@ export function TimelineEmptyState({
       </div>
       {/* Empty drop zone */}
       <div className="flex-1 flex items-center justify-center">
-        {isDragOver ? (
-          <div className={`${ZONE} border-studio-accent/60 bg-studio-accent/6`}>
-            <UploadIcon className="text-accent-ink" />
-            <span className="text-[13px] text-accent-ink">Drop media files to import</span>
-          </div>
-        ) : uploading ? (
-          <div className={`${ZONE} border-studio-accent/60`}>
-            <UploadingText uploading={uploading} />
-          </div>
-        ) : onAddFiles ? (
-          <AddMediaMenu
-            onAdd={onAddFiles}
-            trigger={(onClick) => (
-              <ZoneButton onClick={onClick}>
-                <UploadIcon className="text-text-tertiary" />
-                <span className="text-[13px] text-text-tertiary">
-                  Drop or upload media, or describe your video to start
-                </span>
-              </ZoneButton>
-            )}
-          />
-        ) : (
-          <div className={`${ZONE} border-border-button-default`}>
-            <TimelineIcon />
-            <span className="text-[13px] text-text-tertiary">
-              {onFileDrop
-                ? "Drop media here or describe your video to start"
-                : "Describe your video to start creating"}
-            </span>
-          </div>
-        )}
+        <EmptyLane
+          loading={loading}
+          isDragOver={isDragOver}
+          uploading={uploading}
+          onAddFiles={onAddFiles}
+          onFileDrop={onFileDrop}
+        />
       </div>
+    </div>
+  );
+}
+
+/** What the empty lane shows: loading, a drop over it, an upload, or how to start. */
+function EmptyLane({
+  loading,
+  isDragOver,
+  uploading,
+  onAddFiles,
+  onFileDrop,
+}: Pick<TimelineEmptyStateProps, "loading" | "isDragOver" | "onAddFiles" | "onFileDrop"> & {
+  uploading: ReturnType<typeof usePromptwiseUploads>;
+}) {
+  if (loading) return <TracksSkeleton />;
+  if (isDragOver) {
+    return (
+      <div className={`${ZONE} border-studio-accent/60 bg-studio-accent/6`}>
+        <UploadIcon className="text-accent-ink" />
+        <span className="text-[13px] text-accent-ink">Drop media files to import</span>
+      </div>
+    );
+  }
+  if (uploading) {
+    return (
+      <div className={`${ZONE} border-studio-accent/60`}>
+        <UploadingText uploading={uploading} />
+      </div>
+    );
+  }
+  if (onAddFiles) return <EmptyTimelineStart onAdd={onAddFiles} />;
+  return (
+    <div className={`${ZONE} border-border-button-default`}>
+      <TimelineIcon />
+      <span className="text-[13px] text-text-tertiary">
+        {onFileDrop
+          ? "Drop media here or describe your video to start"
+          : "Describe your video to start creating"}
+      </span>
+    </div>
+  );
+}
+
+/** Three tracks of clip-shaped bars while the composition loads, as the Studio skeleton draws them. */
+function TracksSkeleton() {
+  const rows = [
+    [0, 38, 42, 30],
+    [12, 24],
+    [4, 56],
+  ];
+  return (
+    <div
+      role="status"
+      aria-label="Loading timeline"
+      className="flex w-full flex-col gap-2 self-start pt-2"
+      style={{ paddingLeft: GUTTER, paddingRight: GUTTER }}
+    >
+      {rows.map((row, track) => (
+        <div key={track} className="flex gap-1" style={{ height: LANE_H }}>
+          {row.map((width, clip) =>
+            clip === 0 ? (
+              <span key={clip} style={{ width: `${width}%` }} />
+            ) : (
+              <span key={clip} className="h-full" style={{ width: `${width}%` }}>
+                <Skeleton className="h-full w-full rounded-md" />
+              </span>
+            ),
+          )}
+        </div>
+      ))}
     </div>
   );
 }
