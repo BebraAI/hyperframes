@@ -1,4 +1,5 @@
 // fallow-ignore-file code-duplication
+import { Skeleton } from "../ui/Skeleton";
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { SearchInput } from "../ui/SearchInput";
@@ -40,8 +41,21 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center text-text-tertiary text-caption-1-regular">
-        Loading blocks…
+      // The catalog's own shape: a search field over a grid of cards, as it will land.
+      <div
+        role="status"
+        aria-label="Loading blocks"
+        className="flex flex-1 flex-col gap-2 px-3 pt-2"
+      >
+        <Skeleton className="h-8 w-full rounded-lg" />
+        <div
+          className="grid gap-1.5"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}
+        >
+          {Array.from({ length: 8 }, (_, card) => (
+            <Skeleton key={card} className="aspect-video w-full" />
+          ))}
+        </div>
       </div>
     );
   }

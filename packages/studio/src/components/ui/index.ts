@@ -6,6 +6,7 @@ export type { ButtonSize, ButtonVariant, PreviewState } from "./Button";
 export { IconButton } from "./IconButton";
 export { Tab, TabPanel, Tabs, TabsList } from "./Tabs";
 export { HyperframesLoader, StatusFrame } from "./HyperframesLoader";
+export { Skeleton } from "./Skeleton";
 export type { HyperframesLoaderProps } from "./HyperframesLoader";
 export { Tooltip } from "./Tooltip";
 export {

@@ -1,3 +1,4 @@
+import type { TimelineElement } from "../store/playerStore";
 import { Fragment, useId, useMemo, useRef, type CSSProperties } from "react";
 import { BeatStrip, BeatBackgroundLines } from "./BeatStrip";
 import { TimelineLaneClip, type TimelineLaneClipActions } from "./TimelineLaneClip";
@@ -7,6 +8,7 @@ import { TimelineAutomationLaneSlot } from "./TimelineAutomationLaneSlot";
 import { useAutomationLanes } from "./useAutomationLanes";
 import { useAutomationSelectionKeyboard } from "../../hooks/useAutomationSelectionKeyboard";
 import { TimelineTrackHeader } from "./TimelineTrackHeader";
+import { trackEnd } from "./NewTrackAdd";
 import { TimelineGroupRow } from "./TimelineGroupRow";
 import { useTimelineLaneRowIndexes, useTimelineGroupDisclosure } from "./useTimelineLaneRowIndexes";
 import { useTimelineClipDisclosure } from "./useTimelineClipDisclosure";
@@ -45,6 +47,17 @@ function passengerStyleAt(offsetPx: number): CSSProperties {
   };
 }
 
+/** A track's "+": its files go on that track, after its last clip. */
+function trackAdder(
+  onAddFiles: TimelineLanesProps["onAddFiles"],
+  track: number,
+  elements: readonly TimelineElement[],
+) {
+  if (!onAddFiles) return undefined;
+  return (files: File[]) => onAddFiles(files, { track, start: trackEnd(elements) });
+}
+
+// fallow-ignore-next-line complexity
 export function TimelineLanes({
   pps,
   contentOrigin,
@@ -79,6 +92,7 @@ export function TimelineLanes({
   renderClipContent,
   renderClipOverlay,
   onDrillDown,
+  onAddFiles,
   onSelectElement,
   setHoveredClip,
   setShowPopover,
@@ -348,6 +362,7 @@ export function TimelineLanes({
                 onTogglePropertyGroupKeyframe={onTogglePropertyGroupKeyframe}
                 onRemoveAutomationLane={removeAutomationLane}
                 onSeek={onSeek}
+                onAddFiles={trackAdder(onAddFiles, trackNum, els)}
                 rovingTargetId={keyboard.rovingTargetId}
               />
               <div

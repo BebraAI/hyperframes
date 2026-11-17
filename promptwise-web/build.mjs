@@ -4,8 +4,11 @@
 //   node build.mjs   then   tar -czf studio-web.tgz -C dist .
 import { build } from "esbuild";
 import { execFileSync } from "node:child_process";
-import { copyFileSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 const shim = (f) => fileURLToPath(new URL(`./shims/${f}`, import.meta.url));
 const mod = (m) => fileURLToPath(new URL(`./node_modules/${m}`, import.meta.url));
 const alias = {
@@ -79,8 +82,28 @@ const entry = /<script type="module" crossorigin src="(\.\/assets\/[^"]+\.js)"><
 );
 if (!entry) throw new Error("no module entry in Studio's index.html");
 // The entry is preloaded, so it downloads while boot.js starts the worker rather than after. Until Studio renders
-// over it, #root shows that it's loading instead of an empty panel.
-const LOADER = `<div style="display:flex;height:100vh;align-items:center;justify-content:center;gap:10px;font:13px Inter,system-ui,sans-serif;color:#8a8a8a"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 6.5 6.5"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></path></svg>Loading Studio…</div>`;
+// over it, #root shows Studio's skeleton, the same one Studio shows until its project is open, so nothing jumps.
+const skeletonJs = join(mkdtempSync(join(tmpdir(), "studio-skeleton-")), "skeleton.cjs");
+await build({
+  stdin: {
+    contents: `import { renderToStaticMarkup } from "react-dom/server";
+      import { StudioSkeleton } from "../packages/studio/src/components/StudioSplash";
+      export const skeletonHtml = () => renderToStaticMarkup(<StudioSkeleton />);`,
+    resolveDir: here("."),
+    loader: "tsx",
+  },
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  jsx: "automatic",
+  // React is Studio's, under packages/studio.
+  nodePaths: [here("../packages/studio/node_modules")],
+  outfile: skeletonJs,
+  logLevel: "error",
+  define: { "process.env.NODE_ENV": '"production"' },
+});
+const { skeletonHtml } = createRequire(import.meta.url)(skeletonJs);
+const LOADER = `<div style="height:100vh">${skeletonHtml()}</div>`;
 const root = '<div data-hf-id="hf-aph5" id="root"></div>';
 if (!page.includes(root)) throw new Error("no #root in Studio's index.html");
 writeFileSync(
