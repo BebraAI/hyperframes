@@ -18,6 +18,7 @@ const {
   fetchItemFile,
   fetchItemManifest,
   fetchRegistryManifest,
+  fetchHiddenItems,
   DEFAULT_REGISTRY_URL,
 } = await import("./remote.js");
 
@@ -478,5 +479,27 @@ describe("fetchItemFile retries", () => {
 
     await expect(fetchItemFile(item, file, DEFAULT_REGISTRY_URL)).rejects.toThrow();
     expect(fetchSpy).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("fetchHiddenItems", () => {
+  it("returns promptwise.json's hidden names and serves them from cache", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(ok({ hidden: ["count-up"], use: { other: "note" } }));
+    await expect(fetchHiddenItems(DEFAULT_REGISTRY_URL)).resolves.toEqual(["count-up"]);
+    await expect(fetchHiddenItems(DEFAULT_REGISTRY_URL)).resolves.toEqual(["count-up"]);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]![0])).toBe(`${DEFAULT_REGISTRY_URL}/promptwise.json`);
+  });
+
+  it("hides nothing when the registry has no promptwise.json", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("Not found", { status: 404 }));
+    await expect(fetchHiddenItems(DEFAULT_REGISTRY_URL)).resolves.toEqual([]);
+  });
+
+  it("rejects a hidden list with names that aren't registry names", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(ok({ hidden: ["../../outside"] }));
+    await expect(fetchHiddenItems(DEFAULT_REGISTRY_URL)).resolves.toEqual([]);
   });
 });

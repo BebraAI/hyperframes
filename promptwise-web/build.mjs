@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { visibleCatalog } from "../scripts/promptwise-catalog.mjs";
 const shim = (f) => fileURLToPath(new URL(`./shims/${f}`, import.meta.url));
 const mod = (m) => fileURLToPath(new URL(`./node_modules/${m}`, import.meta.url));
 const alias = {
@@ -61,18 +62,8 @@ copyFileSync(here("../packages/core/dist/hyperframe.runtime.iife.js"), `${dist}/
 
 // The catalog Studio lists, as one file: the worker fetched each of ~240 item manifests from GitHub, 30-40 s before
 // the panel showed anything. Built from this checkout's registry/, the one deploys come from.
-const registry = JSON.parse(readFileSync(here("../registry/registry.json"), "utf8"));
-const catalogDirs = { "hyperframes:block": "blocks", "hyperframes:component": "components" };
-const catalog = registry.items
-  .filter((entry) => entry.type in catalogDirs)
-  .map((entry) =>
-    JSON.parse(
-      readFileSync(
-        here(`../registry/${catalogDirs[entry.type]}/${entry.name}/registry-item.json`),
-        "utf8",
-      ),
-    ),
-  );
+// Without what registry/promptwise.json hides.
+const catalog = visibleCatalog(here(".."));
 writeFileSync(`${dist}/catalog.json`, JSON.stringify(catalog));
 
 // Studio's own entry is loaded by boot.js once the worker answers its API.

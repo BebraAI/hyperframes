@@ -143,6 +143,40 @@ export async function fetchRegistryManifest(
   }
 }
 
+/** A list of registry names, as registry/promptwise.json's `hidden` holds. */
+function validNameList(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.every((name) => typeof name === "string" && validRegistryName(name))
+  );
+}
+
+/** registry/promptwise.json: promptwise's say over the registry; only `hidden` is read here. */
+function validPromptwiseFile(value: unknown): value is { hidden?: string[] } {
+  if (typeof value !== "object" || value === null) return false;
+  const hidden: unknown = Reflect.get(value, "hidden");
+  return hidden === undefined || validNameList(hidden);
+}
+
+/**
+ * The items Studio's catalog leaves out: `hidden` in the registry's promptwise.json (this fork's file; see
+ * scripts/promptwise-catalog.mjs). Cached like the manifest. A registry without the file, or one that can't be
+ * reached with nothing cached, hides nothing.
+ */
+export async function fetchHiddenItems(baseUrl: string = DEFAULT_REGISTRY_URL): Promise<string[]> {
+  const cacheFile = cachePath(baseUrl, "promptwise-hidden");
+  const cached = readCacheEntry(cacheFile, validNameList);
+  if (cached && isFresh(cached)) return cached.data;
+  try {
+    const file = await fetchJson(registryPathUrl(baseUrl, "promptwise.json"), validPromptwiseFile);
+    const hidden = file.hidden ?? [];
+    writeCache(cacheFile, hidden);
+    return hidden;
+  } catch {
+    return cached?.data ?? [];
+  }
+}
+
 /**
  * Fetch a single item's `registry-item.json` manifest. Same freshness policy as
  * the top-level manifest: fresh unless skipCache, else revalidate, else serve stale.
