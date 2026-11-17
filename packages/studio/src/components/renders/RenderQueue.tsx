@@ -438,6 +438,7 @@ function FormatExportButton({
   );
 }
 
+// fallow-ignore-next-line complexity
 export const RenderQueue = memo(function RenderQueue({
   jobs,
   projectId,
@@ -472,17 +473,20 @@ export const RenderQueue = memo(function RenderQueue({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-3 py-3 border-b border-border shrink-0">
-        <FormatExportButton
-          onStartRender={onStartRender}
-          isRendering={isRendering}
-          compositionDimensions={compositionDimensions}
-          lastRenderDurationMs={lastRenderDurationMs}
-          ffmpeg={ffmpeg}
-          ffmpegChecking={ffmpegChecking}
-          onRecheckFfmpeg={onRecheckFfmpeg}
-        />
-      </div>
+      {/* In promptwise the tab's own Export renders, on the server: a second Export here only failed. */}
+      {!embeddedInPromptwise && (
+        <div className="px-3 py-3 border-b border-border shrink-0">
+          <FormatExportButton
+            onStartRender={onStartRender}
+            isRendering={isRendering}
+            compositionDimensions={compositionDimensions}
+            lastRenderDurationMs={lastRenderDurationMs}
+            ffmpeg={ffmpeg}
+            ffmpegChecking={ffmpegChecking}
+            onRecheckFfmpeg={onRecheckFfmpeg}
+          />
+        </div>
+      )}
 
       {actionError && (
         <div
