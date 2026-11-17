@@ -1,3 +1,4 @@
+import type { AddedMedia } from "./NewTrackAdd";
 import type { MutableRefObject, PointerEvent } from "react";
 import type {
   TimelineContainerProps,
@@ -20,7 +21,7 @@ type ViewportHandlers = Pick<
 export interface TimelineShellMetaInputs {
   isDragOver: boolean;
   hasFileDrop: boolean;
-  addFiles?: (files: File[]) => void;
+  addFiles?: (media: AddedMedia) => void;
   drop: Pick<ViewportHandlers, "onDragOver" | "onDragLeave" | "onDrop">;
   pointer: Pick<ViewportHandlers, "onPointerMove" | "onPointerUp" | "onPointerCancel"> & {
     onPointerDown: TimelineViewportProps["onPointerDown"];

@@ -96,7 +96,7 @@ export const TimelineCanvas = memo(function TimelineCanvas() {
             height: TRACK_H - CLIP_Y * 2,
           }}
         >
-          {props.onAddFiles && <NewTrackAdd onFiles={props.onAddFiles} />}
+          {props.onAddFiles && <NewTrackAdd onAdd={props.onAddFiles} />}
           <GhostLaneText acceptsMediaDrop={props.acceptsMediaDrop} />
         </div>
       )}
