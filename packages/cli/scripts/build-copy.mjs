@@ -10,11 +10,13 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout as sleep } from "node:timers/promises";
+import { catalogMenu } from "../../../scripts/promptwise-catalog.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLI_ROOT = resolve(HERE, "..");
@@ -136,6 +138,9 @@ async function main() {
     rmSync(destination, { recursive: true, force: true });
     copyDir(src, destination);
   }
+
+  // promptwise's sandbox points its agent at this: the catalog items to reach for first (registry/promptwise.json).
+  writeFileSync(join(DIST, "promptwise-catalog.md"), catalogMenu(REPO_ROOT));
 
   // The media-use engine lives with the CLI source, but keeps its published
   // skill-relative layout so the moved .mjs tree can run without a rewrite.
