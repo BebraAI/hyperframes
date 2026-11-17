@@ -77,6 +77,27 @@ describe("AssetCard click behavior", () => {
   });
 });
 
+describe("AssetCard badges", () => {
+  // promptwise 2026-11-17: in a light theme the panel's text colour is dark, and "Added" on bg-black/70 couldn't be read.
+  it("writes Added in white on the dark badge, whatever the panel's text colour", () => {
+    const host = mount(
+      <AssetCard
+        projectId="p1"
+        onCopy={vi.fn()}
+        copyFeedback={null}
+        asset="assets/logo.png"
+        used
+      />,
+    );
+    const badge = [...host.querySelectorAll("span")].find(
+      (el) => el.textContent?.trim() === "Added",
+    );
+    expect(badge?.className).toContain("bg-black/70");
+    expect(badge?.className).toContain("text-white");
+    expect(badge?.className).not.toContain("text-panel-text");
+  });
+});
+
 describe("AudioRow click behavior", () => {
   const rowProps = {
     projectId: "p1",

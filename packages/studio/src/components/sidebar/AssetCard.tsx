@@ -261,16 +261,17 @@ export function AssetCard({
             </div>
           )}
 
-          {/* "Added" badge — top-left */}
+          {/* "Added" badge — top-left. White on dark glass in every theme: the panel's text colours turn dark in a light
+              theme, and dark text on bg-black/70 can't be read (promptwise, 2026-11-17). */}
           {used && (
-            <span className="absolute top-1 left-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-panel-text-1">
+            <span className="absolute top-1 left-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-white backdrop-blur-sm">
               Added
             </span>
           )}
 
           {/* Duration badge — top-right, media only */}
           {durationLabel && (
-            <span className="absolute top-1 right-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-panel-text-2 tabular-nums">
+            <span className="absolute top-1 right-1 text-caption-2-medium leading-none px-1.5 py-[3px] rounded-md bg-black/70 text-white/80 backdrop-blur-sm tabular-nums">
               {durationLabel}
             </span>
           )}
