@@ -1,5 +1,7 @@
 import {
+  forwardRef,
   useCallback,
+  type ComponentPropsWithoutRef,
   useRef,
   useState,
   type ReactElement,
@@ -7,9 +9,10 @@ import {
   type RefObject,
 } from "react";
 import { MediaPickerDialog } from "./MediaPickerDialog";
+import { pickInHost, useHostPicker } from "../../promptwise/hostPicker";
 import { Plus } from "@phosphor-icons/react";
 import { IconLibraryPhoto, IconUpload } from "../../boardui/components/icons";
-import { IconButton, Menu, MenuItem } from "../../components/ui";
+import { Menu, MenuItem } from "../../components/ui";
 import { embeddedInPromptwise } from "../../promptwise/embed";
 import { usePlayerStore } from "../store/playerStore";
 import { getDefaultDroppedTrack } from "./timelineLayout";
@@ -60,7 +63,7 @@ export function useAddMedia(
 }
 
 /** A row of the add menu: an icon in its tile, the choice, and a line on where the media comes from. */
-const ROW = "justify-start p-1.5";
+const ROW = "justify-start rounded-xl px-2 py-2";
 
 function AddMediaChoice({
   icon,
@@ -72,11 +75,11 @@ function AddMediaChoice({
   detail: string;
 }) {
   return (
-    <span className="flex items-center gap-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background-secondary-default">
+    <span className="flex items-center gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background-secondary-default">
         {icon}
       </span>
-      <span className="flex min-w-0 flex-col">
+      <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-body-2-medium text-text-primary">{title}</span>
         <span className="truncate text-caption-1-regular text-text-tertiary">{detail}</span>
       </span>
@@ -104,6 +107,13 @@ export function useMediaSources(onAdd: (media: AddedMedia) => void, target = "a 
   const input = useRef<HTMLInputElement>(null);
   const [gallery, setGallery] = useState(false);
   const pickFiles = () => input.current?.click();
+  // The tab's own Assets window where it has one; Studio's gallery where it doesn't.
+  const host = useHostPicker();
+  const openHost = () =>
+    void pickInHost(target).then(({ media, files }) => {
+      if (files.length) onAdd(files);
+      else if (media.length) onAdd(media.map((m) => m.url));
+    });
   const sources = (
     <>
       {gallery && (
@@ -133,8 +143,10 @@ export function useMediaSources(onAdd: (media: AddedMedia) => void, target = "a 
     </>
   );
   return {
-    openGallery: embeddedInPromptwise ? () => setGallery(true) : undefined,
+    openGallery: embeddedInPromptwise ? (host ? openHost : () => setGallery(true)) : undefined,
     pickFiles,
+    /** The tab's Assets window has Upload too, so a "+" opens it straight away instead of a menu. */
+    host,
     sources,
   };
 }
@@ -158,11 +170,13 @@ export function MediaSourcesScope({ children }: { children: ReactNode }) {
 
 /** Media from promptwise's gallery, picked in a dialog where the "+" was, or files from the computer. */
 function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMediaMenuProps) {
-  const { openGallery, pickFiles, sources } = useMediaSources(onAdd, target);
+  const { openGallery, pickFiles, sources, host } = useMediaSources(onAdd, target);
   return (
     <MediaSourcesScope>
-      {openGallery ? (
-        <Menu aria-label="Add media" className="w-64 gap-0.5 p-1.5" trigger={trigger()}>
+      {host && openGallery ? (
+        trigger(openGallery)
+      ) : openGallery ? (
+        <Menu aria-label="Add media" className="w-72 gap-1 p-2" sideOffset={8} trigger={trigger()}>
           <MenuItem className={ROW} onClick={openGallery}>
             <AddMediaChoice
               icon={<IconLibraryPhoto />}
@@ -226,25 +240,38 @@ export function trackEnd(elements: readonly { start: number; duration: number }[
   return Math.max(0, ...elements.map((element) => element.start + element.duration));
 }
 
-/** The empty lane's "+". */
+/**
+ * The empty lane's "+": the whole lane is the button, so a click anywhere on it opens the add menu,
+ * not only on the "+" at its start. A drag still goes through it to the timeline.
+ */
 export function NewTrackAdd({ onAdd }: { onAdd: (media: AddedMedia) => void }) {
   return (
     // The lane lets pointers through to the timeline; the button takes its own, so a click doesn't seek or select.
     <div
-      className="pointer-events-auto absolute left-1.5"
+      className="pointer-events-auto absolute inset-0"
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <AddMediaMenu
-        onAdd={onAdd}
-        trigger={(onClick) => (
-          <IconButton
-            size="sm"
-            aria-label="Add media"
-            icon={<Plus size={14} />}
-            onClick={onClick}
-          />
-        )}
-      />
+      <AddMediaMenu onAdd={onAdd} trigger={(onClick) => <NewLaneButton onClick={onClick} />} />
     </div>
   );
 }
+
+/** Base UI's menu trigger passes its props and ref through here. */
+const NewLaneButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<"button">>(
+  function NewLaneButton({ className, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        aria-label="Add media"
+        title="Add media"
+        className={`group/lane flex h-full w-full cursor-pointer items-center rounded-lg ps-1.5 text-text-tertiary transition-colors hover:bg-studio-accent/6 focus-visible:outline-2 focus-visible:outline-studio-accent data-popup-open:bg-studio-accent/6 ${className ?? ""}`}
+        {...props}
+      >
+        <span className="flex size-6 items-center justify-center rounded-md transition-colors group-hover/lane:bg-background-secondary-default group-hover/lane:text-text-primary">
+          <Plus size={14} />
+        </span>
+      </button>
+    );
+  },
+);
