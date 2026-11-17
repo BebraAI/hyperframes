@@ -81,6 +81,12 @@ const entry = /<script type="module" crossorigin src="(\.\/assets\/[^"]+\.js)"><
   page,
 );
 if (!entry) throw new Error("no module entry in Studio's index.html");
+// The page is served at `<scope><docId>/`, but its code is the same for every tab: it loads from `<scope>assets/`, one
+// URL for all tabs, which the host caches for good (vercel.json). Loaded beside the page, each new tab's URL missed
+// the cache and downloaded Studio's 4 MB again (14 s on staging), and even a known tab only revalidated it.
+// Vite's chunks import each other relative to themselves, so they follow the entry there.
+const SHARED = "../assets/";
+const main = entry[1].replace("./assets/", SHARED);
 // The entry is preloaded, so it downloads while boot.js starts the worker rather than after. Until Studio renders
 // over it, #root shows Studio's skeleton, the same one Studio shows until its project is open, so nothing jumps.
 const skeletonJs = join(mkdtempSync(join(tmpdir(), "studio-skeleton-")), "skeleton.cjs");
@@ -111,8 +117,9 @@ writeFileSync(
   page
     .replace(
       entry[0],
-      `<link rel="modulepreload" href="${entry[1]}" />\n    <script type="module" src="./boot.js"></script>`,
+      `<link rel="modulepreload" href="${main}" />\n    <script type="module" src="./boot.js"></script>`,
     )
+    .replaceAll('"./assets/', `"${SHARED}`)
     .replace(root, root.replace("></div>", `>${LOADER}</div>`)),
 );
 
@@ -168,7 +175,7 @@ await build({
   entryPoints: [here("./src/boot.ts")],
   format: "esm",
   outfile: `${dist}/boot.js`,
-  define: { STUDIO_MAIN: JSON.stringify(entry[1]), STUDIO_RELEASE: JSON.stringify(release) },
+  define: { STUDIO_MAIN: JSON.stringify(main), STUDIO_RELEASE: JSON.stringify(release) },
 });
 
 const bytes = Object.values(worker.metafile.outputs)[0].bytes;

@@ -11,6 +11,8 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
 
 - The page is served at `<scope><docId>/` (the host rewrites `<scope><docId>/*` to `<scope>*`); the build has a
   relative base, so Studio finds its API at `<scope><docId>/api` (`STUDIO_API` in `packages/studio`).
+  Its code loads from `<scope>assets/`, one URL for every tab, which the host caches for good: loaded beside the page,
+  each new tab downloaded Studio's 4 MB again.
 - The folder comes from the tab, never from promptwise directly (`folder.ts`): Studio and the compositions its
   preview runs hold no session. Serve it from an origin of its own.
 - Studio's writes go back over the version they read (sha1), all of one save in one batch where the tab takes batches
