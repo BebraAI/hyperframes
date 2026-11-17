@@ -34,6 +34,7 @@ const COMPONENTS = [
   "popover",
   "radio",
   "segmented-control",
+  "skeleton",
   "select",
   "slider",
   "switch",

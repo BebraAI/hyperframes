@@ -57,8 +57,6 @@ export type TimelineCanvasState = Omit<
   laneGapStrips: TimelineLaneGapStrips[];
   dropPreview: TimelineDropPlacement | null;
   acceptsMediaDrop: boolean;
-  /** Puts files from the computer on a new track at the playhead: the empty lane's "+". */
-  onAddFilesToNewTrack?: (files: File[]) => void;
   setRangeSelection: (value: TimelineRangeSelection | null) => void;
   setResizingClip: (value: ResizingClipState | null) => void;
   setDraggedClip: (value: TimelineLaneBaseProps["draggedClip"]) => void;

@@ -6,6 +6,7 @@ import { AssetsTab } from "./sidebar/AssetsTab";
 import { BlocksTab, type BlockPreviewInfo } from "./sidebar/BlocksTab";
 import { CompositionsPanel } from "./sidebar/CompositionsPanel";
 import { SidebarLintButton } from "./sidebar/SidebarLintButton";
+import { showsLint } from "../promptwise/embed";
 import { Dock } from "./dock/Dock";
 import { useDockLayoutStore } from "./dock/dockLayoutStore";
 import { isMediaFile } from "../utils/mediaTypes";
@@ -89,14 +90,14 @@ export const StudioLeftPanels = memo(function StudioLeftPanels({
   const importFiles = async (files: FileList, dir?: string) => {
     await handleImportFiles(files, dir);
   };
-  const lintButton = (
+  const lintButton = showsLint ? (
     <SidebarLintButton
       onLint={onLint}
       linting={linting}
       findingCount={lintFindingCount}
       hasError={lintHasError}
     />
-  );
+  ) : undefined;
 
   return (
     <>
