@@ -66,12 +66,16 @@ it("fills a bar across the clip while its file goes up, and offers Retry and Rem
     window.parent,
   );
   expect(host.querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")).toBe("25");
+  expect(host.textContent).toBe("25%");
 
   await say(
     { type: "promptwise:upload-state", path: "assets/my clip.mp4", state: "failed" },
     window,
   );
-  expect(host.textContent).toBe("Upload failedRetryRemove");
+  expect(host.textContent).toBe("Upload failed");
+  expect(
+    [...host.querySelectorAll('[role="button"]')].map((b) => b.getAttribute("aria-label")),
+  ).toEqual(["Retry upload", "Remove clip"]);
   const [retry, remove] = host.querySelectorAll<HTMLElement>('[role="button"]');
   await act(async () => retry!.click());
   expect(fetch).toHaveBeenCalledWith(
