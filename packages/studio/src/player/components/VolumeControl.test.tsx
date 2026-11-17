@@ -73,6 +73,15 @@ describe("VolumeControl", () => {
     expect(props.setAudioMuted).toHaveBeenCalledWith(false);
   });
 
+  it("opens the slider above the button, out of the row, so it never pushes the controls onto play", () => {
+    const { host } = renderVolumeControl();
+    const slider = host.querySelector('input[aria-label="Preview volume"]');
+    const popover = slider?.closest("[data-volume-popover]");
+
+    expect(popover?.className).toContain("absolute");
+    expect(popover?.className).toContain("bottom-full");
+  });
+
   it("restores an audible level when unmuting from zero", () => {
     const { host, props } = renderVolumeControl({ audioVolume: 0 });
     const button = host.querySelector<HTMLButtonElement>('button[aria-label="Unmute audio"]');

@@ -51,37 +51,12 @@ export const VolumeControl = memo(function VolumeControl({
   const silent = audioMuted || audioVolume === 0;
   const muteLabel = silent ? "Unmute audio" : "Mute audio";
 
+  // The slider floats above the button instead of opening inside the row: opened inline it widened the
+  // right-hand group, which then spilled left over the centred play button.
   return (
-    <div className="group flex shrink-0 items-center">
-      <div className="w-0 overflow-hidden opacity-0 transition-[width,opacity] duration-150 ease-out group-hover:w-14 group-hover:opacity-100 group-focus-within:w-14 group-focus-within:opacity-100">
-        <div className="relative mx-1 flex h-6 w-12 items-center">
-          <div className="absolute inset-x-0 h-0.5 overflow-hidden rounded-full bg-background-tertiary-default">
-            <div
-              className="h-full rounded-full bg-neutral-300"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            value={percentage}
-            disabled={disabled}
-            aria-label="Preview volume"
-            aria-valuetext={`${percentage}%`}
-            title={`Preview volume: ${percentage}%`}
-            onChange={(event) => {
-              const volume = Number(event.currentTarget.value) / 100;
-              setAudioVolume(volume);
-              if (audioMuted && volume > 0) setAudioMuted(false);
-            }}
-            className="hf-preview-volume-range absolute inset-0 w-full disabled:pointer-events-none"
-          />
-        </div>
-      </div>
-
-      <Tooltip label={muteLabel}>
+    <div className="group relative flex shrink-0 items-center">
+      {/* Below: above the button is where the slider opens, and to the left is play. */}
+      <Tooltip label={muteLabel} side="bottom">
         <button
           type="button"
           onClick={() => {
@@ -99,6 +74,45 @@ export const VolumeControl = memo(function VolumeControl({
           <VolumeIcon muted={audioMuted} volume={audioVolume} />
         </button>
       </Tooltip>
+
+      {/* Clear of the seek bar above the row. pb-5 is a hover bridge: the pointer crosses it from the
+          button to the slider without closing it. */}
+      <div
+        data-volume-popover=""
+        className={`invisible absolute bottom-full left-1/2 z-50 -translate-x-1/2 pb-5 opacity-0 transition-opacity duration-150 ease-out ${
+          disabled
+            ? ""
+            : "group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        }`}
+      >
+        <div className="rounded-lg border border-border-button-default bg-background-primary-default px-2.5 shadow-dropdown">
+          <div className="relative flex h-7 w-20 items-center">
+            <div className="absolute inset-x-0 h-0.5 overflow-hidden rounded-full bg-background-tertiary-default">
+              <div
+                className="h-full rounded-full bg-neutral-300"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={percentage}
+              disabled={disabled}
+              aria-label="Preview volume"
+              aria-valuetext={`${percentage}%`}
+              title={`Preview volume: ${percentage}%`}
+              onChange={(event) => {
+                const volume = Number(event.currentTarget.value) / 100;
+                setAudioVolume(volume);
+                if (audioMuted && volume > 0) setAudioMuted(false);
+              }}
+              className="hf-preview-volume-range absolute inset-0 w-full disabled:pointer-events-none"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 });
