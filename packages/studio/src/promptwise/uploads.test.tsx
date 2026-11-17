@@ -118,3 +118,8 @@ it("keeps a file that failed to go up, whichever word comes first, until the wor
   await worker("clip.mp4", "done");
   expect(host.textContent).toBe("");
 });
+
+it("says the empty lane takes a click too where it adds media", () => {
+  const host = mountHost(<GhostLaneText acceptsMediaDrop clickToAdd />);
+  expect(host.textContent).toBe("Drop media here, or click to add");
+});

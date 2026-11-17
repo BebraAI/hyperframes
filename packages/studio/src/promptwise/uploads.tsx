@@ -111,9 +111,19 @@ export function resetPromptwiseUploads() {
 }
 
 /** The empty lane's words: what is uploading, over a bar that fills as it goes up, or where to drop media. */
-export function GhostLaneText({ acceptsMediaDrop }: { acceptsMediaDrop: boolean }) {
+export function GhostLaneText({
+  acceptsMediaDrop,
+  clickToAdd,
+}: {
+  acceptsMediaDrop: boolean;
+  /** The lane is also a button that adds media. */
+  clickToAdd?: boolean;
+}) {
   const uploading = usePromptwiseUploads();
-  if (!uploading) return acceptsMediaDrop ? <>Drop media here</> : null;
+  if (!uploading) {
+    if (!acceptsMediaDrop) return null;
+    return <>{clickToAdd ? "Drop media here, or click to add" : "Drop media here"}</>;
+  }
   return <UploadingText uploading={uploading} />;
 }
 
