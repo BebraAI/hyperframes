@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type FileChange, openProject } from "./backend";
-import { folder, type FolderRequest, type FolderReply } from "./folder";
+import { folder, refusal, type FolderRequest, type FolderReply } from "./folder";
 
 // promptwise is the outside world here: a fake tab over a folder that takes writes only over the version it has, as
 // the studio/files routes do, and records what it was asked.
@@ -14,6 +14,9 @@ let uploads: Map<string, string>;
 let extra: { path: string; sha1: string; url: string }[];
 /** Whether the tab gives the text with a listing that asks for it, as promptwise does; an older one doesn't. */
 let givesContent: boolean;
+/** Holds the tab's uploads until the test lets them through, and fails them while `failing`. */
+let gate: Promise<void>;
+let failing: boolean;
 const tab = async (request: FolderRequest): Promise<FolderReply> => {
   asked.push(
     request.op === "list"
@@ -40,7 +43,8 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
     };
   }
   if (request.op === "upload") {
-    if (!["video/mp4", "image/png"].includes(request.contentType)) return { status: 400 };
+    await gate;
+    if (failing) return { status: 502 };
     uploads.set(request.path, new TextDecoder().decode(request.bytes));
     return { status: 200, sha1: "b".repeat(40), url: `https://media.test/${request.path}` };
   }
@@ -57,6 +61,7 @@ const HTML =
   '<!doctype html><html><body><div data-composition-id="main" data-width="1920" data-height="1080"><h1 id="title">Made to move fast.</h1></div></body></html>';
 let changes: FileChange[];
 let errors: string[];
+let states: string[];
 let opened: Awaited<ReturnType<typeof openProject>>[] = [];
 const open = () =>
   openProject({
@@ -66,6 +71,7 @@ const open = () =>
     runtimeUrl: "https://app.test/runtime.js",
     onChange: (change) => changes.push(change),
     onError: (path, message) => errors.push(`${path}: ${message}`),
+    onUpload: (path, state) => states.push(`${path} ${state}`),
   }).then((studio) => (opened.push(studio), studio));
 const at = (path: string, init?: RequestInit) =>
   new Request(`https://studio.test/studio/d1/api${path}`, init);
@@ -78,7 +84,10 @@ describe("Studio's API over a tab's folder", () => {
     extra = [];
     changes = [];
     errors = [];
+    states = [];
     givesContent = true;
+    gate = Promise.resolve();
+    failing = false;
   });
 
   it("opens the folder in one request, and reads each text file where the tab doesn't give the text with it", async () => {
@@ -238,6 +247,49 @@ describe("Studio's API over a tab's folder", () => {
     }
   }, 30_000);
 
+  // The catalog took 30-40 s: the worker fetched each of ~240 item manifests from GitHub. Now it is one file, built
+  // with Studio, and the registry only if that file can't be read.
+  it("lists the catalog from the one file built with Studio, and from the registry without it", async () => {
+    const disk = createRequire(import.meta.url)("fs") as typeof import("node:fs");
+    const root = new URL("../../registry/", import.meta.url);
+    const item = JSON.parse(
+      disk.readFileSync(new URL("blocks/lt-color-block/registry-item.json", root), "utf8"),
+    );
+    const asked: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      asked.push(url);
+      if (url === "https://app.test/catalog.json") return Response.json([item]);
+      if (url === "https://app.test/broken/catalog.json") return Response.json([{ name: "x" }]);
+      const path = new URL(url).pathname.split("/registry/")[1]!;
+      const file = new URL(path, root);
+      return disk.existsSync(file)
+        ? new Response(disk.readFileSync(file))
+        : new Response("not found", { status: 404 });
+    });
+    const withCatalog = (catalogUrl: string) =>
+      openProject({
+        prefix: "/studio/d1",
+        projectId: "d1",
+        folder: folder(tab),
+        runtimeUrl: "https://app.test/runtime.js",
+        catalogUrl,
+      }).then((studio) => (opened.push(studio), studio));
+    try {
+      const studio = await withCatalog("https://app.test/catalog.json");
+      for (let i = 0; i < 2; i++) {
+        const listed = await (await studio.fetch(at("/registry/blocks"))).json();
+        expect(listed.map((b: { name: string }) => b.name)).toEqual(["lt-color-block"]);
+      }
+      expect(asked).toEqual(["https://app.test/catalog.json"]);
+
+      const fallback = await withCatalog("https://app.test/broken/catalog.json");
+      const listed = await (await fallback.fetch(at("/registry/blocks"))).json();
+      expect(listed.length).toBeGreaterThan(100);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }, 30_000);
+
   // Cmd+Z in Studio did nothing here: the browser backend had no history, so /history answered 404.
   it("undoes Studio's own edit and sends the file back as it was", async () => {
     const studio = await open();
@@ -273,6 +325,18 @@ describe("Studio's API over a tab's folder", () => {
     expect([...texts.keys()].filter((path) => path.startsWith(".hyperframes/"))).toEqual([]);
   });
 
+  it("names the agent's edit in Undo, not a change from outside the app", async () => {
+    const studio = await open();
+    // Studio's history starts with its first request.
+    await studio.fetch(at("/projects/d1/history"));
+    texts.set("index.html", HTML.replace("Made to move fast.", "The agent's title"));
+    await studio.refresh();
+    await vi.waitFor(async () => {
+      const history = await (await studio.fetch(at("/projects/d1/history"))).json();
+      expect(history.back?.label).toBe("Agent's edit");
+    });
+  });
+
   it("tells Studio about a clip added elsewhere, once", async () => {
     const studio = await open();
     extra = [{ path: "assets/new.mp4", sha1: "c".repeat(40), url: "https://media.test/new.mp4" }];
@@ -283,42 +347,138 @@ describe("Studio's API over a tab's folder", () => {
     expect(clip.headers.get("location")).toBe("https://media.test/new.mp4");
   });
 
-  it("shows a picture it just uploaded from the page, and a clip from its storage", async () => {
+  it("shows a file it just uploaded from the page, a clip in the ranges it's read in", async () => {
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["picture bytes"], "photo.png", { type: "image/png" }));
-    form.append("file", new File(["clip bytes"], "clip.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000picture bytes"], "photo.png", { type: "image/png" }));
+    form.append("file", new File(["\u0000clip bytes"], "clip.mp4", { type: "video/mp4" }));
     await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
 
     const photo = await studio.fetch(at("/projects/d1/preview/photo.png"));
     expect([photo.status, photo.headers.get("content-type"), await photo.text()]).toEqual([
       200,
       "image/png",
-      "picture bytes",
+      "\u0000picture bytes",
     ]);
-    const clip = await studio.fetch(at("/projects/d1/preview/clip.mp4"));
-    expect([clip.status, clip.headers.get("location")]).toEqual([
-      302,
-      "https://media.test/clip.mp4",
+    const part = await studio.fetch(
+      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=6-" } }),
+    );
+    expect([part.status, part.headers.get("content-range"), await part.text()]).toEqual([
+      206,
+      "bytes 6-10/11",
+      "bytes",
     ]);
+    const tail = await studio.fetch(
+      at("/projects/d1/preview/clip.mp4", { headers: { range: "bytes=-4" } }),
+    );
+    expect(await tail.text()).toBe("ytes");
   });
 
-  it("uploads Studio's files through the tab and links them, under a free name", async () => {
+  it("uploads Studio's files through the tab under a free name, and turns down the rest at once", async () => {
     const studio = await open();
     const form = new FormData();
-    form.append("file", new File(["new clip"], "clip.mp4", { type: "video/mp4" }));
+    form.append("file", new File(["\u0000new clip"], "clip.mp4", { type: "video/mp4" }));
     form.append("file", new File(["text"], "notes.txt", { type: "text/plain" }));
+    form.append("file", new File(["hello, I am a text file"], "fake.mp4", { type: "video/mp4" }));
     const res = await studio.fetch(
       at("/projects/d1/upload?dir=assets", { method: "POST", body: form }),
     );
     const body = await res.json();
     expect([res.status, body.files]).toEqual([201, ["assets/clip (2).mp4"]]);
     expect(body.invalid).toEqual([
-      { name: "notes.txt", reason: "promptwise answered 400 to upload" },
+      { name: "notes.txt", reason: "only pictures, clips, sounds and fonts are uploaded" },
+      { name: "fake.mp4", reason: "the file is damaged or isn't really a picture, clip or sound" },
     ]);
-    expect(uploads.get("assets/clip (2).mp4")).toBe("new clip");
-    const clip = await studio.fetch(at("/projects/d1/preview/assets/clip%20(2).mp4"));
-    expect(clip.headers.get("location")).toBe("https://media.test/assets/clip%20(2).mp4");
+    await studio.settled();
+    expect(uploads.get("assets/clip (2).mp4")).toBe("\u0000new clip");
+    expect(states).toEqual(["assets/clip (2).mp4 uploading", "assets/clip (2).mp4 done"]);
+  });
+
+  it("answers the upload before the file is up, and sends the clip's composition once it is", async () => {
+    let release!: () => void;
+    gate = new Promise((resolve) => (release = resolve));
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    const res = await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    expect((await res.json()).files).toEqual(["drop.mp4"]);
+    expect(uploads.has("drop.mp4")).toBe(false);
+
+    const withClip = HTML.replace("</h1>", '</h1><video src="drop.mp4"></video>');
+    const write = await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: withClip,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    // Studio's write is taken here at once; promptwise doesn't get it while the clip isn't in its storage.
+    expect(write.status).toBeLessThan(300);
+    expect(texts.get("index.html")).toBe(HTML);
+
+    release();
+    await studio.settled();
+    await vi.waitFor(() => expect(texts.get("index.html")).toBe(withClip));
+    expect(uploads.get("drop.mp4")).toBe("\u0000clip bytes");
+    expect(texts.has("drop.mp4")).toBe(false);
+  });
+
+  it("holds the composition back while a failed file is on it, and sends it after a retry", async () => {
+    failing = true;
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    const withClip = HTML.replace("</h1>", '</h1><video src="drop.mp4"></video>');
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: withClip,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    await studio.settled();
+    expect(states).toEqual(["drop.mp4 uploading", "drop.mp4 failed"]);
+    expect(texts.get("index.html")).toBe(HTML);
+
+    failing = false;
+    const retry = await studio.fetch(
+      at("/projects/d1/upload-retry?path=drop.mp4", { method: "POST" }),
+    );
+    expect(retry.status).toBe(202);
+    await studio.settled();
+    await vi.waitFor(() => expect(texts.get("index.html")).toBe(withClip));
+    expect(states.at(-1)).toBe("drop.mp4 done");
+  });
+
+  it("lets a failed file go once its clip is deleted, and sends the rest", async () => {
+    failing = true;
+    const studio = await open();
+    const form = new FormData();
+    form.append("file", new File(["\u0000clip bytes"], "drop.mp4", { type: "video/mp4" }));
+    await studio.fetch(at("/projects/d1/upload", { method: "POST", body: form }));
+    await studio.settled();
+    const edited = HTML.replace("Made to move fast.", "No clip after all");
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: edited,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    expect(texts.get("index.html")).toBe(edited);
+    const gone = await studio.fetch(at("/projects/d1/preview/drop.mp4"));
+    expect(gone.status).toBe(404);
+  });
+});
+
+describe("promptwise turning a request down", () => {
+  it("says why in words, never with its status code alone", () => {
+    expect(refusal(400, "upload")).toBe("this file type isn't supported");
+    expect(refusal(413, "upload")).toBe("files can be up to 100 MB");
+    expect(refusal(401, "write")).toBe("you're signed out; reload the page");
+    expect(refusal(502, "upload")).toBe("the upload failed (502); try again");
+    expect(refusal(500, "write")).not.toContain("promptwise");
   });
 });
 

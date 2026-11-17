@@ -1014,8 +1014,21 @@ export async function extractMediaMetadata(filePath: string): Promise<VideoMetad
       effectiveStreamDuration = containerDuration;
     }
 
+    // A live-muxed WebM (what a browser's MediaRecorder writes: screen and camera
+    // recordings) declares no duration anywhere, so both reads above are 0 and the
+    // file looked unrenderable. Its packets still carry their times: the last one
+    // ends the stream.
+    let durationSeconds = containerDuration;
+    if (!(effectiveStreamDuration > 0)) {
+      const packetEnd = await lastVideoPacketEndSeconds(filePath);
+      if (packetEnd > streamStart) {
+        effectiveStreamDuration = packetEnd - streamStart;
+        durationSeconds = packetEnd;
+      }
+    }
+
     return {
-      durationSeconds: containerDuration,
+      durationSeconds,
       videoStreamDurationSeconds: effectiveStreamDuration,
       videoStreamStartSeconds: streamStart,
       videoStreamLeadSeconds: streamLeadSeconds(output, videoStream),
@@ -1037,6 +1050,46 @@ export async function extractMediaMetadata(filePath: string): Promise<VideoMetad
 
   writeMetadataCache(videoMetadataCache, filePath, identity, probePromise);
   return probePromise;
+}
+
+/**
+ * When a video stream ends, read from its packets: the latest pts plus that
+ * packet's duration. 0 when the file has no timed video packets or the probe
+ * fails, so callers keep their own "no duration" handling.
+ */
+export async function lastVideoPacketEndSeconds(filePath: string): Promise<number> {
+  let stdout: string;
+  try {
+    stdout = await runFfprobe(
+      filePath,
+      [
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "packet=pts_time,duration_time",
+        "-of",
+        "csv=p=0",
+      ],
+      undefined,
+      { retainTail: true, maxChars: 64_000 },
+    );
+  } catch {
+    return 0;
+  }
+  return packetEndFromCsv(stdout);
+}
+
+/** The latest `pts_time + duration_time` in ffprobe's `packet=pts_time,duration_time` CSV. */
+export function packetEndFromCsv(csv: string): number {
+  let end = 0;
+  for (const line of csv.split(/\r?\n/)) {
+    const [ptsText, durationText] = line.split(",");
+    const pts = Number(ptsText);
+    if (!ptsText || !Number.isFinite(pts)) continue;
+    const duration = Number(durationText);
+    end = Math.max(end, pts + (Number.isFinite(duration) && duration > 0 ? duration : 0));
+  }
+  return end;
 }
 
 /**

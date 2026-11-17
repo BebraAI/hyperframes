@@ -446,16 +446,18 @@ describe("NLEPreview", () => {
     }
   });
 
-  it("clips a shadow reload so its own loading overlay cannot paint over the live frame", () => {
+  it("keeps a shadow reload transparent, not hidden, so it paints frames and its overlay can't show", () => {
     const view = renderPreview([
       { gen: 0, role: "live" },
       { gen: 1, role: "shadow", url: "/api/projects/p/preview?_t=1" },
     ]);
     const players = [...view.stage.querySelectorAll<HTMLElement>('[data-testid="mock-player"]')];
     expect(players).toHaveLength(2);
-    expect(players[0].style.clipPath).toBe("");
-    expect(players[1].style.clipPath).toBe("inset(100%)");
-    expect(players[1].style.visibility).toBe("hidden");
+    expect(players[0].style.opacity).toBe("");
+    // Chrome draws no frames in a hidden or fully clipped frame: its readiness waited out 8s.
+    expect(players[1].style.opacity).toBe("0");
+    expect(players[1].style.visibility).toBe("");
+    expect(players[1].style.clipPath).toBe("");
     expect(players[1].style.pointerEvents).toBe("none");
     view.cleanup();
   });

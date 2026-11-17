@@ -1,5 +1,18 @@
 export const embeddedInPromptwise = typeof window !== "undefined" && window.parent !== window;
 
+/**
+ * Whether Studio shows its Lint button. In promptwise only where the tab asks for it with `?lint=1` (staging): its
+ * findings are for whoever builds the composition, and the agent lints what it saves on its own.
+ */
+export function showsLintFor(embedded: boolean, search: string): boolean {
+  return !embedded || new URLSearchParams(search).get("lint") === "1";
+}
+
+export const showsLint = showsLintFor(
+  embeddedInPromptwise,
+  typeof window === "undefined" ? "" : window.location.search,
+);
+
 /** What the user pointed at when they asked promptwise's agent from Studio. */
 export type PromptwiseAskContext =
   | {

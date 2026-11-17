@@ -68,13 +68,12 @@ const ZOOM_HUD_TIMEOUT_MS = 1200;
 const ZOOM_SETTLE_MS = 200;
 const PREVIEW_STAGE_INSET_PX = 8;
 
-// clip-path as well as visibility: the player's loading overlay sets its own
-// visibility:visible and would otherwise paint over the live frame.
+// Transparent, not hidden: Chrome paints no frames in a hidden or clipped-away frame, so the shadow's
+// first-frame readiness ran out its 8s timeout before every promotion. Opacity hides its overlay too.
 const SHADOW_IFRAME_STYLE: React.CSSProperties = {
   position: "absolute",
   inset: 0,
-  visibility: "hidden",
-  clipPath: "inset(100%)",
+  opacity: 0,
   pointerEvents: "none",
 };
 

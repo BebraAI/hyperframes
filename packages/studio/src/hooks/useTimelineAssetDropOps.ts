@@ -16,7 +16,9 @@ import {
   isRemoteAsset,
   resolveTimelineAssetCompositionSize,
   resolveTimelineAssetSrc,
+  timelineIdFromName,
 } from "../utils/timelineAssetDrop";
+import { promptwiseMediaName } from "../promptwise/media";
 import { generateId } from "../utils/generateId";
 import { saveProjectFilesWithHistory, type RecordEditInput } from "../utils/studioFileHistory";
 import {
@@ -30,6 +32,16 @@ import { commitTimelineCompositionInsertion } from "../utils/timelineComposition
 import { extendRootDurationInSource } from "../utils/rootDuration";
 import { deriveTimelineStoreKeyForDomId } from "../player/lib/timelineElementHelpers";
 import { selectAndRevealTimelineElement } from "../player/components/timelineDropReveal";
+import { probeMediaFile, type MediaProbeResult } from "../player/lib/mediaProbe";
+
+/** The dropped file an uploaded path came from: the same name, or the name with the " (2)" a taken one gets. */
+export function fileForUpload<F extends { name: string }>(path: string, files: F[]): F | undefined {
+  const name = path.split("/").pop() ?? path;
+  return (
+    files.find((file) => file.name === name) ??
+    files.find((file) => file.name === name.replace(/ \(\d+\)(?=\.[^.]*$|$)/, ""))
+  );
+}
 
 /** The first uploaded file opens the new track (if asked); each next one aims right after the previous. */
 function fileDropPlacement(
@@ -61,6 +73,7 @@ function timelineDropTarget(
   };
 }
 
+// fallow-ignore-next-line code-duplication -- the options the timeline's edit hooks share, each its own
 interface UseTimelineAssetDropOpsOptions {
   projectIdRef: MutableRefObject<string | null>;
   activeCompPath: string | null;
@@ -98,6 +111,7 @@ export function useTimelineAssetDropOps({
       placement: TimelineDropPlacement,
       durationOverride?: number,
       gesture: DropGesture = { placed: [], onNewTrack: false },
+      hasAudioOverride?: boolean,
     ): Promise<TimelineElement | undefined> => {
       if (isRecordingRef?.current) {
         showToast("Cannot edit timeline while recording", "error");
@@ -125,7 +139,8 @@ export function useTimelineAssetDropOps({
         const normalizedDuration = Number(formatTimelineAttributeNumber(duration));
         // A video with an audio stream lands audible; the mixer only hears a
         // <video> marked data-has-audio, and a muted drop was losing the sound.
-        const hasAudio = await resolveDroppedAssetHasAudio(pid, assetPath, kind);
+        const hasAudio =
+          hasAudioOverride ?? (await resolveDroppedAssetHasAudio(pid, assetPath, kind));
         const resolvedAssetSrc = isRemoteAsset(assetPath)
           ? assetPath
           : resolveTimelineAssetSrc(targetPath, assetPath);
@@ -141,7 +156,11 @@ export function useTimelineAssetDropOps({
         let track = 0;
         let start = normalizedStart;
         const insertAsset = (originalContent: string) => {
-          newId = buildTimelineAssetId(assetPath, collectHtmlIds(originalContent));
+          // Media from promptwise is named after its title there; its file is named by a UUID.
+          const named = isRemoteAsset(assetPath) ? promptwiseMediaName(assetPath) : undefined;
+          newId = named
+            ? timelineIdFromName(named, collectHtmlIds(originalContent), kind)
+            : buildTimelineAssetId(assetPath, collectHtmlIds(originalContent));
           const resolved = resolveDropTrack({
             source: originalContent,
             // Rows and insertRow count the rows the timeline shows; a track this drop opened has no others.
@@ -244,12 +263,29 @@ export function useTimelineAssetDropOps({
       }
       const pid = projectIdRef.current;
       if (!pid) return;
+      // Each file is read where it is while it uploads: its length and sound don't wait on storage.
+      const probes = new Map<File, Promise<MediaProbeResult | null>>(
+        files.map((file) => [
+          file,
+          getTimelineAssetKind(file.name) === "image"
+            ? Promise.resolve(null)
+            : probeMediaFile(file),
+        ]),
+      );
       const uploaded = await uploadProjectFiles(files);
       if (uploaded.length === 0) return;
+      const local = await Promise.all(
+        uploaded.map((path) => {
+          const file = fileForUpload(path, files);
+          return file ? (probes.get(file) ?? null) : null;
+        }),
+      );
       const durations: number[] = [];
-      for (const assetPath of uploaded) {
+      for (const [index, assetPath] of uploaded.entries()) {
         const kind = getTimelineAssetKind(assetPath);
-        const duration = kind ? await resolveDroppedAssetDuration(pid, assetPath, kind) : 0;
+        const duration = !kind
+          ? 0
+          : (local[index]?.duration ?? (await resolveDroppedAssetDuration(pid, assetPath, kind)));
         durations.push(Number(formatTimelineAttributeNumber(duration)));
       }
       const placements = buildTimelineFileDropPlacements(
@@ -264,6 +300,7 @@ export function useTimelineAssetDropOps({
           fileDropPlacement(index, next, placement, gesture.placed.at(-1)),
           durations[index],
           gesture,
+          getTimelineAssetKind(assetPath) === "video" ? local[index]?.hasAudio : undefined,
         );
         if (!clip) continue;
         gesture.placed.push(clip);

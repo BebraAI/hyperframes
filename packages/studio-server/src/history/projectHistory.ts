@@ -89,6 +89,8 @@ export interface ProjectHistoryOptions {
   closedWindowAfterOwnership?: () => ClosedWindow | undefined;
   undoScope?: "own" | "everyone";
   pruneGoneProjectsBudgetMs?: number;
+  /** What Undo calls a change made outside the app (default "Changed outside the app"): a host that knows who made it names them. */
+  outsideLabel?: string;
 }
 
 interface ClaimOptions {
@@ -895,7 +897,7 @@ class Engine {
       return timer;
     };
     if (!this.outside) {
-      this.outside = this.newGroup(OUTSIDE, OUTSIDE_LABEL);
+      this.outside = this.newGroup(OUTSIDE, this.options.outsideLabel ?? OUTSIDE_LABEL);
       this.maxTimer = closeIn(maxGroupMs);
     }
     clearTimeout(this.quietTimer);

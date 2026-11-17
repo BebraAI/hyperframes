@@ -1,5 +1,5 @@
 import { encodeUrlPath } from "@hyperframes/parsers";
-export { buildTimelineAssetId } from "@hyperframes/core/timeline-asset-id";
+export { buildTimelineAssetId, timelineIdFromName } from "@hyperframes/core/timeline-asset-id";
 import { AUDIO_EXT, IMAGE_EXT, VIDEO_EXT } from "./mediaTypes";
 import { roundToCenti } from "./rounding";
 import { COMPOSITION_ROOT_OPEN_TAG_RE } from "./compositionPatterns";

@@ -24,6 +24,7 @@ import type { TimelineTheme } from "./timelineTheme";
 import { trackDisplaySuffix } from "./timelineTrackDisplay";
 import { AutomationLaneHeaderRow, PropertyGroupHeaderRow } from "./trackHeaderLabelRows";
 import { useMemo } from "react";
+import { TrackAddButton } from "./NewTrackAdd";
 
 /** Accent rail + inset marking a row as a group MEMBER, matching the level-2
  *  nesting its `aria-level` already reports. */
@@ -81,6 +82,8 @@ interface TimelineTrackHeaderProps {
    *  hides the control rather than offering a button that cannot act. */
   onRemoveAutomationLane?: (target: string) => void;
   onSeek?: (time: number) => void;
+  /** The track's "+": files onto this track, after its last clip. Absent where the timeline takes no files. */
+  onAddFiles?: (files: File[]) => void;
 }
 
 // fallow-ignore-next-line complexity
@@ -106,6 +109,7 @@ export function TimelineTrackHeader({
   onTogglePropertyGroupKeyframe,
   onRemoveAutomationLane,
   onSeek,
+  onAddFiles,
   rovingTargetId = null,
 }: TimelineTrackHeaderProps) {
   const clipPercentage = keyframeClip
@@ -213,6 +217,14 @@ export function TimelineTrackHeader({
     clipCount > 1
       ? `Track${trackDisplaySuffix(trackDisplayNumber)}`
       : (keyframeClip?.label ?? keyframeClip?.domId ?? keyframeClip?.id ?? trackLabel);
+  // Last on the row, against the lane it adds to; not in the compact gutter, which has no room for it.
+  const addButton =
+    onAddFiles && showTrackLabel ? (
+      <TrackAddButton
+        onFiles={onAddFiles}
+        trackName={`track${trackDisplaySuffix(trackDisplayNumber)}`}
+      />
+    ) : null;
 
   // C1: the FX entry point. A single audio clip has one chain to point at; a
   // track holding several ungrouped ones has no single chain — the design
@@ -361,6 +373,7 @@ export function TimelineTrackHeader({
                       onToggle={onToggleClipExpanded}
                     />
                   )}
+                  {addButton}
                 </>
               }
             />
@@ -389,6 +402,7 @@ export function TimelineTrackHeader({
               asMute={isAudioOnly}
               onToggle={onToggleTrackHidden}
             />
+            {addButton}
           </LayerDisclosureRow>
         </>
       )}

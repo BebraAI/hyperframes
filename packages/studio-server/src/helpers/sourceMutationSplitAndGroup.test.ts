@@ -35,6 +35,16 @@ describe("splitElementInHtml", () => {
     expect(result.html).toContain('data-duration="4"');
   });
 
+  // Cut at 13.094, ripple wrote the second half back at 13.09 (Studio moves on centiseconds): it overlapped the
+  // first by 4 ms and the timeline gave it a row of its own.
+  it("cuts on the centisecond grid Studio's move and trim write on", () => {
+    const result = splitElementInHtml(source, { id: "box" }, 3.094, "box-split");
+    const { document } = parseHTML(result.html);
+    expect(document.getElementById("box")?.getAttribute("data-duration")).toBe("2.09");
+    expect(document.getElementById("box-split")?.getAttribute("data-start")).toBe("3.09");
+    expect(document.getElementById("box-split")?.getAttribute("data-duration")).toBe("3.91");
+  });
+
   it("pins both halves to the caller-supplied track so an unauthored clip's split half can't drift to a new row", () => {
     // #box has no data-track-index/data-layer — this is the common, unauthored
     // case that relies on the runtime's positional-index fallback. Without an

@@ -8,6 +8,11 @@ import type { FfmpegStatus } from "./useFfmpegStatus";
 import { Button } from "../ui/Button";
 import { IconButton } from "../ui/IconButton";
 import { Select, type SelectOption } from "../ui/Select";
+import { embeddedInPromptwise } from "../../promptwise/embed";
+
+/** In promptwise a video is exported by the tab's own Export, into the project's assets, not rendered here. */
+export const PROMPTWISE_RENDERS_NOTE =
+  "Export from the Export button at the top right of this tab. Finished videos go to the project's Assets.";
 import { Tooltip } from "../ui/Tooltip";
 import { resolveFloatingPanelPosition, type FloatingPosition } from "../editor/floatingPanel";
 import type { RenderJob, ResolutionPreset } from "./useRenderQueue";
@@ -433,6 +438,7 @@ function FormatExportButton({
   );
 }
 
+// fallow-ignore-next-line complexity
 export const RenderQueue = memo(function RenderQueue({
   jobs,
   projectId,
@@ -467,17 +473,20 @@ export const RenderQueue = memo(function RenderQueue({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-3 py-3 border-b border-border shrink-0">
-        <FormatExportButton
-          onStartRender={onStartRender}
-          isRendering={isRendering}
-          compositionDimensions={compositionDimensions}
-          lastRenderDurationMs={lastRenderDurationMs}
-          ffmpeg={ffmpeg}
-          ffmpegChecking={ffmpegChecking}
-          onRecheckFfmpeg={onRecheckFfmpeg}
-        />
-      </div>
+      {/* In promptwise the tab's own Export renders, on the server: a second Export here only failed. */}
+      {!embeddedInPromptwise && (
+        <div className="px-3 py-3 border-b border-border shrink-0">
+          <FormatExportButton
+            onStartRender={onStartRender}
+            isRendering={isRendering}
+            compositionDimensions={compositionDimensions}
+            lastRenderDurationMs={lastRenderDurationMs}
+            ffmpeg={ffmpeg}
+            ffmpegChecking={ffmpegChecking}
+            onRecheckFfmpeg={onRecheckFfmpeg}
+          />
+        </div>
+      )}
 
       {actionError && (
         <div
@@ -548,7 +557,9 @@ export const RenderQueue = memo(function RenderQueue({
                 strokeLinejoin="round"
               />
             </svg>
-            <p className="text-step-10 text-text-5 text-center">No renders yet</p>
+            <p className="text-step-10 text-text-5 text-center">
+              {embeddedInPromptwise ? PROMPTWISE_RENDERS_NOTE : "No renders yet"}
+            </p>
           </div>
         ) : (
           <div>

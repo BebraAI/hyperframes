@@ -117,10 +117,12 @@ export function commitCloseAllTrackGaps(
   );
 }
 
-/** What a ripple-edit delete must additionally shift on the main track. Pure
- *  — no IO; the caller persists the shifts itself. Null means nothing to
- *  ripple: off, nothing deleted was on the main track, already gapless, or a
- *  shifting clip is locked (same whole-action refusal as the gap-close menu). */
+/** What a ripple-edit delete must additionally shift: the main track closes up, and what sits wholly after a
+ *  deleted main-track clip on the other tracks (an effect, a sound, a title on the next shot) moves with the
+ *  shot it belongs to. What spans the cut (music under the whole video) stays. Pure — no IO; the caller
+ *  persists the shifts itself. Null means nothing to ripple: off, nothing deleted was on the main track, already
+ *  gapless, or a shifting main-track clip is locked (same whole-action refusal as the gap-close menu); a locked
+ *  clip on another track only stays where it is. */
 export function resolveMainTrackDeleteRippleShifts(
   survivingElements: readonly TimelineElement[],
   deletedElements: readonly TimelineElement[],
@@ -143,6 +145,39 @@ export function resolveMainTrackDeleteRippleShifts(
       shifts.push({ key: keyOf(survivor), newStart });
     }
   }
-  if (shifts.length === 0 || !canShiftTrackGapClips(survivors, shifts)) return null;
-  return shifts;
+  if (shifts.length > 0 && !canShiftTrackGapClips(survivors, shifts)) return null;
+  const followers = survivingElements.filter((el) => !isMainTrackElement(el));
+  for (const follower of followers) {
+    const width = deletedMainTrack
+      .filter((d) => d.start + d.duration <= follower.start + TRACK_GAP_EPSILON_S)
+      .reduce((sum, d) => sum + d.duration, 0);
+    if (width <= 0) continue;
+    const shift = { key: keyOf(follower), newStart: round3(Math.max(0, follower.start - width)) };
+    if (canShiftTrackGapClips([follower], [shift])) shifts.push(shift);
+  }
+  return shifts.length > 0 ? shifts : null;
+}
+
+/** What a ripple-edit trim of a main-track clip's end must shift: everything that started at or after its old end,
+ *  on every track, moves by as much as the end did, so a shorter shot leaves no hole and a longer one covers
+ *  nothing. What spans the old end (music under the video) stays. Null: off, not a main-track clip, the end didn't
+ *  move, or nothing follows it. A locked clip stays where it is. */
+export function resolveTrimRippleShifts(
+  elements: readonly TimelineElement[],
+  trimmed: TimelineElement,
+  updates: Pick<TimelineElement, "start" | "duration">,
+  rippleEnabled: boolean,
+): TrackGapShift[] | null {
+  if (!rippleEnabled || !isMainTrackElement(trimmed)) return null;
+  const oldEnd = trimmed.start + trimmed.duration;
+  const delta = round3(updates.start + updates.duration - oldEnd);
+  if (Math.abs(delta) <= TRACK_GAP_EPSILON_S) return null;
+  const trimmedKey = keyOf(trimmed);
+  const shifts: TrackGapShift[] = [];
+  for (const el of elements) {
+    if (keyOf(el) === trimmedKey || el.start < oldEnd - TRACK_GAP_EPSILON_S) continue;
+    const shift = { key: keyOf(el), newStart: round3(Math.max(0, el.start + delta)) };
+    if (canShiftTrackGapClips([el], [shift])) shifts.push(shift);
+  }
+  return shifts.length > 0 ? shifts : null;
 }

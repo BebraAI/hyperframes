@@ -2,7 +2,7 @@
 
 import React, { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useTimelineAssetDropOps } from "./useTimelineAssetDropOps";
+import { fileForUpload, useTimelineAssetDropOps } from "./useTimelineAssetDropOps";
 import { mountReactHarness } from "./domSelectionTestHarness";
 import { usePlayerStore } from "../player/store/playerStore";
 import type { TimelineElement } from "../player";
@@ -213,6 +213,39 @@ describe("useTimelineAssetDropOps handleTimelineAssetDrop", () => {
     });
   }
 
+  it("takes a dropped clip's length and sound from the file itself, not from storage", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    // Run from the package, as its test script does.
+    const bytes = readFileSync(
+      join(process.cwd(), "tests/e2e/fixtures/aroll-backdrop/assets/aroll.mp4"),
+    );
+    const writeProjectFile = vi.fn().mockResolvedValue(undefined);
+    const uploadProjectFiles = vi.fn().mockResolvedValue(["aroll.mp4"]);
+    const getDrop = renderDropHook(
+      rowSource([]),
+      writeProjectFile,
+      [],
+      undefined,
+      uploadProjectFiles,
+    );
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    await act(async () => {
+      await getDrop.file()([new File([bytes], "aroll.mp4", { type: "video/mp4" })], {
+        start: 0,
+        track: 0,
+      });
+    });
+    const clip = writtenClip(writeProjectFile.mock.calls[0]![1] as string, "video");
+    expect(clip).toContain('data-duration="2"');
+    expect(clip).toContain("data-has-audio");
+    // No probe of the uploaded copy: the media-metadata route isn't asked.
+    expect(
+      fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.includes("metadata")),
+    ).toEqual([]);
+    fetchSpy.mockRestore();
+  });
+
   it("keeps a multi-file drop's clips off each other and off the row's clips", async () => {
     const landed = await twoFileDrop([rowClip("a", 0, 4), rowClip("b", 8, 2)], {
       start: 1,
@@ -318,5 +351,15 @@ describe("useTimelineAssetDropOps handleTimelineAssetDrop", () => {
     expect(uploadProjectFiles).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(writeProjectFile).not.toHaveBeenCalled();
+  });
+});
+
+describe("fileForUpload", () => {
+  it("finds the dropped file an upload came from, under the free name it may have taken", () => {
+    const files = [{ name: "clip.mp4" }, { name: "photo (1).png" }];
+    expect(fileForUpload("clip.mp4", files)).toBe(files[0]);
+    expect(fileForUpload("assets/clip (2).mp4", files)).toBe(files[0]);
+    expect(fileForUpload("photo (1).png", files)).toBe(files[1]);
+    expect(fileForUpload("other.mp4", files)).toBeUndefined();
   });
 });

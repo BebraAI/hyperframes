@@ -1,4 +1,5 @@
 // fallow-ignore-file code-duplication
+import { Skeleton } from "../ui/Skeleton";
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { SearchInput } from "../ui/SearchInput";
@@ -40,8 +41,21 @@ export const BlocksTab = memo(function BlocksTab({ onAddBlock, onPreviewBlock }:
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center text-text-tertiary text-caption-1-regular">
-        Loading blocks…
+      // The catalog's own shape: a search field over a grid of cards, as it will land.
+      <div
+        role="status"
+        aria-label="Loading blocks"
+        className="flex flex-1 flex-col gap-2 px-3 pt-2"
+      >
+        <Skeleton className="h-8 w-full rounded-lg" />
+        <div
+          className="grid gap-1.5"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}
+        >
+          {Array.from({ length: 8 }, (_, card) => (
+            <Skeleton key={card} className="aspect-video w-full" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -275,7 +289,7 @@ function buildAgentPrompt(
   return [instruction, "", "## Current composition state", "", compositionInfo].join("\n");
 }
 
-function BlockCard({
+export function BlockCard({
   name,
   title,
   description,
@@ -303,6 +317,12 @@ function BlockCard({
   onPreview?: (preview: BlockPreviewInfo | null) => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  // 64 of the catalog's posters answer 404: a card whose poster or video won't load falls back to the next thing it
+  // has, down to its category's placeholder, rather than a broken image.
+  const [posterFailed, setPosterFailed] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const poster = posterFailed ? undefined : posterUrl;
+  const video = videoFailed ? undefined : videoUrl;
   const [addState, setAddState] = useState<"idle" | "adding" | "added" | "failed">("idle");
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colors = getCategoryColors(category);
@@ -311,9 +331,9 @@ function BlockCard({
   const handleEnter = useCallback(() => {
     hoverTimer.current = setTimeout(() => {
       setHovered(true);
-      onPreview?.({ videoUrl, posterUrl, title });
+      onPreview?.({ videoUrl: video, posterUrl: poster, title });
     }, 300);
-  }, [onPreview, videoUrl, posterUrl, title]);
+  }, [onPreview, video, poster, title]);
 
   const handleLeave = useCallback(() => {
     if (hoverTimer.current) {
@@ -409,20 +429,28 @@ function BlockCard({
       onPointerLeave={handleLeave}
     >
       <div className="aspect-video w-full overflow-hidden relative">
-        {hovered && videoUrl ? (
+        {hovered && video ? (
           <video
-            src={videoUrl}
+            src={video}
+            onError={() => setVideoFailed(true)}
             autoPlay
             muted
             loop
             playsInline
             className="w-full h-full object-cover"
           />
-        ) : posterUrl ? (
-          <img src={posterUrl} alt={title} loading="lazy" className="w-full h-full object-cover" />
-        ) : videoUrl ? (
+        ) : poster ? (
+          <img
+            src={poster}
+            alt={title}
+            loading="lazy"
+            onError={() => setPosterFailed(true)}
+            className="w-full h-full object-cover"
+          />
+        ) : video ? (
           <video
-            src={videoUrl}
+            src={video}
+            onError={() => setVideoFailed(true)}
             muted
             playsInline
             preload="metadata"

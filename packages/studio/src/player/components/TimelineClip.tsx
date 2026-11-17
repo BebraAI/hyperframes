@@ -18,6 +18,7 @@ import { OutOfSyncBadge } from "./OutOfSyncBadge";
 import { clipSpeedSuffix } from "./clipToolAttrs";
 import { ClipPeakTooltip } from "./ClipPeakTooltip";
 import { timeLayerPercent } from "./TimelineTimeLayer";
+import { ClipUpload } from "../../promptwise/ClipUpload";
 
 interface TimelineClipProps {
   el: TimelineElement;
@@ -247,6 +248,7 @@ export const TimelineClip = memo(function TimelineClip({
       )}
       {isAudioClip && badges}
       {!isGestureActor && el.syncOrigin && <OutOfSyncBadge el={el} />}
+      {!isGestureActor && el.src && <ClipUpload el={el} />}
       {showDefaultText && (
         <span className="timeline-clip__timecode">
           {startLabel}-{endLabel}s

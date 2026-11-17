@@ -469,7 +469,7 @@ export function useTimelineProviderState({
     laneGapStrips,
     dropPreview: assetDrop.dropPreview,
     acceptsMediaDrop: !!(onFileDrop || onAssetDrop),
-    onAddFilesToNewTrack: addFiles,
+    onAddFiles: addFiles,
     theme,
     showAudioEffects,
     displayTrackOrder: displayLayout.displayTrackOrder,

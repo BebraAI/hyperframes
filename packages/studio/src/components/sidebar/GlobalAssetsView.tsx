@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Skeleton } from "../ui/Skeleton";
 import { studioApiFetch } from "../../utils/studioApiFetch";
 import { STUDIO_API } from "../../utils/studioApiBase";
 
@@ -62,7 +63,15 @@ export function GlobalAssetsView({ searchQuery }: { searchQuery: string }) {
 
   if (records === null) {
     return (
-      <p className="px-4 py-3 text-caption-1-regular text-panel-text-5">Loading global assets…</p>
+      <div
+        role="status"
+        aria-label="Loading global assets"
+        className="flex flex-col gap-3 px-4 py-3"
+      >
+        {Array.from({ length: 4 }, (_, row) => (
+          <Skeleton key={row} className="h-4 w-full" />
+        ))}
+      </div>
     );
   }
   if (rows.length === 0) {
