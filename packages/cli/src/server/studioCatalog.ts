@@ -5,15 +5,22 @@ import { join, relative, sep } from "node:path";
 import { realpath } from "@hyperframes/core";
 import { replaceFileAtomically } from "@hyperframes/core/atomic-file";
 
-/** The blocks and components of the registry `add` installs from. */
+/** The blocks and components of the registry `add` installs from, without the ones it hides. */
 export async function listStudioCatalog(projectDir: string) {
   const { listRegistryItems, loadAllItems } = await import("../registry/resolver.js");
   const { loadProjectConfig } = await import("../utils/projectConfig.js");
   // The same registry `add` installs from, so the panel lists what can be installed.
   const registry = { baseUrl: loadProjectConfig(projectDir).registry };
-  const entries = await listRegistryItems(undefined, registry);
+  const { fetchHiddenItems } = await import("../registry/remote.js");
+  const [entries, hidden] = await Promise.all([
+    listRegistryItems(undefined, registry),
+    fetchHiddenItems(registry.baseUrl),
+  ]);
+  // Without what the registry's promptwise.json hides, as the bundled catalog promptwise-web ships.
   const blockAndComponentEntries = entries.filter(
-    (e) => e.type === "hyperframes:block" || e.type === "hyperframes:component",
+    (e) =>
+      (e.type === "hyperframes:block" || e.type === "hyperframes:component") &&
+      !hidden.includes(e.name),
   );
   return loadAllItems(blockAndComponentEntries, registry);
 }

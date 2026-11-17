@@ -1,8 +1,11 @@
 // promptwise's say over the registry (registry/promptwise.json): which items Studio's catalog hides, and which ones
 // the agent is offered first, with when and where to use each. promptwise-web/build.mjs filters the catalog it ships
-// with it, and the CLI's build writes the agent's menu (dist/promptwise-catalog.md) from it.
+// with it, and the CLI's build writes the agent's menu from it (dist/promptwise-catalog/catalog.md and catalog-all.md).
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+
+/** Where the rest of the catalog goes, beside the menu. */
+export const ALL_FILE = "catalog-all.md";
 
 const TYPE_DIRS = { "hyperframes:block": "blocks", "hyperframes:component": "components" };
 
@@ -93,17 +96,15 @@ function brief(description) {
   return first.length <= 120 ? first : `${first.slice(0, 117).replace(/\s+\S*$/, "")}...`;
 }
 
-/**
- * The agent's menu: the offered items first, in the file's order, with when to use each and how to put one in; then
- * every other item Studio lists, by its catalog tab, with the registry's own description.
- */
+/** The agent's menu (catalog.md): how to put an item in, then the items to reach for first with when to use each. */
 export function catalogMenu(root) {
-  const { hidden, use, items } = loadPromptwiseCatalog(root);
+  const { use, items } = loadPromptwiseCatalog(root);
   const lines = [
     "# Ready-made catalog items",
     "",
-    "These are the HyperFrames registry items the Timeline tab's catalog lists. Each is ordinary source once installed:",
-    "change it, cut it down, restyle it to the video's colours and fonts.",
+    "The HyperFrames registry items to reach for first, each with when and where it fits. Each is ordinary source once",
+    "installed: change it, cut it down, restyle it to the video's colours and fonts. When none of these fits, look in",
+    `\`${ALL_FILE}\` next to this file: every other item the Timeline tab's catalog lists, by its tab.`,
     "",
     "- Install in the project folder: `hyperframes add <name> --json` (needs the network). It prints the files it",
     "  wrote and a mount snippet.",
@@ -114,11 +115,23 @@ export function catalogMenu(root) {
     "- Set an item's variables for one mount with `data-variable-values` on its host (`add --vars '{...}'` writes it).",
     "  Point its colour and font variables at the brand's.",
     "- A 16:9 block in a 9:16 video (or the other way) needs its layout checked: look with preview_timeline.",
-    "- Items tagged webgl, webgpu or html-in-canvas can render blank here: check their frames, and say so if they do.",
     "- Then `hyperframes check`, and look at the frames.",
   ];
   if (use.size) lines.push("", "## Reach for these first", "");
   for (const [name, note] of use) lines.push(`- \`${name}\` (${shape(items.get(name))}): ${note}`);
+  return `${lines.join("\n")}\n`;
+}
+
+/** The rest of the catalog (catalog-all.md): every item Studio lists that isn't offered first, by its catalog tab. */
+export function catalogAll(root) {
+  const { hidden, use, items } = loadPromptwiseCatalog(root);
+  const lines = [
+    "# The rest of the catalog",
+    "",
+    "Every other item the Timeline tab's catalog lists, by its tab, with the registry's own description. Install and",
+    "mount one as catalog.md says. Items tagged webgl, webgpu or html-in-canvas can render blank here: check their",
+    "frames, and say so if they do.",
+  ];
   const rest = [...items.values()].filter((item) => !hidden.has(item.name) && !use.has(item.name));
   for (const [id, label] of CATEGORIES) {
     const inTab = rest.filter((item) => categoryOf(item.tags) === id);

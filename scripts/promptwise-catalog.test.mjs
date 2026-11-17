@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { BLOCK_CATEGORIES, resolveBlockCategory } from "../packages/core/src/registry/types.ts";
 import {
   CATEGORIES,
+  catalogAll,
   catalogMenu,
   categoryOf,
   loadPromptwiseCatalog,
@@ -72,12 +73,10 @@ test("the catalog leaves out hidden items and keeps the rest in the registry's o
 test("without promptwise.json nothing is hidden or offered", () => {
   const root = fixture();
   assert.equal(visibleCatalog(root).length, 3);
-  const menu = catalogMenu(root);
-  assert.match(
-    menu,
-    /look at the frames\.\n\n## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): A block\.\n/,
-  );
-  assert.match(menu, /- `b` \(component\): A component\.\n- `c` \(component\): Another\.\n/);
+  assert.doesNotMatch(catalogMenu(root), /^- `/m);
+  const all = catalogAll(root);
+  assert.match(all, /## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): A block\.\n/);
+  assert.match(all, /- `b` \(component\): A component\.\n- `c` \(component\): Another\.\n/);
 });
 
 test("the menu gives each offered item its shape and note, in the file's order", () => {
@@ -102,13 +101,15 @@ test("every mistake in promptwise.json is reported at once", () => {
   );
 });
 
-test("the menu lists every other visible item under its catalog tab, and no hidden one", () => {
+test("the menu holds only the offered items; the rest holds every other visible one, by tab", () => {
   const root = fixture({ hidden: ["c"], use: { b: "For accents." } });
   const menu = catalogMenu(root);
-  assert.match(menu, /## Reach for these first\n\n- `b`/);
-  assert.match(menu, /## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): /);
-  assert.doesNotMatch(menu, /`c`/);
-  assert.equal(menu.match(/`b`/g).length, 1);
+  assert.match(menu, /## Reach for these first\n\n- `b` [^\n]*\n$/);
+  assert.match(menu, /`catalog-all\.md`/);
+  assert.doesNotMatch(menu, /`a`|`c`/);
+  const all = catalogAll(root);
+  assert.match(all, /## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): A block\.\n$/);
+  assert.doesNotMatch(all, /`b`|`c`/);
 });
 
 test("the menu's tabs are Studio's: same order, same tag rule", () => {
