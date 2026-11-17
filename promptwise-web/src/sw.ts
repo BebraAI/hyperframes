@@ -78,6 +78,8 @@ function project(docId: string): Promise<StudioBackend> {
         void tell(docId, { type: "promptwise:studio-error", path, message }),
       // Where each file Studio added has got, which Studio shows on its clip.
       onUpload: (path, state) => void tell(docId, { type: "promptwise:upload-state", path, state }),
+      // Studio's edit gave way to a change made elsewhere: the tab tells the user, who can bring it back with Undo.
+      onConflict: (paths) => void tell(docId, { type: "promptwise:conflict", paths }),
     });
     // A folder that failed to open (the tab wasn't there yet) is tried again on the next request.
     opened.catch(() => projects.delete(docId));

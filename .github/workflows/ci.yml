@@ -52,6 +52,30 @@ jobs:
       - uses: ./.github/actions/setup-test-workspace
       - run: bun run --filter '@hyperframes/cli' test
 
+  # Studio in promptwise's browser (promptwise-web): its worker backend's tests, and a build, which also catches a Node
+  # shim that an upstream change broke. Deployed by hand from a Mac until now, with nothing checking it.
+  promptwise-web:
+    name: "promptwise-web: test and build"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - uses: ./.github/actions/prepare-ffmpeg-bin
+      - run: bash scripts/ci/install-workspace-dependencies.sh
+      - run: bun run build
+        env:
+          VITE_HYPERFRAMES_NO_TELEMETRY: "1"
+      - run: npm ci --no-audit --no-fund
+        working-directory: promptwise-web
+      - run: npm test
+        working-directory: promptwise-web
+      - run: node build.mjs
+        working-directory: promptwise-web
+
   studio-smoke:
     name: "Studio: load smoke"
     runs-on: ubuntu-latest

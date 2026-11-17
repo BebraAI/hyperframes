@@ -150,12 +150,25 @@ const worker = await build({
     STUDIO_BUILD: JSON.stringify(new Date().toISOString()),
   },
 });
+// The release this Studio is (promptwise-vN), which the tab checks against the one it expects: the release workflow
+// sets PROMPTWISE_RELEASE; a build by hand takes the nearest promptwise tag, or the commit.
+const release =
+  process.env.PROMPTWISE_RELEASE ||
+  (() => {
+    try {
+      return execFileSync("git", ["describe", "--tags", "--match", "promptwise-v*", "--always"], {
+        encoding: "utf8",
+      }).trim();
+    } catch {
+      return "unknown";
+    }
+  })();
 await build({
   ...common,
   entryPoints: [here("./src/boot.ts")],
   format: "esm",
   outfile: `${dist}/boot.js`,
-  define: { STUDIO_MAIN: JSON.stringify(entry[1]) },
+  define: { STUDIO_MAIN: JSON.stringify(entry[1]), STUDIO_RELEASE: JSON.stringify(release) },
 });
 
 const bytes = Object.values(worker.metafile.outputs)[0].bytes;

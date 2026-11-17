@@ -13,8 +13,9 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
   relative base, so Studio finds its API at `<scope><docId>/api` (`STUDIO_API` in `packages/studio`).
 - The folder comes from the tab, never from promptwise directly (`folder.ts`): Studio and the compositions its
   preview runs hold no session. Serve it from an origin of its own.
-- Studio's writes go back over the version they read (sha1); one that lost to a change made elsewhere takes that
-  change. The page asks the worker to open the folder as soon as the worker runs, while Studio's code (preloaded by
+- Studio's writes go back over the version they read (sha1), all of one save in one batch where the tab takes batches
+  (its listing says `batch`), saved all or none. One that lost to a change made elsewhere takes that change; the
+  history keeps the user's edit for Undo, and the page tells the tab (`promptwise:conflict`), which tells the user. The page asks the worker to open the folder as soon as the worker runs, while Studio's code (preloaded by
   `index.html`) downloads: one listing that carries the text files' text (`list` with `content`; a tab that leaves the
   text out gets a read per file). Until Studio renders, `#root` shows a loader. Every 5 seconds Studio's page asks the worker (`__pull`) to look for changes made elsewhere; the worker sends
   them to the page as Studio's own `file-change` events, by message. No request is held open on the worker: one that
@@ -30,5 +31,7 @@ promptwise tab ──postMessage──▶ Studio page (boot.ts) ──postMessag
 
 Hosting: the Vercel project `bebraai-studio` (team triangleint), a static site with no Git link, at https://bebraai-studio.vercel.app/studio/: its own site (`vercel.app` is on the Public Suffix List), apart from promptwise's. `vercel.json` rewrites `/studio/<docId>/` to the page and its files to `/studio/`, keeps `sw.js`, `boot.js` and the page uncached, and lets only promptwise's origins (and localhost) frame it. Deploy with `node deploy.mjs` after a build. Today staging uses that production deployment; give staging its own environment before prod uses it.
 
-Build (after `bun run build` at the root): `npm install && node build.mjs`, then `tar -czf studio-web.tgz -C dist .`
-for the release. Test: `npm test`; in a browser: `node check.mjs dist <files.json>` (see the file).
+Build (after `bun run build` at the root): `npm install && node build.mjs`. A `promptwise-v*` release builds it in CI
+with `PROMPTWISE_RELEASE` set and attaches `studio-web.tgz`; the page says that release to the tab
+(`promptwise:studio-ready`), which checks it against `NEXT_PUBLIC_STUDIO_RELEASE`. CI runs the tests and the build on
+every PR. Test: `npm test`; in a browser: `node check.mjs dist <files.json>` (see the file).
