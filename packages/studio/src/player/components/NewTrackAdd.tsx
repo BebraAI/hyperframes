@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react";
 import { MediaPickerDialog } from "./MediaPickerDialog";
+import { pickInHost, useHostPicker } from "../../promptwise/hostPicker";
 import { Plus } from "@phosphor-icons/react";
 import { IconLibraryPhoto, IconUpload } from "../../boardui/components/icons";
 import { Menu, MenuItem } from "../../components/ui";
@@ -106,6 +107,13 @@ export function useMediaSources(onAdd: (media: AddedMedia) => void, target = "a 
   const input = useRef<HTMLInputElement>(null);
   const [gallery, setGallery] = useState(false);
   const pickFiles = () => input.current?.click();
+  // The tab's own Assets window where it has one; Studio's gallery where it doesn't.
+  const host = useHostPicker();
+  const openHost = () =>
+    void pickInHost(target).then(({ media, files }) => {
+      if (files.length) onAdd(files);
+      else if (media.length) onAdd(media.map((m) => m.url));
+    });
   const sources = (
     <>
       {gallery && (
@@ -135,8 +143,10 @@ export function useMediaSources(onAdd: (media: AddedMedia) => void, target = "a 
     </>
   );
   return {
-    openGallery: embeddedInPromptwise ? () => setGallery(true) : undefined,
+    openGallery: embeddedInPromptwise ? (host ? openHost : () => setGallery(true)) : undefined,
     pickFiles,
+    /** The tab's Assets window has Upload too, so a "+" opens it straight away instead of a menu. */
+    host,
     sources,
   };
 }
@@ -160,10 +170,12 @@ export function MediaSourcesScope({ children }: { children: ReactNode }) {
 
 /** Media from promptwise's gallery, picked in a dialog where the "+" was, or files from the computer. */
 function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMediaMenuProps) {
-  const { openGallery, pickFiles, sources } = useMediaSources(onAdd, target);
+  const { openGallery, pickFiles, sources, host } = useMediaSources(onAdd, target);
   return (
     <MediaSourcesScope>
-      {openGallery ? (
+      {host && openGallery ? (
+        trigger(openGallery)
+      ) : openGallery ? (
         <Menu aria-label="Add media" className="w-72 gap-1 p-2" sideOffset={8} trigger={trigger()}>
           <MenuItem className={ROW} onClick={openGallery}>
             <AddMediaChoice

@@ -22,7 +22,7 @@ interface TimelineEmptyStateProps {
  * Clipchamp's empty timelines offer import right there. The lane around it still takes a drop.
  */
 function EmptyTimelineStart({ onAdd }: { onAdd: (media: AddedMedia) => void }) {
-  const { openGallery, pickFiles, sources } = useMediaSources(onAdd);
+  const { openGallery, pickFiles, sources, host } = useMediaSources(onAdd);
   return (
     <MediaSourcesScope>
       <div className="flex flex-col items-center gap-3 text-center">
@@ -35,7 +35,7 @@ function EmptyTimelineStart({ onAdd }: { onAdd: (media: AddedMedia) => void }) {
         <div className="flex gap-2">
           {openGallery && (
             <Button size="md" icon={<IconLibraryPhoto />} onClick={openGallery}>
-              From gallery
+              {host ? "Add media" : "From gallery"}
             </Button>
           )}
           <Button size="md" icon={<IconUpload />} onClick={pickFiles}>
