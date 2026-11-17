@@ -70,6 +70,7 @@ function project(docId: string): Promise<StudioBackend> {
       projectId: docId,
       folder: folder((r) => ask(docId, r)),
       runtimeUrl: `${scope}runtime.js`,
+      catalogUrl: `${scope}catalog.json`,
       onChange: (change: FileChange) =>
         void tell(docId, { type: "promptwise:file-change", change }),
       // Studio only says "failed"; the tab logs why, which is all there is to see of a worker in a cross-site frame.

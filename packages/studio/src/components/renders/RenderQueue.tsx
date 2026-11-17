@@ -12,7 +12,7 @@ import { embeddedInPromptwise } from "../../promptwise/embed";
 
 /** In promptwise a video is exported by the tab's own Export, into the project's assets, not rendered here. */
 export const PROMPTWISE_RENDERS_NOTE =
-  "Exports from the Export button above the timeline go to the project's Assets.";
+  "Export from the Export button at the top right of this tab. Finished videos go to the project's Assets.";
 import { Tooltip } from "../ui/Tooltip";
 import { resolveFloatingPanelPosition, type FloatingPosition } from "../editor/floatingPanel";
 import type { RenderJob, ResolutionPreset } from "./useRenderQueue";

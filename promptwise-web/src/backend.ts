@@ -19,6 +19,10 @@ import {
   installStudioBlock,
   listStudioCatalog,
 } from "../../packages/cli/src/server/studioCatalog.ts";
+import { loadProjectConfig } from "../../packages/cli/src/utils/projectConfig.ts";
+import { DEFAULT_REGISTRY_URL } from "../../packages/cli/src/registry/remote.ts";
+import { validRegistryItem } from "../../packages/cli/src/registry/validation.ts";
+import type { RegistryItem } from "@hyperframes/core";
 import type { Folder } from "./folder";
 import { AGENT_EDIT_LABEL } from "../../packages/studio/src/promptwise/agentEdit.ts";
 
@@ -104,6 +108,8 @@ type Options = {
   folder: Folder;
   /** Where the runtime the preview loads is. */
   runtimeUrl: string;
+  /** The registry's catalog as one file, built with this Studio (build.mjs); without it, each item is fetched. */
+  catalogUrl?: string;
   /** Hears about each of Studio's requests that failed on this side (a 5xx), for the tab to log. */
   onError?: (path: string, message: string) => void;
   /** Hears about each file a refresh found changed elsewhere, to tell Studio. */
@@ -117,6 +123,7 @@ export async function openProject({
   projectId,
   folder,
   runtimeUrl,
+  catalogUrl,
   onError,
   onChange,
   onUpload,
@@ -313,8 +320,13 @@ export async function openProject({
     lintProject: (projectDir: string) => lintProject(projectDir, undefined, { host: "studio" }),
     runtimeUrl: `${apiBase}/runtime.js`,
     apiBase,
-    // The catalog from the fork's registry on GitHub; an install writes into the folder, which goes back as any write.
-    listRegistryCatalog: () => listStudioCatalog(dir),
+    // The catalog built with this Studio, for a project on the default registry: fetching ~240 manifests one by one
+    // from GitHub took 30-40 s. Otherwise, or if that file is missing, the catalog from the project's registry. An
+    // install still fetches from the registry and writes into the folder, which goes back as any write.
+    listRegistryCatalog: async () =>
+      (catalogUrl && loadProjectConfig(dir).registry === DEFAULT_REGISTRY_URL
+        ? await bundledCatalog(catalogUrl)
+        : undefined) ?? listStudioCatalog(dir),
     installRegistryBlock: (opts: { project: { dir: string }; blockName: string }) =>
       installStudioBlock(opts.project.dir, opts.blockName),
     rendersDir: () => "/renders",
@@ -457,3 +469,37 @@ export async function openProject({
   };
 }
 export type StudioBackend = Awaited<ReturnType<typeof openProject>>;
+
+const bundled = new Map<string, Promise<RegistryItem[] | undefined>>();
+
+/** A block or component as the registry lists it, checked as `add` checks a fetched one. */
+function catalogItem(value: unknown): value is RegistryItem {
+  if (typeof value !== "object" || value === null) return false;
+  const name = "name" in value ? value.name : undefined;
+  const type = "type" in value ? value.type : undefined;
+  return (
+    typeof name === "string" &&
+    (type === "hyperframes:block" || type === "hyperframes:component") &&
+    validRegistryItem(value, name, type)
+  );
+}
+
+/** The catalog file build.mjs wrote, fetched once per worker; undefined when it is missing or not a catalog. */
+function bundledCatalog(url: string): Promise<RegistryItem[] | undefined> {
+  let loading = bundled.get(url);
+  if (!loading) {
+    loading = fetch(url)
+      .then(async (res) => {
+        if (!res.ok) return undefined;
+        const items: unknown = await res.json();
+        if (!Array.isArray(items) || items.length === 0) return undefined;
+        const valid = items.filter(catalogItem);
+        return valid.length === items.length ? valid : undefined;
+      })
+      .catch(() => undefined);
+    // A failed fetch isn't kept: the next catalog request tries the file again.
+    loading.then((items) => items ?? bundled.delete(url));
+    bundled.set(url, loading);
+  }
+  return loading;
+}

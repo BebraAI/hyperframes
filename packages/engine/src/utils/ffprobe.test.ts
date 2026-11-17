@@ -5,7 +5,12 @@ import { mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs
 import { tmpdir } from "os";
 import { basename, join, resolve } from "path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { extractMediaMetadata, extractPngMetadataFromBuffer, parseFrameRate } from "./ffprobe.js";
+import {
+  extractMediaMetadata,
+  extractPngMetadataFromBuffer,
+  packetEndFromCsv,
+  parseFrameRate,
+} from "./ffprobe.js";
 
 function crc32(buf: Buffer): number {
   let crc = 0xffffffff;
@@ -2233,5 +2238,57 @@ describe.skipIf(!HAS_FFPROBE)("VP8/VP9 decoded alpha plane probe on real files",
     const other = await extractMediaMetadata(mpeg4);
     expect(other.videoCodec).toBe("mpeg4");
     expect("alphaPlaneDecoded" in other).toBe(false);
+  });
+});
+
+describe("extractMediaMetadata live-muxed WebM (MediaRecorder output)", () => {
+  const hasFfmpeg = spawnSync("ffmpeg", ["-version"]).status === 0;
+  let dir = "";
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), "hf-live-webm-"));
+  });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  it.skipIf(!hasFfmpeg)(
+    "reads the duration from the packets when the file declares none",
+    async () => {
+      const file = join(dir, "live.webm");
+      const made = spawnSync("ffmpeg", [
+        "-loglevel",
+        "error",
+        "-y",
+        "-f",
+        "lavfi",
+        "-i",
+        "testsrc=d=3:s=160x120:r=30",
+        "-c:v",
+        "libvpx-vp9",
+        "-deadline",
+        "realtime",
+        "-f",
+        "webm",
+        "-live",
+        "1",
+        file,
+      ]);
+      expect(made.status).toBe(0);
+
+      const metadata = await extractMediaMetadata(file);
+
+      expect(metadata.videoStreamDurationSeconds).toBeGreaterThan(2.9);
+      expect(metadata.videoStreamDurationSeconds).toBeLessThan(3.1);
+      expect(metadata.durationSeconds).toBeGreaterThan(2.9);
+    },
+  );
+});
+
+describe("packetEndFromCsv", () => {
+  it("takes the latest pts plus its duration and skips blank or bad lines", () => {
+    expect(packetEndFromCsv("0.000000,0.033000\n2.967000,0.033000\n\nN/A,N/A\n")).toBeCloseTo(
+      3.0,
+      3,
+    );
+    expect(packetEndFromCsv("1.5,N/A\n")).toBe(1.5);
+    expect(packetEndFromCsv("")).toBe(0);
   });
 });

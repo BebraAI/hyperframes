@@ -247,6 +247,49 @@ describe("Studio's API over a tab's folder", () => {
     }
   }, 30_000);
 
+  // The catalog took 30-40 s: the worker fetched each of ~240 item manifests from GitHub. Now it is one file, built
+  // with Studio, and the registry only if that file can't be read.
+  it("lists the catalog from the one file built with Studio, and from the registry without it", async () => {
+    const disk = createRequire(import.meta.url)("fs") as typeof import("node:fs");
+    const root = new URL("../../registry/", import.meta.url);
+    const item = JSON.parse(
+      disk.readFileSync(new URL("blocks/lt-color-block/registry-item.json", root), "utf8"),
+    );
+    const asked: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      asked.push(url);
+      if (url === "https://app.test/catalog.json") return Response.json([item]);
+      if (url === "https://app.test/broken/catalog.json") return Response.json([{ name: "x" }]);
+      const path = new URL(url).pathname.split("/registry/")[1]!;
+      const file = new URL(path, root);
+      return disk.existsSync(file)
+        ? new Response(disk.readFileSync(file))
+        : new Response("not found", { status: 404 });
+    });
+    const withCatalog = (catalogUrl: string) =>
+      openProject({
+        prefix: "/studio/d1",
+        projectId: "d1",
+        folder: folder(tab),
+        runtimeUrl: "https://app.test/runtime.js",
+        catalogUrl,
+      }).then((studio) => (opened.push(studio), studio));
+    try {
+      const studio = await withCatalog("https://app.test/catalog.json");
+      for (let i = 0; i < 2; i++) {
+        const listed = await (await studio.fetch(at("/registry/blocks"))).json();
+        expect(listed.map((b: { name: string }) => b.name)).toEqual(["lt-color-block"]);
+      }
+      expect(asked).toEqual(["https://app.test/catalog.json"]);
+
+      const fallback = await withCatalog("https://app.test/broken/catalog.json");
+      const listed = await (await fallback.fetch(at("/registry/blocks"))).json();
+      expect(listed.length).toBeGreaterThan(100);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }, 30_000);
+
   // Cmd+Z in Studio did nothing here: the browser backend had no history, so /history answered 404.
   it("undoes Studio's own edit and sends the file back as it was", async () => {
     const studio = await open();
