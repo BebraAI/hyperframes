@@ -114,7 +114,7 @@ export interface AssetCardProps {
 }
 
 /**
- * Thumbnail card for images and video assets. Renders in a 2-col grid.
+ * Thumbnail card for images and video assets. Renders in a grid of 104px-or-wider columns: one in a narrow panel, more in a wide one.
  *
  * Click behaviour (CapCut-style):
  *   - Already added  → selects the clip on the timeline (setSelectedElementId).

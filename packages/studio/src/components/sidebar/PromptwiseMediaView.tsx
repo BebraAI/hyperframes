@@ -62,7 +62,7 @@ function MediaGrid({
 }) {
   if (media.length === 0) return null;
   return (
-    <div className="grid grid-cols-2 gap-1 px-2 pb-1">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-1 px-2 pb-1">
       {media.map((m) => (
         <button
           key={m.url}
