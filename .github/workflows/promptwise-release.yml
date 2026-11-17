@@ -32,7 +32,12 @@ jobs:
       # Upstream publishes the CLI as "hyperframes", so the sandbox's paths stay the same.
       - run: npm pkg set name=hyperframes && npm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/cli
-      - run: gh release create "$TAG" "$RUNNER_TEMP"/hyperframes-*.tgz --target "$GITHUB_SHA" --title "$TAG" --notes "HyperFrames CLI with the promptwise Studio."
+      # Studio for promptwise's browser, stamped with this release: the tab checks it against NEXT_PUBLIC_STUDIO_RELEASE.
+      - run: npm ci --no-audit --no-fund && node build.mjs && tar -czf "$RUNNER_TEMP/studio-web.tgz" -C dist .
+        working-directory: promptwise-web
+        env:
+          PROMPTWISE_RELEASE: ${{ inputs.tag || github.ref_name }}
+      - run: gh release create "$TAG" "$RUNNER_TEMP"/hyperframes-*.tgz "$RUNNER_TEMP/studio-web.tgz" --target "$GITHUB_SHA" --title "$TAG" --notes "HyperFrames CLI with the promptwise Studio, and Studio for the browser (studio-web.tgz)."
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || github.ref_name }}

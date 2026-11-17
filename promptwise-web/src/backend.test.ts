@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type FileChange, openProject } from "./backend";
 import { folder, refusal, type FolderRequest, type FolderReply } from "./folder";
+import { vol } from "../shims/fs.js";
 
 // promptwise is the outside world here: a fake tab over a folder that takes writes only over the version it has, as
 // the studio/files routes do, and records what it was asked.
@@ -14,6 +15,8 @@ let uploads: Map<string, string>;
 let extra: { path: string; sha1: string; url: string }[];
 /** Whether the tab gives the text with a listing that asks for it, as promptwise does; an older one doesn't. */
 let givesContent: boolean;
+/** Whether the tab takes a batch of writes in one request, as promptwise does now; an older one doesn't. */
+let takesBatch: boolean;
 /** Holds the tab's uploads until the test lets them through, and fails them while `failing`. */
 let gate: Promise<void>;
 let failing: boolean;
@@ -23,7 +26,9 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
       ? request.content
         ? "list with content"
         : "list"
-      : `${request.op} ${request.path}`,
+      : request.op === "batch"
+        ? `batch ${request.writes.map((w) => w.path).join(", ")}`
+        : `${request.op} ${request.path}`,
   );
   if (request.op === "list") {
     const withText = request.content && givesContent;
@@ -35,6 +40,7 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
     }));
     return {
       status: 200,
+      ...(takesBatch ? { batch: true } : {}),
       files: [
         ...files,
         { path: "assets/clip.mp4", sha1: "a".repeat(40), url: "https://media.test/clip.mp4" },
@@ -47,6 +53,26 @@ const tab = async (request: FolderRequest): Promise<FolderReply> => {
     if (failing) return { status: 502 };
     uploads.set(request.path, new TextDecoder().decode(request.bytes));
     return { status: 200, sha1: "b".repeat(40), url: `https://media.test/${request.path}` };
+  }
+  if (request.op === "batch") {
+    const stale = request.writes
+      .filter((w) => {
+        const text = texts.get(w.path);
+        return (text === undefined ? null : sha1(text)) !== w.base;
+      })
+      .map((w) => w.path);
+    if (stale.length) return { status: 412, stale };
+    for (const w of request.writes) {
+      if ("remove" in w) texts.delete(w.path);
+      else texts.set(w.path, w.content);
+    }
+    return {
+      status: 200,
+      files: request.writes.map((w) => ({
+        path: w.path,
+        sha1: "remove" in w ? null : sha1(w.content),
+      })),
+    };
   }
   const text = texts.get(request.path);
   if (request.op === "read")
@@ -86,6 +112,7 @@ describe("Studio's API over a tab's folder", () => {
     errors = [];
     states = [];
     givesContent = true;
+    takesBatch = false;
     gate = Promise.resolve();
     failing = false;
   });
@@ -178,6 +205,74 @@ describe("Studio's API over a tab's folder", () => {
         affectedCompositions: null,
       },
     ]);
+  });
+
+  it("sends an edit to two files in one batch, saved all or none, where the tab takes batches", async () => {
+    takesBatch = true;
+    texts.set("compositions/scene.html", HTML);
+    const studio = await open();
+    const [main, scene] = [HTML.replace("fast", "far"), HTML.replace("fast", "well")];
+    vol.writeFileSync("/projects/d1/compositions/scene.html", scene);
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: main,
+        headers: { "if-match": await versionOf(studio) },
+      }),
+    );
+    expect(asked.at(-1)).toMatch(
+      /^batch (index\.html, compositions\/scene\.html|compositions\/scene\.html, index\.html)$/,
+    );
+    expect([texts.get("index.html"), texts.get("compositions/scene.html")]).toEqual([main, scene]);
+  });
+
+  it("keeps none of an edit whose batch lost to the agent, tells the tab, and lets Undo bring it back", async () => {
+    takesBatch = true;
+    const conflicts: string[][] = [];
+    const studio = await openProject({
+      prefix: "/studio/d1",
+      projectId: "d1",
+      folder: folder(tab),
+      runtimeUrl: "https://app.test/runtime.js",
+      onChange: (change) => changes.push(change),
+      onError: (path, message) => errors.push(`${path}: ${message}`),
+      onConflict: (paths) => conflicts.push(paths),
+    }).then((opened_) => (opened.push(opened_), opened_));
+    await studio.fetch(at("/projects/d1/history"));
+    const version = await versionOf(studio);
+    const agents = HTML.replace("Made to move fast.", "The agent's line");
+    texts.set("index.html", agents);
+    // Studio's edit adds a file and changes index.html, which the agent changed meanwhile.
+    vol.writeFileSync("/projects/d1/new.html", "<p>new</p>");
+    const mine = HTML.replace("Made to move fast.", "My line");
+    await studio.fetch(
+      at("/projects/d1/files/index.html", {
+        method: "PUT",
+        body: mine,
+        headers: { "if-match": version },
+      }),
+    );
+
+    expect(conflicts).toEqual([["index.html"]]);
+    expect([texts.get("index.html"), texts.has("new.html")]).toEqual([agents, false]);
+    expect(vol.existsSync("/projects/d1/new.html")).toBe(false);
+    expect((await (await studio.fetch(at("/projects/d1/files/index.html"))).json()).content).toBe(
+      agents,
+    );
+
+    // The agent's change is the last step: Undo puts the user's line back, and it goes to promptwise.
+    await vi.waitFor(async () => {
+      const history = await (await studio.fetch(at("/projects/d1/history"))).json();
+      expect(history.back?.label).toBe("Agent's edit");
+    });
+    await studio.fetch(
+      at("/projects/d1/history/step", {
+        method: "POST",
+        body: JSON.stringify({ direction: "back" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await vi.waitFor(() => expect(texts.get("index.html")).toBe(mine));
   });
 
   it("takes in the agent's changes on a refresh: new, changed and deleted files", async () => {

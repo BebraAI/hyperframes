@@ -116,6 +116,8 @@ type Options = {
   onChange?: (change: FileChange) => void;
   /** Hears where each file Studio added has got, for Studio to show on its clip. */
   onUpload?: (path: string, state: UploadState) => void;
+  /** Hears the files whose edit in Studio gave way to a change made elsewhere meanwhile, for the tab to tell the user. */
+  onConflict?: (paths: string[]) => void;
 };
 
 export async function openProject({
@@ -127,6 +129,7 @@ export async function openProject({
   onError,
   onChange,
   onUpload,
+  onConflict,
 }: Options) {
   const dir = `/projects/${projectId}`;
   const apiBase = `${prefix}/api`;
@@ -206,28 +209,64 @@ export async function openProject({
       return skip ? [] : [{ path, text: text! }];
     });
 
-  /** Sends Studio's writes and deletes; returns the ones that lost to a change made meanwhile. */
+  /**
+   * Sends Studio's writes and deletes; returns the ones that lost to a change made meanwhile. A tab that takes batches
+   * gets them all in one request, saved all or none, so one edit that touches two files never lands half way.
+   */
   async function send(files: Record<string, string | null>): Promise<string[]> {
+    const writes = edited(files);
+    const removed = [...known].filter(([path]) => !(local(path) in files));
+    if (!writes.length && !removed.length) return [];
+    if (folder.batches) {
+      const result = await folder.batch([
+        ...writes.map(({ path, text }) => ({ path, base: known.get(path) ?? null, content: text })),
+        ...removed.map(([path, base]) => ({ path, base, remove: true as const })),
+      ]);
+      if ("stale" in result) return result.stale;
+      for (const [path, sha] of result.saved) {
+        if (sha) known.set(path, sha);
+        else known.delete(path);
+      }
+      return [];
+    }
     const lost: string[] = [];
-    for (const { path, text } of edited(files)) {
+    for (const { path, text } of writes) {
       const saved = await folder.write(path, text, known.get(path) ?? null);
       if (saved) known.set(path, saved);
       else lost.push(path);
     }
-    for (const [path, base] of [...known].filter(([path]) => !(local(path) in files))) {
+    for (const [path, base] of removed) {
       if (await folder.remove(path, base)) known.delete(path);
       else lost.push(path);
     }
     return lost;
   }
 
-  /** Sends Studio's changes. One that lost takes promptwise's copy: forgetting its version makes pull read it. */
+  /**
+   * Sends Studio's changes. One that lost takes promptwise's copy: forgetting its version makes pull read it. A batch
+   * saved nothing of the edit, so every file it touched takes promptwise's copy. The history records the change as the
+   * agent's, so Undo brings the user's edit back over it, and the tab tells the user so.
+   */
   async function push() {
-    const lost = await send(vol.toJSON(dir) as Record<string, string | null>);
-    lost.forEach((path) => known.delete(path));
+    const files = vol.toJSON(dir) as Record<string, string | null>;
+    const touched = [
+      ...edited(files).map((w) => w.path),
+      ...[...known.keys()].filter((path) => !(local(path) in files)),
+    ];
+    const lost = await send(files);
     if (!lost.length) return;
+    // The history takes in the user's edit before promptwise's copy replaces it, so Undo has it to bring back.
+    await (await histories.peek(dir))?.checkpoint().catch(() => undefined);
+    for (const path of folder.batches ? touched : lost) known.delete(path);
     onError?.(lost.join(", "), "changed in promptwise meanwhile, so Studio's edit gave way to it");
+    onConflict?.(lost);
     await pull();
+    // A file the lost batch would have made isn't in promptwise: it goes too, so a later save can't send it on its own.
+    if (!folder.batches) return;
+    for (const path of touched.filter((p) => !known.has(p) && !media.has(p) && !uploading.has(p))) {
+      vol.rmSync(local(path), { force: true });
+      changed(path);
+    }
   }
 
   // One look or send at a time, in order.

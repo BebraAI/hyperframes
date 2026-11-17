@@ -6,6 +6,8 @@
 
 /** Studio's entry, set by build.mjs. */
 declare const STUDIO_MAIN: string;
+/** The release this Studio is (promptwise-vN), set by build.mjs: the tab checks it against the one it expects. */
+declare const STUDIO_RELEASE: string;
 
 /** How long the worker has to take the page before Studio gives up on it. */
 const START_MS = 15_000;
@@ -26,6 +28,8 @@ async function startWorker(): Promise<void> {
       const moved = bytes instanceof ArrayBuffer ? [bytes] : [];
       window.parent.postMessage(event.data, "*", [...event.ports, ...moved]);
     }
+    // Studio's edit gave way to the agent's change meanwhile: the tab tells the user, who can bring it back with Undo.
+    if (type === "promptwise:conflict") window.parent.postMessage(event.data, "*");
     if (type === "promptwise:studio-error") {
       console.warn(`[promptwise] ${event.data.path}: ${event.data.message}`);
       window.parent.postMessage(event.data, "*");
@@ -86,7 +90,11 @@ setInterval(async () => {
   const reply = await fetch(pullUrl, { cache: "no-store" }).catch(() => null);
   const build = reply?.headers.get("x-promptwise-worker");
   if (build) {
-    if (!reported) window.parent.postMessage({ type: "promptwise:studio-ready", build }, "*");
+    if (!reported)
+      window.parent.postMessage(
+        { type: "promptwise:studio-ready", build, release: STUDIO_RELEASE },
+        "*",
+      );
     reported = true;
     return;
   }
