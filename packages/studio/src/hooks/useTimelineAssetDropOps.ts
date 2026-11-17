@@ -78,7 +78,7 @@ interface UseTimelineAssetDropOpsOptions {
   projectIdRef: MutableRefObject<string | null>;
   activeCompPath: string | null;
   timelineElements: TimelineElement[];
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   recordEdit: (input: RecordEditInput) => Promise<void>;
   reloadPreview: () => void;

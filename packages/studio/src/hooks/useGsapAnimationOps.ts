@@ -29,7 +29,7 @@ interface GsapAnimationOpsParams extends SdkAnimationDeps {
   activeCompPath: string | null;
   commitMutation: CommitMutation;
   commitMutationSafely: SafeGsapCommitMutation;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile?: StudioProjectFileWriter;
 }
 

@@ -22,7 +22,7 @@ const selection = { id: "box", selector: "#box" } as unknown as DomEditSelection
 // Mount a hook and capture its return value via a ref.
 function renderSafeCommit(
   commitMutation: CommitMutation,
-  showToast?: (message: string, tone?: "error" | "info") => void,
+  showToast?: (message: string, tone?: "error" | "info" | "undo") => void,
 ) {
   const captured: { fn: ReturnType<typeof useSafeGsapCommitMutation> | null } = { fn: null };
   function Probe() {

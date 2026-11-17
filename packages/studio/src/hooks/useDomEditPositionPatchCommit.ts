@@ -9,7 +9,7 @@ import { wasAlreadyToasted } from "./domEditPersistFailure";
 interface UseDomEditPositionPatchCommitParams {
   activeCompPath: string | null;
   persistDomEditOperations: PersistDomEditOperations;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
 }
 
 type PositionPatchOptions = {

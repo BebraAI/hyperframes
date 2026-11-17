@@ -31,7 +31,7 @@ export { membersForDelete };
 
 export interface UseDomEditSessionParams extends DomEditTimelineParams {
   compositionLoading: boolean;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   isRecordingRef?: React.RefObject<boolean>;
   refreshPreviewDocumentVersion: () => void;
   queueDomEditSave: <T>(save: () => Promise<T>) => Promise<T>;

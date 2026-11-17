@@ -22,7 +22,7 @@ interface RecordEditInput {
 
 interface UseFileManagerOptions {
   projectId: string | null;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   recordEdit: (input: RecordEditInput) => Promise<void>;
   setRefreshKey: React.Dispatch<React.SetStateAction<number>>;
 }

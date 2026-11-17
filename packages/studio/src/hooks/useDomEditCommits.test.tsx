@@ -50,7 +50,7 @@ type FetchHandler = (
 ) => Promise<Response>;
 
 function makeShowToast() {
-  return vi.fn<(message: string, tone?: "error" | "info") => void>();
+  return vi.fn<(message: string, tone?: "error" | "info" | "undo") => void>();
 }
 
 function ensureCssEscape(): void {

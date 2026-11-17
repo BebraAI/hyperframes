@@ -23,7 +23,7 @@ interface BlockCtxDeps {
   }) => Promise<void>;
   refreshFileTree: () => Promise<void>;
   reloadPreview: () => void;
-  showToast: (message: string, tone?: "error" | "info") => number;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => number;
   dismissToast: (id: number) => void;
 }
 

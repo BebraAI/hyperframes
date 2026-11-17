@@ -2,6 +2,7 @@ import { memo, type ComponentProps } from "react";
 import { LintModal } from "./LintModal";
 import { AskAgentModal } from "./AskAgentModal";
 import { StudioToast } from "./StudioToast";
+import { useStudioShellContextOptional } from "../contexts/StudioContext";
 import { StudioFeedbackCard } from "./feedback/StudioFeedbackCard";
 import { buildAgentContextPreview } from "./editor/domEditingAgentPrompt";
 import type { useDomEditSession } from "../hooks/useDomEditSession";
@@ -20,6 +21,7 @@ interface StudioOverlaysProps {
   activeCompPath: string | null;
   toasts: ReturnType<typeof useToast>["toasts"];
   dismissToast: (id: number) => void;
+  holdToast: (id: number, held: boolean) => void;
 }
 
 /**
@@ -39,7 +41,9 @@ export const StudioOverlays = memo(function StudioOverlays({
   activeCompPath,
   toasts,
   dismissToast,
+  holdToast,
 }: StudioOverlaysProps) {
+  const shell = useStudioShellContextOptional();
   return (
     <>
       {lintModal !== null && (
@@ -85,6 +89,11 @@ export const StudioOverlays = memo(function StudioOverlays({
             tone={toast.tone}
             leaving={toast.leaving}
             onDismiss={() => dismissToast(toast.id)}
+            onHold={(held) => holdToast(toast.id, held)}
+            onUndo={() => {
+              dismissToast(toast.id);
+              void shell?.handleUndo();
+            }}
           />
         ))}
         <StudioFeedbackCard />

@@ -43,7 +43,7 @@ interface RecordEditInput {
 }
 
 export interface UsePreviewPersistenceParams {
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   readOptionalProjectFile: (path: string) => Promise<string>;
   writeProjectFile: (path: string, content: string) => Promise<void>;
   recordEdit: (entry: RecordEditInput) => Promise<void>;

@@ -138,10 +138,7 @@ export function useElementLifecycleOps({
           if (allHandled) {
             clearDomSelection();
             usePlayerStore.getState().setSelectedElementId(null);
-            showToast(
-              `Deleted ${label}. Use Undo to restore ${sameFile.length === 1 ? "it" : "them"}.`,
-              "info",
-            );
+            showToast(`Deleted ${label}`, "undo");
             return { ok: true } as const;
           }
         }
@@ -201,10 +198,7 @@ export function useElementLifecycleOps({
         forceReloadSdkSession?.();
         reloadPreview();
         for (const member of sameFile) onElementDeleted?.(member);
-        showToast(
-          `Deleted ${label}. Use Undo to restore ${sameFile.length === 1 ? "it" : "them"}.`,
-          "info",
-        );
+        showToast(`Deleted ${label}`, "undo");
         return { ok: true } as const;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to delete element";

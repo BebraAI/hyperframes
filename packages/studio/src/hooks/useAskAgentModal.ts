@@ -18,7 +18,7 @@ export interface UseAskAgentModalParams {
   activeCompPath: string | null;
   projectDir: string | null;
   projectIdRef: React.MutableRefObject<string | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   domEditSelectionRef: React.MutableRefObject<DomEditSelection | null>;
   domEditSelection: DomEditSelection | null;
 }

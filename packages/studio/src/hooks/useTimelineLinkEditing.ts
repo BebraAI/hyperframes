@@ -14,7 +14,7 @@ interface UseTimelineLinkEditingOptions {
   editQueueRef: MutableRefObject<Promise<void>>;
   pendingTimelineEditPathRef: MutableRefObject<Set<string>>;
   isRecordingRef?: MutableRefObject<boolean>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   recordEdit: (input: RecordEditInput) => Promise<void>;
   reloadPreview: () => void;

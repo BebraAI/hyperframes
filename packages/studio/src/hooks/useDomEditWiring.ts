@@ -33,7 +33,7 @@ export interface UseDomEditWiringParams {
   refreshKey: number;
   gsapCacheVersion: number;
   bumpGsapCache: () => void;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   refreshPreviewDocumentVersion: () => void;
   syncPreviewHotkeys: (iframe: HTMLIFrameElement | null) => void;
   applyStudioManualEditsToPreviewRef: React.MutableRefObject<

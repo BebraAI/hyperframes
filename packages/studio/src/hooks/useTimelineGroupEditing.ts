@@ -75,7 +75,7 @@ interface UseTimelineGroupEditingOptions {
   reloadPreview: () => void;
   sdkSession?: Composition | null;
   publishSdkSession?: PublishSdkSession;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
 }
 

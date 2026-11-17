@@ -12,7 +12,7 @@ export interface UsePreviewInteractionParams {
   captionEditMode: boolean;
   compositionLoading: boolean;
   previewIframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
 
   // From useDomSelection
   applyDomSelection: (

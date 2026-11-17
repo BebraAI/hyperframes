@@ -68,7 +68,7 @@ export function reportDomEditPersistFailure(
   selection: DomEditPersistFailureSelection,
   operations: PatchOperation[],
   error: unknown,
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ): void {
   const detail = getErrorDetail(error);
   console.warn("[Studio] DOM edit persist failed", {

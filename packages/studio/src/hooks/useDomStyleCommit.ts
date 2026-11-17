@@ -14,7 +14,7 @@ export interface UseDomStyleCommitOptions {
   writeProjectFile: (path: string, content: string, expectedContent?: string) => Promise<void>;
   recordEdit: (entry: RecordEditInput) => Promise<void>;
   activeCompPath?: string | null;
-  showToast?: (message: string, tone?: "error" | "info") => void;
+  showToast?: (message: string, tone?: "error" | "info" | "undo") => void;
 }
 
 const noop = () => {};

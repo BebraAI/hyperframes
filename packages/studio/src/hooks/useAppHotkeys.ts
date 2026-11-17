@@ -55,7 +55,7 @@ function tryApplyBeatHistory(
     undo: ReadonlyArray<{ createdAt: number }>;
     redo: ReadonlyArray<{ createdAt: number }>;
   },
-  showToast: (message: string, tone?: "error" | "info") => void,
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void,
 ): boolean {
   const ps = usePlayerStore.getState();
   const beatStack = direction === "undo" ? ps.beatUndo : ps.beatRedo;
@@ -87,7 +87,7 @@ interface UseAppHotkeysParams {
   readOptionalProjectFile: (path: string) => Promise<string>;
   readProjectFile: (path: string) => Promise<string>;
   writeProjectFile: (path: string, content: string) => Promise<void>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   syncHistoryPreviewAfterApply: UseEditHistoryActionsOptions["syncHistoryPreviewAfterApply"];
   showHistoryRestoreNow?: UseEditHistoryActionsOptions["showHistoryRestoreNow"];
   settlePendingEdits: () => Promise<void>;

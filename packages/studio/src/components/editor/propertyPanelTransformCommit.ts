@@ -16,7 +16,7 @@ interface TransformCommitDeps {
   onSetManualOffset: PropertyPanelProps["onSetManualOffset"];
   onSetManualSize: PropertyPanelProps["onSetManualSize"];
   onSetManualRotation: PropertyPanelProps["onSetManualRotation"];
-  showToast?: (message: string, tone?: "error" | "info") => void;
+  showToast?: (message: string, tone?: "error" | "info" | "undo") => void;
 }
 
 /**

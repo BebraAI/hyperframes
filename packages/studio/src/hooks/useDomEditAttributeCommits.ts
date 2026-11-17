@@ -20,7 +20,7 @@ import { invalidateGroupInfoCache } from "../player/lib/timelineGroupInfo";
 export interface UseDomEditAttributeCommitsParams {
   activeCompPath: string | null;
   previewIframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   domEditSelection: DomEditSelection | null;
   refreshDomEditSelectionFromPreview: (selection: DomEditSelection) => void;
   persistDomEditOperations: PersistDomEditOperations;

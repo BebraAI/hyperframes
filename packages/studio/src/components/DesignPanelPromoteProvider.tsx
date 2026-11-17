@@ -32,7 +32,7 @@ export function DesignPanelPromoteProvider({
   selection: DomEditSelection | null;
   projectId: string | null;
   activeCompPath: string | null;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
   /**
    * Forces the app's SHARED SDK session (Variables tab, Slideshow, etc.) to
    * re-open from disk. This provider opens its OWN session, separate from

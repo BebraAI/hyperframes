@@ -18,7 +18,7 @@ export function useCompositionContentLoader({
   projectId: string | null;
   setEditingFile: (file: { path: string; content: string | null }) => void;
   setActiveCompPath: (path: string | null) => void;
-  showToast: (message: string, tone?: "error" | "info") => void;
+  showToast: (message: string, tone?: "error" | "info" | "undo") => void;
 }) {
   return useCallback(
     (comp: string) => {
