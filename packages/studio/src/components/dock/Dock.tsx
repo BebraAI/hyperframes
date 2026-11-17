@@ -19,7 +19,13 @@ import { installDockAccessibility } from "./dockAccessibility";
 import { DockStripActions } from "./DockStripActions";
 import { DockTab } from "./DockTab";
 import { installTabFill } from "./dockTabFill";
-import { addRegisteredPanel, applySideMinimums, buildEditLayout, sideZone } from "./dockLayout";
+import {
+  addRegisteredPanel,
+  applySideMinimums,
+  buildEditLayout,
+  isCompactDock,
+  sideZone,
+} from "./dockLayout";
 import { SideDrawerEdges } from "./SideDrawerEdges";
 import { DOCK_PANEL_COMPONENT, parseDockLayout } from "./dockLayoutSchema";
 import { useDockLayoutStore, type DockController, type DockSnapshot } from "./dockLayoutStore";
@@ -84,6 +90,9 @@ function keepActiveVisible(api: DockviewApi, before: ReadonlySet<unknown> = new 
     (shown[0]?.activePanel ?? api.getPanel("preview"))?.api.setActive();
   return new Set(shownSides(api));
 }
+
+const sameMembers = (a: ReadonlySet<unknown>, b: ReadonlySet<unknown>) =>
+  a.size === b.size && [...a].every((member) => b.has(member));
 
 const sideGroup = (api: DockviewApi, side: "left" | "right") =>
   api.groups.find((group) => sideZone(group) === side);
@@ -227,12 +236,19 @@ function Root({
       restoreOrBuild(api, projectId, options);
       let sidesShown = new Set(shownSides(api));
       keepActiveVisible(api, sidesShown);
-      applySideMinimums(api, dockWidth());
+      // The column last pulled out on a narrow dock: it stays while the dock has room for it alone.
+      let kept: (typeof api.groups)[number] | undefined;
+      const fit = () => {
+        const width = dockWidth();
+        if (!isCompactDock(width) || !kept?.api.isVisible) kept = undefined;
+        applySideMinimums(api, width, kept);
+      };
+      fit();
       const root = api.groups[0]?.element.closest<HTMLElement>(".hf-dock");
       const disposeAccessibility = root ? installDockAccessibility(api, root) : () => {};
       const disposeTabFill = root ? installTabFill(api, root) : () => {};
       // Sides size against dockWidth, the window by default; the dock's own box lags a resize.
-      const resizeObserver = new ResizeObserver(() => applySideMinimums(api, dockWidth()));
+      const resizeObserver = new ResizeObserver(fit);
       if (root) resizeObserver.observe(root);
       const store = useDockLayoutStore.getState();
       store.attach(createController(api, options), panels);
@@ -255,17 +271,24 @@ function Root({
       };
       const subscriptions = [
         api.onDidAddPanel(() => {
-          applySideMinimums(api, dockWidth());
+          fit();
           onDockChange();
         }),
         api.onDidMovePanel(() => {
-          applySideMinimums(api, dockWidth());
+          fit();
           onDockChange();
         }),
         api.onDidRemovePanel(onDockChange),
         api.onDidActivePanelChange(onDockChange),
         api.onDidLayoutChange(() => {
+          const before = sidesShown;
           sidesShown = keepActiveVisible(api, sidesShown);
+          // A column came out or went in: one pulled out on a narrow dock closes the other, and the
+          // preview's floor follows how many columns share the row.
+          if (!sameMembers(before, sidesShown)) {
+            kept = [...sidesShown].find((group) => !before.has(group)) ?? kept;
+            fit();
+          }
           onDockChange();
         }),
       ];

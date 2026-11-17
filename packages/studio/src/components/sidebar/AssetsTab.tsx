@@ -378,7 +378,7 @@ export const AssetsTab = memo(function AssetsTab({
           />
         ))}
       {(cat === "images" || cat === "video") && (
-        <div className="grid grid-cols-2 gap-1 px-2 pb-1">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-1 px-2 pb-1">
           {categorized[cat].map((a) => (
             <AssetCard
               key={a}

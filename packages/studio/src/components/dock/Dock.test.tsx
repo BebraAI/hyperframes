@@ -249,7 +249,7 @@ describe("Dock wiring", () => {
         target?.classList.contains("hf-dock"),
       );
       act(() => dockObservers.forEach(({ callback }) => callback()));
-      expect(applySideMinimums).toHaveBeenCalledWith(expect.anything(), 560);
+      expect(applySideMinimums).toHaveBeenCalledWith(expect.anything(), 560, undefined);
     } finally {
       Object.defineProperty(window, "innerWidth", { value: innerWidth, configurable: true });
     }
@@ -311,7 +311,7 @@ describe("a host's dock", () => {
       target?.classList.contains("hf-dock"),
     );
     act(() => dockObservers.forEach(({ callback }) => callback()));
-    expect(applySideMinimums).toHaveBeenCalledWith(expect.anything(), 700);
+    expect(applySideMinimums).toHaveBeenCalledWith(expect.anything(), 700, undefined);
   });
 });
 
