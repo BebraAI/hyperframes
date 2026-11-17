@@ -429,11 +429,12 @@ describe("TimelineToolbar Fit", () => {
     act(() => unregister());
   });
 
-  it("shows Fit as a named icon and says whether fit is on", () => {
+  it("shows Fit as the zoom readout, and says whether fit is on", () => {
     const { host, root } = renderToolbar();
     const fit = () => host.querySelector('button[aria-label="Fit timeline to width"]');
-    expect(fit()?.textContent).toBe("");
-    expect(fit()?.querySelector("svg")).not.toBeNull();
+    act(() => fit()?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(fit()?.textContent).toBe("Fit");
+    expect(fit()?.querySelector("svg")).toBeNull();
     act(() => fit()?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(fit()?.getAttribute("aria-pressed")).toBe("true");
     act(() =>
@@ -577,22 +578,31 @@ describe("TimelineToolbar tool menu", () => {
 });
 
 describe("TimelineToolbar add beat", () => {
-  it("shows Add beat by default, as Studio does", () => {
+  it("shows Add beat once the project has sound, and not before", () => {
+    usePlayerStore.setState({ elements: [] });
     const { host, root } = renderToolbar();
-    expect(host.querySelector('button[aria-label="Add beat at playhead"]')).not.toBeNull();
+    const beat = () => host.querySelector('button[aria-label="Add beat at playhead"]');
+    expect(beat()).toBeNull();
+    act(() =>
+      usePlayerStore.setState({
+        elements: [{ id: "music", key: "music", tag: "audio", start: 0, duration: 10, track: 1 }],
+      }),
+    );
+    expect(beat()).not.toBeNull();
     act(() => root.unmount());
+    usePlayerStore.setState({ elements: [] });
   });
 });
 
 describe("TimelineToolbar Linked Selection", () => {
-  it("is on by default, first among the editing toggles, and persists a click", async () => {
+  it("is on by default, after snapping and ripple, and persists a click", async () => {
     const { useLinkedClipPreferences } = await import("../utils/linkedClipPreferences");
     const { host } = renderToolbar();
     const button = host.querySelector<HTMLButtonElement>('button[aria-label="Linked Selection"]');
     expect(button?.getAttribute("aria-pressed")).toBe("true");
     const snapping = host.querySelector('button[aria-label="Toggle timeline snapping"]');
     expect(snapping && button?.compareDocumentPosition(snapping)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_PRECEDING,
     );
     act(() => button?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(button?.getAttribute("aria-pressed")).toBe("false");
@@ -642,7 +652,11 @@ describe("TimelineToolbar split hint", () => {
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    const label = document.querySelector('[role="tooltip"]')?.textContent;
+    const tooltip = document.querySelector('[role="tooltip"]');
+    // The key is a Kbd chip after the name.
+    const key = tooltip?.querySelector("kbd")?.textContent ?? "";
+    const name = (tooltip?.textContent ?? "").slice(0, -key.length || undefined);
+    const label = `${name} (${key})`;
     act(() => root.unmount());
     usePlayerStore.setState({ elements: [], selectedElementId: null, currentTime: 0 });
     return label;

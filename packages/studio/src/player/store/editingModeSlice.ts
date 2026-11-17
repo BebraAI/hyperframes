@@ -11,6 +11,7 @@
  * with the state they clear alongside.
  */
 import type { StoreApi } from "zustand";
+import { embeddedInPromptwise } from "../../promptwise/embed";
 
 export interface EditingModeSlice {
   /** Motion-path "set destination" mode. Armed from the preview toolbar
@@ -39,7 +40,9 @@ export function createEditingModeSlice(
     setMotionPathArmed: (armed) => set({ motionPathArmed: armed }),
     motionPathCreateAvailable: false,
     setMotionPathCreateAvailable: (available) => set({ motionPathCreateAvailable: available }),
-    autoKeyframeEnabled: true,
+    // promptwise starts with it off: there a drag on an animated element should move the whole animation, not
+    // quietly add a keyframe. The toolbar shows the mode whenever it is on.
+    autoKeyframeEnabled: !embeddedInPromptwise,
     setAutoKeyframeEnabled: (enabled) => set({ autoKeyframeEnabled: enabled }),
   };
 }

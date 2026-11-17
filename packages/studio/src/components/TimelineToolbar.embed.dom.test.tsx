@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-/** Embedded in promptwise the toolbar starts as its own Timeline's does; the rest opens with More. */
+/** Embedded in promptwise the row keeps what an edit needs; the rarely used toggles are named in More. */
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
@@ -21,24 +21,61 @@ vi.mock("../contexts/StudioContext", () => ({
 }));
 
 const { TimelineToolbar } = await import("./TimelineToolbar");
+const { usePlayerStore } = await import("../player");
 
-it("shows history, the tool, split and zoom, and the other tools once More is pressed", () => {
+function mount() {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
   act(() => root.render(<TimelineToolbar onSplitElement={() => {}} />));
   const labels = () =>
     [...host.querySelectorAll("button, input")].map((el) => el.getAttribute("aria-label") ?? "");
-  const rare = ["Toggle timeline snapping", "Toggle ripple edit", "Add beat at playhead"];
+  const unmount = () => {
+    act(() => root.unmount());
+    host.remove();
+  };
+  return { host, labels, unmount };
+}
 
+it("keeps editing tools in the row and names the rare toggles in More", async () => {
+  const { host, labels, unmount } = mount();
   expect(labels()).toEqual(
-    expect.arrayContaining(["Split at playhead", "Fit timeline to width", "Zoom out", "Zoom in"]),
+    expect.arrayContaining([
+      "Split at playhead",
+      "Toggle timeline snapping",
+      "Toggle ripple edit",
+      "Fit timeline to width",
+      "Zoom out",
+      "Zoom in",
+      "More tools",
+    ]),
   );
-  for (const label of rare) expect(labels()).not.toContain(label);
+  for (const rare of ["Linked Selection", "Add beat at playhead", "Toggle audio meters"]) {
+    expect(labels()).not.toContain(rare);
+  }
 
   act(() => host.querySelector<HTMLButtonElement>('[aria-label="More tools"]')!.click());
-  expect(labels()).toEqual(expect.arrayContaining([...rare, "Fewer tools"]));
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  const items = [...document.querySelectorAll('[role="menuitemcheckbox"]')].map(
+    (item) => item.textContent,
+  );
+  expect(items).toEqual([
+    "Select video and its sound together",
+    "Record edits as keyframes",
+    "Thumbnails on clips",
+  ]);
+  unmount();
+});
 
-  act(() => root.unmount());
-  host.remove();
+it("starts with auto-record off, and shows its button only while it is on", () => {
+  expect(usePlayerStore.getState().autoKeyframeEnabled).toBe(false);
+  const { labels, unmount } = mount();
+  const autoRecord = "Auto-record manual edits as keyframes";
+  expect(labels()).not.toContain(autoRecord);
+  act(() => usePlayerStore.getState().setAutoKeyframeEnabled(true));
+  expect(labels()).toContain(autoRecord);
+  act(() => usePlayerStore.getState().setAutoKeyframeEnabled(false));
+  unmount();
 });

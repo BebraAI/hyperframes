@@ -12,12 +12,15 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
+import { Kbd } from "../../boardui/components/base/kbd/kbd";
 import { TOOLTIP_CARETS } from "../../boardui/components/base/tooltip/tooltip";
 import { cn } from "./cn";
 import { floatingMotion, POPUP_LAYER } from "./Menu";
 
 interface TooltipProps {
   label: string;
+  /** A key that runs the same action, shown as a BoardUI Kbd chip after the label. */
+  shortcut?: string;
   /** A single element, wrapped in a box-less span so a disabled one still gets hover. */
   children: ReactElement<{ "aria-describedby"?: string }>;
   /** Hover delay in ms. */
@@ -47,6 +50,7 @@ export function Tooltip({
   side = "top",
   disabled = false,
   lines,
+  shortcut,
 }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLSpanElement>(null);
@@ -110,6 +114,7 @@ export function Tooltip({
             ) : (
               label
             )}
+            {shortcut ? <Kbd className="ms-1.5 align-baseline">{shortcut}</Kbd> : null}
           </BaseTooltip.Popup>
         </BaseTooltip.Positioner>
       </BaseTooltip.Portal>
