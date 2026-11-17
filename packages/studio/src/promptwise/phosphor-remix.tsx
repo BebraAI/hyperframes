@@ -25,6 +25,27 @@ type Remix = typeof Ri.RiAddLine;
 /** Phosphor's context for default props (size, weight) of the icons under it. */
 export const IconContext = createContext<IconProps>({});
 
+/** Remix has no magnet, and snapping needs one: a crosshair there read as "aim", not "snap". Drawn on Remix's grid. */
+const MAGNET_SHAPE = "M5 3h4v8a3 3 0 0 0 6 0V3h4v8a7 7 0 0 1-14 0Z";
+function magnet(filled: boolean): Remix {
+  return function RemixMagnet({ size = 24, color = "currentColor", ...rest }) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+        <path
+          d={MAGNET_SHAPE}
+          fill={filled ? color : "none"}
+          stroke={color}
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
+        <path d="M5 7h4M15 7h4" stroke={filled ? "none" : color} strokeWidth={2} />
+      </svg>
+    );
+  };
+}
+const MagnetLine = magnet(false);
+const MagnetFill = magnet(true);
+
 /** Phosphor's weight and mirroring props have no Remix twin; `fill` picks the filled icon when there is one. */
 function icon(line: Remix, fill = line): Icon {
   return forwardRef<SVGSVGElement, IconProps>(function RemixIcon(
@@ -114,7 +135,7 @@ export const Layout = icon(Ri.RiLayoutLine, Ri.RiLayoutFill);
 export const Lightning = icon(Ri.RiFlashlightLine, Ri.RiFlashlightFill);
 export const Link = icon(Ri.RiLinksLine);
 export const LinkSimple = Link;
-export const Magnet = icon(Ri.RiCrosshair2Line, Ri.RiCrosshair2Fill);
+export const Magnet = icon(MagnetLine, MagnetFill);
 export const MagnetStraight = Magnet;
 export const MagnifyingGlassMinus = icon(Ri.RiZoomOutLine);
 export const MagnifyingGlassPlus = icon(Ri.RiZoomInLine);

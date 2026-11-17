@@ -1,13 +1,5 @@
-import { memo, useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  ArrowsOutLineHorizontal,
-  DotsThree,
-  FrameCorners,
-  Image,
-  Magnet,
-  MagnifyingGlassMinus,
-  MagnifyingGlassPlus,
-} from "@phosphor-icons/react";
+import { memo, useEffect, useRef, type ReactNode } from "react";
+import { Image, Magnet, MagnifyingGlassMinus, MagnifyingGlassPlus } from "@phosphor-icons/react";
 import {
   useEnableKeyframes,
   isPlayheadWithinTween,
@@ -29,9 +21,28 @@ import {
 import { usePlayerStore, type TimelineElement } from "../player";
 import { embeddedInPromptwise } from "../promptwise/embed";
 import { Tooltip } from "./ui";
+import {
+  AUTO_RECORD_LABEL,
+  AutoRecordIcon,
+  BeatIcon,
+  keyframeAriaLabel,
+  keyframeTooltip,
+  MoreToolsMenu,
+  THUMBNAILS_OFF_LABEL,
+  THUMBNAILS_ON_LABEL,
+} from "./TimelineToolbarParts";
+import { Scissors } from "../icons/SystemIcons";
 import { AudioMetersIcon } from "./icons/AudioMetersIcon";
 import { RippleEditIcon } from "./icons/RippleEditIcon";
-import { flatActive, flatBtn, flatDisabled, flatIdle } from "./timelineToolbarStyles";
+import { ZoomToSelectionIcon } from "./icons/ZoomToSelectionIcon";
+import {
+  flatActive,
+  flatBtn,
+  flatDisabled,
+  flatIdle,
+  flatTextActive,
+  flatTextIdle,
+} from "./timelineToolbarStyles";
 import { TimelineHistoryButtons, type TimelineHistoryButtonsProps } from "./TimelineHistoryButtons";
 import { TimelineToolPicker } from "./TimelineToolPicker";
 import type { GsapAnimation } from "@hyperframes/core/gsap-parser";
@@ -170,9 +181,9 @@ export const TimelineToolbar = memo(function TimelineToolbar({
   showKeyframes = true,
   rightActions,
 }: TimelineToolbarProps) {
-  // Embedded in promptwise the toolbar starts as its own editor's does: history, the tool, split and
-  // zoom. Snapping, ripple, meters, keyframes, beats and the thumbnail and selection zooms open with More.
-  const [allTools, setAllTools] = useState(!embeddedInPromptwise);
+  // Embedded in promptwise the row keeps what an edit needs: history, the tool, split, keyframe, snapping, ripple
+  // and zoom. Linked selection, auto-record, thumbnails, meters and beats are named in the More menu.
+  const inlineSecondary = !embeddedInPromptwise;
   const timelineSnapEnabled = usePlayerStore((s) => s.timelineSnapEnabled);
   const setTimelineSnapEnabled = usePlayerStore((s) => s.setTimelineSnapEnabled);
   const rippleEditEnabled = usePlayerStore((s) => s.rippleEditEnabled);
@@ -182,6 +193,7 @@ export const TimelineToolbar = memo(function TimelineToolbar({
   const thumbnailMode = usePlayerStore((s) => s.thumbnailMode);
   const setThumbnailMode = usePlayerStore((s) => s.setThumbnailMode);
   const thumbnailsVisible = thumbnailMode === "adaptive";
+  const setThumbnailsVisible = (on: boolean) => setThumbnailMode(on ? "adaptive" : "hidden");
   const audioMetersVisible = useAudioMetersVisible((s) => s.visible);
   const setAudioMetersVisible = useAudioMetersVisible((s) => s.setVisible);
   const projectHasAudio = useProjectHasAudio();
@@ -234,6 +246,23 @@ export const TimelineToolbar = memo(function TimelineToolbar({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Mirrors the S-key gate: selected clip + playhead strictly inside it.
+  const splitTarget = selectedElementId
+    ? elements.find((e) => (e.key ?? e.id) === selectedElementId)
+    : null;
+  const splittable = splitTarget != null && canSplitElement(splitTarget);
+  const canSplit =
+    splittable &&
+    currentTime > splitTarget.start &&
+    currentTime < splitTarget.start + splitTarget.duration;
+
+  // Beats need music to analyse: with no sound in the project there is nothing to place them on.
+  const showBeat = showAddBeat && projectHasAudio;
+  const canAddBeat = beatAnalysisReady && canAddBeatAt(currentTime);
+  const addBeat = () => {
+    if (canAddBeat) addBeatAtCompositionTime(currentTime);
+  };
+
   return (
     <div className="border-b border-border-button-default">
       <div className="flex items-center justify-between px-2 py-0.5">
@@ -242,37 +271,131 @@ export const TimelineToolbar = memo(function TimelineToolbar({
           <TimelineToolPicker showSelectAroundPlayhead={showSelectAroundPlayhead} />
           {/* Divider: tool-mode | editing-actions */}
           <div aria-hidden="true" className="mx-1 h-4 w-px bg-background-tertiary-default" />
-          {allTools && (
-            <>
-              <LinkedSelectionToggle />
-              <Tooltip label={timelineSnapEnabled ? "Snapping on (N)" : "Snapping off (N)"}>
-                <button
-                  type="button"
-                  onClick={() => setTimelineSnapEnabled(!timelineSnapEnabled)}
-                  aria-label="Toggle timeline snapping"
-                  aria-pressed={timelineSnapEnabled}
-                  className={timelineSnapEnabled ? flatActive : flatIdle}
-                >
-                  <Magnet size={16} weight="bold" aria-hidden="true" />
-                </button>
-              </Tooltip>
-              <Tooltip
-                label={
-                  rippleEditEnabled
-                    ? "Ripple on: keeps the main track gapless"
-                    : "Ripple off: deleting a main-track clip leaves a gap"
+          {onSplitElement && (
+            // Rendered unconditionally (disabled when unusable): mounting mid-task shifts the neighbours.
+            <Tooltip
+              label={
+                canSplit
+                  ? "Split at playhead"
+                  : splittable
+                    ? "Move the playhead inside the clip to split"
+                    : "Select a clip to split"
+              }
+              shortcut={canSplit ? splitShortcut : undefined}
+            >
+              <button
+                type="button"
+                disabled={!canSplit}
+                aria-label="Split at playhead"
+                onClick={() => {
+                  if (canSplit && splitTarget) onSplitElement(splitTarget, currentTime);
+                }}
+                className={canSplit ? flatIdle : flatDisabled}
+              >
+                <Scissors size={16} />
+              </button>
+            </Tooltip>
+          )}
+          {showKeyframes && (
+            // With no keyframeable selection the button fades to disabled instead of
+            // unmounting, so the toolbar layout never shifts (CapCut-style).
+            <Tooltip
+              label={keyframeTooltip(
+                keyframePathEndpoint,
+                Boolean(onToggleKeyframe),
+                keyframeIsMotionPath,
+                keyframeWillExtend,
+                keyframeState,
+              )}
+              shortcut={onToggleKeyframe ? "K" : undefined}
+            >
+              <button
+                type="button"
+                disabled={!onToggleKeyframe}
+                onClick={onToggleKeyframe}
+                aria-label={keyframeAriaLabel(
+                  keyframePathEndpoint,
+                  keyframeIsMotionPath,
+                  keyframeWillExtend,
+                  keyframeState,
+                )}
+                className={
+                  !onToggleKeyframe
+                    ? flatDisabled
+                    : `${flatBtn} active:scale-[0.98] hover:bg-hover ${
+                        keyframeState === "active"
+                          ? "text-accent-ink"
+                          : "text-text-2 hover:text-accent-ink"
+                      }`
                 }
               >
-                <button
-                  type="button"
-                  onClick={() => setRippleEditEnabled(!rippleEditEnabled)}
-                  aria-label="Toggle ripple edit"
-                  aria-pressed={rippleEditEnabled}
-                  className={rippleEditEnabled ? flatActive : flatIdle}
-                >
-                  <RippleEditIcon size={16} />
-                </button>
-              </Tooltip>
+                <svg width="16" height="16" viewBox="0 0 10 10" fill="currentColor">
+                  {keyframeState === "active" ? (
+                    <path d="M5 0.5L9.5 5L5 9.5L0.5 5Z" />
+                  ) : (
+                    <path
+                      d="M5 1.2L8.8 5L5 8.8L1.2 5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                    />
+                  )}
+                </svg>
+              </button>
+            </Tooltip>
+          )}
+          {/* Embedded, auto-record lives in More; while it is on it also shows here, so the mode is never hidden. */}
+          {showKeyframes && (inlineSecondary || autoKeyframeEnabled) && (
+            <Tooltip
+              label={
+                autoKeyframeEnabled
+                  ? "Recording edits as keyframes (click to stop)"
+                  : "Edits move the whole animation (click to record keyframes)"
+              }
+            >
+              <button
+                type="button"
+                onClick={() => setAutoKeyframeEnabled(!autoKeyframeEnabled)}
+                aria-label={AUTO_RECORD_LABEL}
+                aria-pressed={autoKeyframeEnabled}
+                className={autoKeyframeEnabled ? flatActive : flatIdle}
+              >
+                <AutoRecordIcon on={autoKeyframeEnabled} />
+              </button>
+            </Tooltip>
+          )}
+          <div aria-hidden="true" className="mx-1 h-4 w-px bg-background-tertiary-default" />
+          <Tooltip label={timelineSnapEnabled ? "Snapping on" : "Snapping off"} shortcut="N">
+            <button
+              type="button"
+              onClick={() => setTimelineSnapEnabled(!timelineSnapEnabled)}
+              aria-label="Toggle timeline snapping"
+              aria-pressed={timelineSnapEnabled}
+              className={timelineSnapEnabled ? flatActive : flatIdle}
+            >
+              <Magnet size={16} weight="bold" aria-hidden="true" />
+            </button>
+          </Tooltip>
+          <Tooltip
+            label={
+              rippleEditEnabled
+                ? "Ripple on: deleting a clip closes the gap"
+                : "Ripple off: deleting a clip leaves a gap"
+            }
+          >
+            <button
+              type="button"
+              onClick={() => setRippleEditEnabled(!rippleEditEnabled)}
+              aria-label="Toggle ripple edit"
+              aria-pressed={rippleEditEnabled}
+              className={rippleEditEnabled ? flatActive : flatIdle}
+            >
+              <RippleEditIcon size={16} />
+            </button>
+          </Tooltip>
+          {inlineSecondary && (
+            <>
+              <LinkedSelectionToggle />
               {projectHasAudio && (
                 <Tooltip label={audioMetersVisible ? "Hide audio meters" : "Show audio meters"}>
                   <button
@@ -286,284 +409,76 @@ export const TimelineToolbar = memo(function TimelineToolbar({
                   </button>
                 </Tooltip>
               )}
-              {showKeyframes && (
-                <>
-                  {/* With no keyframeable selection the button fades to disabled instead of
-              unmounting, so the toolbar layout never shifts (CapCut-style). */}
-                  <Tooltip
-                    label={
-                      keyframePathEndpoint
-                        ? "Motion path endpoints cannot be removed"
-                        : !onToggleKeyframe
-                          ? "Select an animated element to add keyframes"
-                          : keyframeIsMotionPath
-                            ? keyframeWillExtend
-                              ? "Extend motion path to playhead (K)"
-                              : keyframeState === "active"
-                                ? "Remove waypoint from motion path (K)"
-                                : "Add waypoint to motion path (K)"
-                            : keyframeState === "active"
-                              ? "Remove keyframe at playhead (K)"
-                              : keyframeState === "inactive"
-                                ? keyframeWillExtend
-                                  ? "Add keyframe at playhead, extends animation (K)"
-                                  : "Add keyframe at playhead (K)"
-                                : "Add keyframe (K)"
-                    }
-                  >
-                    <button
-                      type="button"
-                      disabled={!onToggleKeyframe}
-                      onClick={onToggleKeyframe}
-                      aria-label={
-                        keyframePathEndpoint
-                          ? "Motion path endpoint"
-                          : keyframeIsMotionPath
-                            ? keyframeState === "active"
-                              ? "Remove motion path waypoint"
-                              : keyframeWillExtend
-                                ? "Extend motion path to playhead"
-                                : "Add motion path waypoint"
-                            : keyframeState === "active"
-                              ? "Remove keyframe at playhead"
-                              : "Add keyframe at playhead"
-                      }
-                      className={
-                        !onToggleKeyframe
-                          ? flatDisabled
-                          : `${flatBtn} active:scale-[0.98] hover:bg-hover ${
-                              keyframeState === "active"
-                                ? "text-accent-ink"
-                                : keyframeState === "inactive"
-                                  ? "text-text-secondary hover:text-accent-ink"
-                                  : "text-text-tertiary hover:text-text-secondary"
-                            }`
-                      }
-                    >
-                      <svg width="16" height="16" viewBox="0 0 10 10" fill="currentColor">
-                        {keyframeState === "active" ? (
-                          <path d="M5 0.5L9.5 5L5 9.5L0.5 5Z" />
-                        ) : (
-                          <path
-                            d="M5 1.2L8.8 5L5 8.8L1.2 5Z"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.2"
-                          />
-                        )}
-                      </svg>
-                    </button>
-                  </Tooltip>
-                  <Tooltip
-                    label={
-                      autoKeyframeEnabled
-                        ? "Auto-record manual edits as keyframes (click to turn off)"
-                        : "Manual edits will not be recorded as keyframes (click to turn on)"
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setAutoKeyframeEnabled(!autoKeyframeEnabled)}
-                      aria-label="Auto-record manual edits as keyframes"
-                      aria-pressed={autoKeyframeEnabled}
-                      className={`${flatBtn} active:scale-[0.98] hover:bg-hover ${
-                        autoKeyframeEnabled
-                          ? "text-danger-ink"
-                          : "text-text-tertiary hover:text-text-secondary"
-                      }`}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 10 10" fill="none">
-                        {/* Same diamond outline as the Add-keyframe icon, with a
-                      record-style dot inside: filled = auto-recording,
-                      hollow = manual edits won't be keyframed. */}
-                        <path d="M5 0.7L9.3 5L5 9.3L0.7 5Z" stroke="currentColor" strokeWidth="1" />
-                        <circle
-                          cx="5"
-                          cy="5"
-                          r="1.8"
-                          fill={autoKeyframeEnabled ? "currentColor" : "none"}
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        />
-                      </svg>
-                    </button>
-                  </Tooltip>
-                </>
-              )}
-            </>
-          )}
-          {onSplitElement &&
-            (() => {
-              // Render the button unconditionally (disabled when unusable):
-              // mounting/unmounting mid-task shifts the neighboring controls.
-              // Mirrors the S-key gate: selected clip + playhead strictly inside it.
-              const el = selectedElementId
-                ? elements.find((e) => (e.key ?? e.id) === selectedElementId)
-                : null;
-              const splittable = el != null && canSplitElement(el);
-              const canSplit =
-                splittable && currentTime > el.start && currentTime < el.start + el.duration;
-              return (
+              {showBeat && (
                 <Tooltip
                   label={
-                    canSplit
-                      ? `Split at playhead (${splitShortcut})`
-                      : splittable
-                        ? "Move the playhead inside the clip to split"
-                        : "Select a clip to split"
+                    !beatAnalysisReady
+                      ? "Beats appear once the music is analysed"
+                      : canAddBeat
+                        ? "Add beat at playhead"
+                        : "A beat already exists at the playhead"
                   }
                 >
                   <button
                     type="button"
-                    disabled={!canSplit}
-                    aria-label="Split at playhead"
-                    onClick={() => {
-                      if (canSplit && el) onSplitElement(el, currentTime);
-                    }}
-                    className={canSplit ? flatIdle : flatDisabled}
+                    disabled={!canAddBeat}
+                    aria-label="Add beat at playhead"
+                    onClick={addBeat}
+                    className={canAddBeat ? flatIdle : flatDisabled}
                   >
-                    {/* "][" split glyph: two outward-facing brackets with a center gap */}
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      {/* Right bracket of left half: ] */}
-                      <path d="M5 3 L7 3 L7 13 L5 13" />
-                      {/* Left bracket of right half: [ */}
-                      <path d="M11 3 L9 3 L9 13 L11 13" />
-                    </svg>
+                    <BeatIcon />
                   </button>
                 </Tooltip>
-              );
-            })()}
-          {(() => {
-            if (!showAddBeat || !allTools) return null;
-            // Rendered whenever shown (CapCut-style): before beat analysis loads (or when
-            // the project has no analyzed music) the button fades to a disabled
-            // state instead of unmounting, so the toolbar layout never shifts.
-            const canAdd = beatAnalysisReady && canAddBeatAt(currentTime);
-            return (
-              <Tooltip
-                label={
-                  !beatAnalysisReady
-                    ? "Add a music track with beat analysis to place beats"
-                    : canAdd
-                      ? "Add beat at playhead"
-                      : "A beat already exists at the playhead"
-                }
-              >
-                <button
-                  type="button"
-                  disabled={!canAdd}
-                  aria-label="Add beat at playhead"
-                  onClick={() => {
-                    if (canAdd) addBeatAtCompositionTime(currentTime);
-                  }}
-                  className={
-                    canAdd
-                      ? `${flatBtn} text-text-2 hover:bg-hover hover:text-accent-ink active:scale-[0.98]`
-                      : flatDisabled
-                  }
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M21 10C21 12.2091 16.9706 14 12 14M21 10C21 7.79086 16.9706 6 12 6C7.02944 6 3 7.79086 3 10M21 10V16C21 18.2091 16.9706 20 12 20M12 14C7.02944 14 3 12.2091 3 10M12 14V20M3 10V16C3 18.2091 7.02944 20 12 20M7 19.3264V13.3264M17 19.3264V13.3264M12 10L20 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </Tooltip>
-            );
-          })()}
+              )}
+            </>
+          )}
           {embeddedInPromptwise && (
-            <Tooltip label={allTools ? "Fewer tools" : "More tools"}>
-              <button
-                type="button"
-                onClick={() => setAllTools(!allTools)}
-                aria-label={allTools ? "Fewer tools" : "More tools"}
-                aria-pressed={allTools}
-                className={allTools ? flatActive : flatIdle}
-              >
-                <DotsThree size={16} weight="bold" aria-hidden="true" />
-              </button>
-            </Tooltip>
+            <MoreToolsMenu
+              showKeyframes={showKeyframes}
+              autoKeyframeEnabled={autoKeyframeEnabled}
+              setAutoKeyframeEnabled={setAutoKeyframeEnabled}
+              thumbnailsVisible={thumbnailsVisible}
+              setThumbnailsVisible={setThumbnailsVisible}
+              projectHasAudio={projectHasAudio}
+              audioMetersVisible={audioMetersVisible}
+              setAudioMetersVisible={setAudioMetersVisible}
+              showBeat={showBeat}
+              canAddBeat={canAddBeat}
+              onAddBeat={addBeat}
+            />
           )}
         </div>
         <div className="flex items-center gap-0.5">
           {rightActions}
-          {allTools && (
-            <>
-              <Tooltip
-                label={
-                  thumbnailsVisible
-                    ? "Hide thumbnails: labels only"
-                    : "Show thumbnails: posters stay visible; richer previews appear on interaction"
-                }
+          {inlineSecondary && (
+            <Tooltip label={thumbnailsVisible ? THUMBNAILS_ON_LABEL : THUMBNAILS_OFF_LABEL}>
+              <button
+                type="button"
+                aria-label={thumbnailsVisible ? THUMBNAILS_ON_LABEL : THUMBNAILS_OFF_LABEL}
+                aria-pressed={thumbnailsVisible}
+                onClick={() => setThumbnailsVisible(!thumbnailsVisible)}
+                className={thumbnailsVisible ? flatActive : flatIdle}
               >
-                <button
-                  type="button"
-                  aria-label={
-                    thumbnailsVisible
-                      ? "Hide thumbnails: labels only"
-                      : "Show thumbnails: posters stay visible; richer previews appear on interaction"
-                  }
-                  aria-pressed={thumbnailsVisible}
-                  onClick={() => setThumbnailMode(thumbnailsVisible ? "hidden" : "adaptive")}
-                  className={`h-7 px-2 rounded-md text-caption-2-medium transition-colors ${
-                    thumbnailsVisible
-                      ? "bg-studio-accent/10 text-accent-ink"
-                      : "text-text-secondary hover:bg-hover hover:text-text-primary"
-                  }`}
-                >
-                  <Image size={16} aria-hidden="true" />
-                </button>
-              </Tooltip>
-              <Tooltip
-                label={
-                  canZoomSelection
-                    ? `Zoom to selected clips (${ZOOM_SELECTION_SHORTCUT_HINT})`
-                    : "Select a clip to zoom the timeline"
-                }
-              >
-                <button
-                  type="button"
-                  disabled={!canZoomSelection}
-                  aria-label={
-                    canZoomSelection
-                      ? "Zoom to selected clips"
-                      : "Select a clip to zoom the timeline"
-                  }
-                  onClick={() => zoomTimelineToSelectedClips()}
-                  className={canZoomSelection ? flatIdle : flatDisabled}
-                >
-                  <FrameCorners size={16} aria-hidden="true" />
-                </button>
-              </Tooltip>
-            </>
+                <Image size={16} aria-hidden="true" />
+              </button>
+            </Tooltip>
           )}
-          <Tooltip label="Fit timeline to width">
+          <Tooltip
+            label={
+              canZoomSelection ? "Zoom to selected clips" : "Select a clip to zoom the timeline"
+            }
+            shortcut={canZoomSelection ? ZOOM_SELECTION_SHORTCUT_HINT : undefined}
+          >
             <button
               type="button"
-              onClick={() => setZoomMode("fit")}
-              aria-label="Fit timeline to width"
-              aria-pressed={zoomMode === "fit"}
-              className={`h-7 px-2 rounded-md text-caption-2-medium transition-colors ${
-                zoomMode === "fit"
-                  ? "bg-studio-accent/10 text-accent-ink"
-                  : "text-text-secondary hover:bg-hover hover:text-text-primary"
-              }`}
+              disabled={!canZoomSelection}
+              aria-label={
+                canZoomSelection ? "Zoom to selected clips" : "Select a clip to zoom the timeline"
+              }
+              onClick={() => zoomTimelineToSelectedClips()}
+              className={canZoomSelection ? flatIdle : flatDisabled}
             >
-              <ArrowsOutLineHorizontal size={16} aria-hidden="true" />
+              <ZoomToSelectionIcon size={16} />
             </button>
           </Tooltip>
           <Tooltip label="Zoom out">
@@ -602,15 +517,20 @@ export const TimelineToolbar = memo(function TimelineToolbar({
               <MagnifyingGlassPlus size={16} aria-hidden="true" />
             </button>
           </Tooltip>
-          {/* Numeric zoom readout (main-parity): "Fit" in fit mode, N% in manual. */}
-          {allTools && (
-            <span
-              className="ml-1 w-[38px] text-right font-mono text-caption-2-regular tabular-nums text-text-tertiary select-none"
-              aria-label="Timeline zoom level"
+          {/* The zoom readout is the Fit control: "Fit" while the timeline fits, N% after a zoom; a click fits it. */}
+          <Tooltip label={showsFit ? "Timeline fits the width" : "Fit timeline to width"}>
+            <button
+              type="button"
+              onClick={() => setZoomMode("fit")}
+              aria-label="Fit timeline to width"
+              aria-pressed={zoomMode === "fit"}
+              className={`${zoomMode === "fit" ? flatTextActive : flatTextIdle} ml-0.5 w-[46px] font-mono text-caption-2-regular tabular-nums`}
             >
-              {showsFit ? "Fit" : `${displayedTimelineZoomPercent}%`}
-            </span>
-          )}
+              <span aria-label="Timeline zoom level">
+                {showsFit ? "Fit" : `${displayedTimelineZoomPercent}%`}
+              </span>
+            </button>
+          </Tooltip>
         </div>
       </div>
     </div>
