@@ -185,11 +185,11 @@ function OtherAssetsView({
   return <PromptwiseMediaView media={projectMedia} searchQuery={searchQuery} onAdd={onAdd} />;
 }
 
-/** The scope toggle's words: in promptwise the folder is the timeline's, and "the project" is promptwise's. */
-const SCOPE_LABELS = {
-  studio: { local: "This project", global: "All projects" },
-  promptwise: { local: "This timeline", global: "Project media" },
-} as const;
+/** The scope toggle's words, outside promptwise. */
+const SCOPE_LABELS = { local: "This project", global: "All projects" } as const;
+
+/** Which chip a gallery item answers to. */
+const GALLERY_CATEGORY = { image: "images", video: "video", audio: "audio" } as const;
 
 // fallow-ignore-next-line complexity
 export const AssetsTab = memo(function AssetsTab({
@@ -279,6 +279,11 @@ export const AssetsTab = memo(function AssetsTab({
   }, []);
   const elements = usePlayerStore((s) => s.elements);
   const usedPaths = useMemo(() => deriveUsedPaths(elements), [elements]);
+  // The gallery's media play from their own address, which deriveUsedPaths cuts down to a path.
+  const usedUrls = useMemo(
+    () => new Set(elements.flatMap((el) => (el.src ? [el.src] : []))),
+    [elements],
+  );
 
   // Unfiltered pool — header controls (search, chips) are gated on THIS, not
   // the search-filtered list, so a no-match query can't unmount its own input.
@@ -327,10 +332,84 @@ export const AssetsTab = memo(function AssetsTab({
       ),
     [assets, usedPaths],
   );
+  // The project's media under the same kind and "In use" chips as the timeline's files.
+  const galleryShown = useMemo(
+    () =>
+      (projectMedia ?? []).filter(
+        (m) =>
+          (activeFilter === "all" || GALLERY_CATEGORY[m.kind] === activeFilter) &&
+          (usageFilter === "all" || usedUrls.has(m.url) === (usageFilter === "used")),
+      ),
+    [projectMedia, activeFilter, usageFilter, usedUrls],
+  );
+  const galleryCounts = useMemo(() => {
+    const c: Record<string, number> = { all: projectMedia?.length ?? 0, fonts: 0 };
+    for (const kind of ["image", "video", "audio"] as const)
+      c[GALLERY_CATEGORY[kind]] = projectMedia?.filter((m) => m.kind === kind).length ?? 0;
+    return c;
+  }, [projectMedia]);
   const visibleCategories =
     activeFilter === "all"
       ? FILTER_ORDER.filter((c) => categorized[c].length > 0)
       : [activeFilter as MediaCategory].filter((c) => categorized[c].length > 0);
+  const localList = visibleCategories.map((cat) => (
+    <div key={cat} className="mb-1">
+      {activeFilter === "all" && (
+        <div className="flex items-center gap-2 px-4 py-2 border-t border-panel-border">
+          <h3 className="text-caption-1-semibold text-panel-text-1">{CATEGORY_LABELS[cat]}</h3>
+          <span className="text-caption-1-regular text-panel-text-5">
+            {categorized[cat].length}
+          </span>
+        </div>
+      )}
+      {cat === "audio" &&
+        categorized[cat].map((a) => (
+          <AudioRow
+            key={a}
+            projectId={projectId}
+            asset={a}
+            used={usedPaths.has(a)}
+            meta={manifest.get(a)}
+            onCopy={handleCopyPath}
+            copyFeedback={copyFeedback}
+            onDelete={onDelete}
+            onRename={onRename}
+            onAddAssetToTimeline={onAddAssetToTimeline}
+          />
+        ))}
+      {(cat === "images" || cat === "video") && (
+        <div className="grid grid-cols-2 gap-1 px-2 pb-1">
+          {categorized[cat].map((a) => (
+            <AssetCard
+              key={a}
+              projectId={projectId}
+              asset={a}
+              used={usedPaths.has(a)}
+              duration={manifest.get(a)?.duration}
+              onCopy={handleCopyPath}
+              copyFeedback={copyFeedback}
+              onDelete={onDelete}
+              onRename={onRename}
+              onAddAssetToTimeline={onAddAssetToTimeline}
+            />
+          ))}
+        </div>
+      )}
+      {cat === "fonts" &&
+        categorized[cat].map((a) => (
+          <FontRow
+            key={a}
+            asset={a}
+            used={usedPaths.has(a)}
+            onCopy={handleCopyPath}
+            copyFeedback={copyFeedback}
+            onDelete={onDelete}
+            onRename={onRename}
+            onAddAssetToTimeline={onAddAssetToTimeline}
+          />
+        ))}
+    </div>
+  ));
   return (
     <div
       className={`flex-1 flex flex-col min-h-0 transition-colors ${dragOver ? "bg-background-primary-hover" : ""}`}
@@ -343,22 +422,25 @@ export const AssetsTab = memo(function AssetsTab({
     >
       {/* Header — matches design panel Section pattern */}
       <div className="px-4 pt-2.5 pb-1.5 shrink-0">
-        {/* Scope toggle */}
-        <div className="flex gap-1 mb-2.5 p-0.5 rounded-lg bg-panel-input">
-          {(["local", "global"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setViewMode(m)}
-              className={`flex-1 px-2 py-1 text-caption-1-medium rounded transition-colors ${
-                viewMode === m
-                  ? "bg-panel-accent/15 text-accent-ink"
-                  : "text-panel-text-3 hover:text-panel-text-1"
-              }`}
-            >
-              {SCOPE_LABELS[projectMedia ? "promptwise" : "studio"][m]}
-            </button>
-          ))}
-        </div>
+        {/* Scope toggle. Not in promptwise: there the timeline's files and the project's media are one
+            list, since which folder a file sits in is nothing the user chose or cares about. */}
+        {!projectMedia && (
+          <div className="flex gap-1 mb-2.5 p-0.5 rounded-lg bg-panel-input">
+            {(["local", "global"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setViewMode(m)}
+                className={`flex-1 px-2 py-1 text-caption-1-medium rounded transition-colors ${
+                  viewMode === m
+                    ? "bg-panel-accent/15 text-accent-ink"
+                    : "text-panel-text-3 hover:text-panel-text-1"
+                }`}
+              >
+                {SCOPE_LABELS[m]}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Import */}
         {onImport && (
           <>
@@ -380,7 +462,7 @@ export const AssetsTab = memo(function AssetsTab({
         )}
 
         {/* Search — gated on the UNFILTERED pool so it never unmounts itself */}
-        {allMediaAssets.length > 0 && (
+        {(allMediaAssets.length > 0 || !!projectMedia?.length) && (
           <SearchInput
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -391,7 +473,9 @@ export const AssetsTab = memo(function AssetsTab({
         )}
 
         {/* Filter chips */}
-        {viewMode === "local" && allMediaAssets.length > 0 && (
+        {(projectMedia
+          ? allMediaAssets.length + projectMedia.length > 0
+          : viewMode === "local" && allMediaAssets.length > 0) && (
           <div className="flex gap-1.5 flex-wrap">
             <button
               onClick={() => setActiveFilter("all")}
@@ -402,10 +486,10 @@ export const AssetsTab = memo(function AssetsTab({
                   : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
               }`}
             >
-              All {counts.all}
+              All {counts.all + galleryCounts.all}
             </button>
             {FILTER_ORDER.map((cat) =>
-              counts[cat] > 0 ? (
+              counts[cat] + galleryCounts[cat] > 0 ? (
                 <button
                   key={cat}
                   onClick={() => setActiveFilter(activeFilter === cat ? "all" : cat)}
@@ -416,7 +500,7 @@ export const AssetsTab = memo(function AssetsTab({
                       : "bg-panel-input text-panel-text-3 hover:text-panel-text-1"
                   }`}
                 >
-                  {CATEGORY_LABELS[cat]} {counts[cat]}
+                  {CATEGORY_LABELS[cat]} {counts[cat] + galleryCounts[cat]}
                 </button>
               ) : null,
             )}
@@ -450,7 +534,23 @@ export const AssetsTab = memo(function AssetsTab({
       </div>
 
       <div className="flex-1 overflow-y-auto mt-1">
-        {viewMode === "global" ? (
+        {projectMedia ? (
+          <>
+            <PromptwiseMediaView
+              media={galleryShown}
+              searchQuery={searchQuery}
+              onAdd={onAddAssetToTimeline}
+              used={usedUrls}
+              quietWhenEmpty={mediaAssets.length > 0}
+            />
+            {mediaAssets.length > 0 && (
+              <p className="px-4 pb-1 pt-3 text-caption-1-medium text-panel-text-3">
+                Uploaded to this timeline
+              </p>
+            )}
+            {localList}
+          </>
+        ) : viewMode === "global" ? (
           <OtherAssetsView
             projectMedia={projectMedia}
             searchQuery={searchQuery}
@@ -459,66 +559,7 @@ export const AssetsTab = memo(function AssetsTab({
         ) : mediaAssets.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onClearSearch={() => setSearchQuery("")} />
         ) : (
-          visibleCategories.map((cat) => (
-            <div key={cat} className="mb-1">
-              {activeFilter === "all" && (
-                <div className="flex items-center gap-2 px-4 py-2 border-t border-panel-border">
-                  <h3 className="text-caption-1-semibold text-panel-text-1">
-                    {CATEGORY_LABELS[cat]}
-                  </h3>
-                  <span className="text-caption-1-regular text-panel-text-5">
-                    {categorized[cat].length}
-                  </span>
-                </div>
-              )}
-              {cat === "audio" &&
-                categorized[cat].map((a) => (
-                  <AudioRow
-                    key={a}
-                    projectId={projectId}
-                    asset={a}
-                    used={usedPaths.has(a)}
-                    meta={manifest.get(a)}
-                    onCopy={handleCopyPath}
-                    copyFeedback={copyFeedback}
-                    onDelete={onDelete}
-                    onRename={onRename}
-                    onAddAssetToTimeline={onAddAssetToTimeline}
-                  />
-                ))}
-              {(cat === "images" || cat === "video") && (
-                <div className="grid grid-cols-2 gap-1 px-2 pb-1">
-                  {categorized[cat].map((a) => (
-                    <AssetCard
-                      key={a}
-                      projectId={projectId}
-                      asset={a}
-                      used={usedPaths.has(a)}
-                      duration={manifest.get(a)?.duration}
-                      onCopy={handleCopyPath}
-                      copyFeedback={copyFeedback}
-                      onDelete={onDelete}
-                      onRename={onRename}
-                      onAddAssetToTimeline={onAddAssetToTimeline}
-                    />
-                  ))}
-                </div>
-              )}
-              {cat === "fonts" &&
-                categorized[cat].map((a) => (
-                  <FontRow
-                    key={a}
-                    asset={a}
-                    used={usedPaths.has(a)}
-                    onCopy={handleCopyPath}
-                    copyFeedback={copyFeedback}
-                    onDelete={onDelete}
-                    onRename={onRename}
-                    onAddAssetToTimeline={onAddAssetToTimeline}
-                  />
-                ))}
-            </div>
-          ))
+          localList
         )}
       </div>
     </div>
