@@ -102,6 +102,17 @@ async function pull(docId: string): Promise<Response> {
   });
 }
 
+// Asked by Studio on every open, with nothing behind them here, so each one was a 404 in the console: the tab's
+// exports render on promptwise's worker, not with an FFmpeg in the browser, and its media carry no `.media`
+// manifest (Studio reads an empty one as none).
+const HERE_ANSWERS: [string, () => Response][] = [
+  ["/api/environment/ffmpeg", () => Response.json({ ok: true })],
+  [
+    "/preview/.media/manifest.jsonl",
+    () => new Response("", { headers: { "content-type": "text/plain" } }),
+  ],
+];
+
 self.addEventListener("install", () => void self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", (event) => {
@@ -109,6 +120,8 @@ self.addEventListener("fetch", (event) => {
   const docId = url.origin === location.origin ? API.exec(url.pathname)?.[1] : undefined;
   if (!docId) return;
   if (url.pathname.endsWith("/api/__pull")) return event.respondWith(pull(docId));
+  const known = HERE_ANSWERS.find(([path]) => url.pathname.endsWith(path));
+  if (known) return event.respondWith(known[1]());
   const opened = project(docId);
   event.respondWith(
     opened.then(

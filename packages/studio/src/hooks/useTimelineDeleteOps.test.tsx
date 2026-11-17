@@ -117,7 +117,7 @@ describe("useTimelineDeleteOps: ripple undo label", () => {
 
     expect(handleTimelineGroupMove).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ label: "Delete timeline clip" }),
+      expect.objectContaining({ label: expect.stringMatching(/^Delete (?!timeline clip)/) }),
     );
   });
 
@@ -156,7 +156,7 @@ describe("useTimelineDeleteOps: ripple undo label", () => {
     expect(body.targets).toHaveLength(elements.length);
   });
 
-  it("shows exactly one toast when a ripple fails to persist after a committed delete", async () => {
+  it("says the delete landed at once, then only the specific message when its ripple fails to persist", async () => {
     const handleTimelineGroupMove = vi.fn().mockRejectedValue(new Error("persist failed"));
     const showToast = vi.fn();
     const { b, getHook } = mountDeleteHarness({ handleTimelineGroupMove, showToast });
@@ -165,17 +165,39 @@ describe("useTimelineDeleteOps: ripple undo label", () => {
       await getHook().handleTimelineElementDelete(b);
     });
 
-    // The user did one thing (delete); the generic move-failure toast is
-    // suppressed on this call so only the specific message reaches them.
-    expect(showToast).toHaveBeenCalledTimes(1);
-    expect(showToast).toHaveBeenCalledWith(
-      "Clip deleted, but the gap could not be closed.",
-      "error",
-    );
+    // The delete's own toast does not wait for the ripple's write; the generic move-failure toast is
+    // suppressed on this call, so the only other message is the specific one.
+    expect(showToast.mock.calls).toEqual([
+      [expect.stringMatching(/^Deleted .+, Ripple closed the gap$/), "undo"],
+      ["Clip deleted, but the gap could not be closed.", "error"],
+    ]);
     expect(handleTimelineGroupMove).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ suppressFailureToast: true }),
     );
+  });
+
+  // The ripple's write can take long in promptwise (it goes through the host); the delete's toast and the cleared
+  // selection waited for it, so a rippled delete sometimes showed no toast and left the clip in the inspector.
+  it("shows the Undo toast and clears the selection before the ripple's write lands", async () => {
+    let finish = () => {};
+    const handleTimelineGroupMove = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    const showToast = vi.fn();
+    const { b, getHook } = mountDeleteHarness({ handleTimelineGroupMove, showToast });
+    usePlayerStore.getState().setSelectedElementId("hf-b");
+
+    let deleting: Promise<void> = Promise.resolve();
+    await act(async () => {
+      deleting = getHook().handleTimelineElementDelete(b);
+      await vi.waitFor(() => expect(handleTimelineGroupMove).toHaveBeenCalled());
+    });
+
+    expect(showToast).toHaveBeenCalledWith(expect.stringMatching(/^Deleted /), "undo");
+    expect(usePlayerStore.getState().selectedElementId).toBeNull();
+    await act(async () => {
+      finish();
+      await deleting;
+    });
   });
 });
 

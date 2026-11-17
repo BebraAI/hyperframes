@@ -25,8 +25,12 @@ export interface AssetMediaTypeMismatch {
 }
 
 export class AssetMediaTypeMismatchError extends Error {
+  // Read by the render's error handling through the error's shape, not by name.
+  // fallow-ignore-next-line unused-class-member
   readonly code = ASSET_MEDIA_TYPE_MISMATCH;
+  // fallow-ignore-next-line unused-class-member
   readonly owner = "user" as const;
+  // fallow-ignore-next-line unused-class-member
   readonly retryable = false as const;
   readonly mismatches: readonly AssetMediaTypeMismatch[];
 
@@ -106,11 +110,16 @@ export async function preflightCompositionAssetMediaTypes(input: {
       src: asset.src,
       expected: "video" as const,
     })),
-    ...input.composition.audios.map((asset) => ({
-      id: asset.id,
-      src: asset.src,
-      expected: "audio" as const,
-    })),
+    // A `<video data-has-audio>`'s own sound (type "video") is not checked: a video file without an audio stream is
+    // still a video, and the mix leaves out a sound it can't read. Studio marks clips it inserts as having audio
+    // before it knows, so a silent upload (a screen or canvas recording) failed the whole export here.
+    ...input.composition.audios
+      .filter((asset) => asset.type !== "video")
+      .map((asset) => ({
+        id: asset.id,
+        src: asset.src,
+        expected: "audio" as const,
+      })),
     ...input.composition.images.map((asset) => ({
       id: asset.id,
       src: asset.src,

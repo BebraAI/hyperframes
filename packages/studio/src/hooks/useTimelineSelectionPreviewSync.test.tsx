@@ -143,6 +143,42 @@ describe("useTimelineSelectionPreviewSync", () => {
     harness.cleanup();
   });
 
+  it("clears a group selection whose clips were deleted, though they left the timeline too", async () => {
+    const { firstSelection, secondSelection, timelineElements, selectionById } = makeSyncFixture();
+    const applyDomSelection = vi.fn();
+    const harness = renderHarness();
+    const props = {
+      buildDomSelectionForTimelineElement: vi.fn(
+        async (element: TimelineElement) => selectionById.get(element.id) ?? null,
+      ),
+      applyDomSelection,
+      applyMarqueeSelection: vi.fn(),
+      onSelectionNotFound: vi.fn(),
+    };
+    await harness.rerender({
+      ...props,
+      selectedElementId: "clip-1",
+      selectedElementIds: new Set(["clip-1", "clip-2"]),
+      timelineElements,
+      domEditSelection: firstSelection,
+      domEditGroupSelections: [firstSelection, secondSelection],
+    });
+    applyDomSelection.mockClear();
+
+    // The delete: both clips leave the timeline and the preview, and the timeline selection empties.
+    await harness.rerender({
+      ...props,
+      selectedElementId: null,
+      selectedElementIds: new Set(),
+      timelineElements: [],
+      domEditSelection: firstSelection,
+      domEditGroupSelections: [firstSelection, secondSelection],
+    });
+
+    expect(applyDomSelection).toHaveBeenCalledWith(null, { revealPanel: false });
+    harness.cleanup();
+  });
+
   it("drops a canvas selection that points outside the timeline selection", async () => {
     // The reveal paths (sidebar audio/asset click, asset drop) select a clip
     // with no canvas node. Bailing here kept whatever the canvas held, and

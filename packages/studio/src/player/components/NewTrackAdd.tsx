@@ -24,17 +24,29 @@ type Placement = { track: number; start: number };
 
 const isFiles = (media: AddedMedia): media is File[] => media[0] instanceof File;
 
-/** Gallery picks land one after another from `at`, in the order picked, as a drop of several does. */
-async function placeUrls(
+const AUDIO_URL = /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac)(?:[?#]|$)/i;
+
+/**
+ * Gallery picks land one after another from `at`, in the order picked, as a drop of several does. Sounds picked
+ * with pictures go under them: from the same start, on the track `soundTrack`, one after another there.
+ */
+export async function placeUrls(
   urls: readonly string[],
   at: Placement,
   onAssetDrop: NonNullable<TimelineDropCallbacks["onAssetDrop"]>,
+  soundTrack: number,
 ) {
-  let next = at;
-  for (const url of urls) {
-    const clip = await onAssetDrop(url, next);
-    if (clip) next = { start: clip.start + clip.duration, track: clip.track };
-  }
+  const sounds = urls.filter((url) => AUDIO_URL.test(url));
+  const pictures = urls.filter((url) => !AUDIO_URL.test(url));
+  const chain = async (list: readonly string[], from: Placement) => {
+    let next = from;
+    for (const url of list) {
+      const clip = await onAssetDrop(url, next);
+      if (clip) next = { start: clip.start + clip.duration, track: clip.track };
+    }
+  };
+  await chain(pictures, at);
+  await chain(sounds, pictures.length ? { start: at.start, track: soundTrack } : at);
 }
 
 /**
@@ -55,7 +67,9 @@ export function useAddMedia(
       const start = elements.length ? currentTime : 0;
       const where = at ?? { start, track: getDefaultDroppedTrack(order, order.length) };
       if (isFiles(media)) void onFileDrop?.(media, where);
-      else if (onAssetDrop) void placeUrls(media, where, onAssetDrop);
+      // Sounds picked with pictures take a track of their own, past every track there is.
+      else if (onAssetDrop)
+        void placeUrls(media, where, onAssetDrop, Math.max(where.track, ...order) + 1);
     },
     [onFileDrop, onAssetDrop, trackOrderRef],
   );

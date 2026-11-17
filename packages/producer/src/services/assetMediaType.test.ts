@@ -81,7 +81,12 @@ describe("preflightCompositionAssetMediaTypes", () => {
     if (existsSync(fixtureDir)) rmSync(fixtureDir, { recursive: true, force: true });
   });
 
-  function composition(input: { videoSrc?: string; audioSrc?: string; imageSrc?: string }) {
+  function composition(input: {
+    videoSrc?: string;
+    audioSrc?: string;
+    imageSrc?: string;
+    audioType?: "audio" | "video";
+  }) {
     return {
       videos: input.videoSrc
         ? [
@@ -105,7 +110,7 @@ describe("preflightCompositionAssetMediaTypes", () => {
               end: 1,
               mediaStart: 0,
               layer: 0,
-              type: "audio" as const,
+              type: input.audioType ?? ("audio" as const),
             },
           ]
         : [],
@@ -116,7 +121,12 @@ describe("preflightCompositionAssetMediaTypes", () => {
   }
 
   async function run(
-    input: { videoSrc?: string; audioSrc?: string; imageSrc?: string },
+    input: {
+      videoSrc?: string;
+      audioSrc?: string;
+      imageSrc?: string;
+      audioType?: "audio" | "video";
+    },
     signal?: AbortSignal,
   ) {
     return preflightCompositionAssetMediaTypes({
@@ -134,6 +144,12 @@ describe("preflightCompositionAssetMediaTypes", () => {
         videoSrc: "extensionless-video",
         audioSrc: "extensionless-audio",
       }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("accepts a silent video's own sound track, which the mix leaves out", async () => {
+    await expect(
+      run({ videoSrc: "extensionless-video", audioSrc: "extensionless-video", audioType: "video" }),
     ).resolves.toBeUndefined();
   });
 
