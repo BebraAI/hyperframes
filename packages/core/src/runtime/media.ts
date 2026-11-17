@@ -1,6 +1,10 @@
 import { swallow } from "./diagnostics";
 import { isClipVisibleAt, isInClipWindow } from "./clipWindow";
-import { mediaElementTime, startsSoundOnlyInsideATap } from "./mediaClock";
+import {
+  MEDIA_ELEMENT_LEAD_SECONDS,
+  mediaElementTime,
+  startsSoundOnlyInsideATap,
+} from "./mediaClock";
 import { sameInstant } from "../clipFacts";
 import { interpolateVolumeGain } from "./mediaVolumeEnvelope.js";
 import { elementVolumeLaneGain } from "./audioAutomationVolume.js";
@@ -62,6 +66,49 @@ function holdSeekBarrierUntilVideoLands(el: HTMLMediaElement): void {
     }),
     "video-frame",
   );
+}
+
+// Chromium can leave a seek pending for good: a seek sent back to where a still-pending seek was going (t, t - 1
+// frame, t, as Studio's reseek after a reload sends) on an element whose preload just went from metadata to auto
+// sits at `seeking` with HAVE_METADATA and an idle network, and its `seeked` never comes. The preview shows the
+// old frame, the player waits for the frame before it plays, and a playing clip holds the audio-led playhead there;
+// only another seek frees it. So a seek that has not landed within SEEK_WEDGE_MS, with nothing loading, is sent
+// again to the time it waits for. `suspend` (an idle network) also comes between the range requests of a seek
+// still fetching, so each retry waits twice as long as the last, up to SEEK_WEDGE_MAX_MS. Timers, not the sync
+// tick: a paused preview doesn't tick.
+export const SEEK_WEDGE_MS = 400;
+const SEEK_WEDGE_MAX_MS = 3200;
+const watchedSeeks = new WeakSet<HTMLMediaElement>();
+
+/** Watches the element's seeks from now on, and sends again one that sits pending with nothing loading. */
+export function watchForWedgedSeeks(el: HTMLMediaElement): void {
+  if (watchedSeeks.has(el)) return;
+  watchedSeeks.add(el);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const stop = () => {
+    clearTimeout(timer);
+    timer = undefined;
+  };
+  const check = (wait: number) => {
+    timer = undefined;
+    if (!el.isConnected || !el.seeking || findInjectedRenderFrame(el)) return;
+    if (el.networkState !== el.NETWORK_LOADING && el.readyState >= el.HAVE_METADATA) {
+      try {
+        // The time it already waits for (a pending seek reads as its target, lead included): the element lands
+        // there, and the playhead does not move.
+        el.currentTime = mediaElementTime(el.currentTime - MEDIA_ELEMENT_LEAD_SECONDS);
+      } catch (err) {
+        swallow("runtime.media.unwedge", err);
+      }
+    }
+    const next = Math.min(wait * 2, SEEK_WEDGE_MAX_MS);
+    timer = setTimeout(() => check(next), next);
+  };
+  // A watch already running keeps its pace: the seek it sends again starts a `seeking` of its own.
+  el.addEventListener("seeking", () => {
+    if (timer === undefined) timer = setTimeout(() => check(SEEK_WEDGE_MS), SEEK_WEDGE_MS);
+  });
+  for (const type of ["seeked", "emptied", "abort", "error"]) el.addEventListener(type, stop);
 }
 
 /**
@@ -396,6 +443,7 @@ export function syncRuntimeMedia(params: {
   for (const clip of params.clips) {
     const { el } = clip;
     if (!el.isConnected) continue;
+    watchForWedgedSeeks(el);
     const clipRate = clip.rate ?? clip.playbackRate;
     const origin = clip.origin ?? clip.start;
     const isNonLoopVideo = el.tagName === "VIDEO" && !clip.loop;
