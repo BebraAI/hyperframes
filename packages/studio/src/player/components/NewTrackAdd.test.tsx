@@ -4,7 +4,7 @@ import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../../components/ui/mountHost.testHelpers";
 import { useDockLayoutStore } from "../../components/dock/dockLayoutStore";
-import { NewTrackAdd } from "./NewTrackAdd";
+import { NewTrackAdd, TrackAddButton, trackEnd } from "./NewTrackAdd";
 
 vi.mock("../../promptwise/embed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../promptwise/embed")>()),
@@ -31,4 +31,23 @@ it("adds files from the computer, or opens the project's media, from the empty l
   Object.defineProperty(input, "files", { value: [clip], configurable: true });
   await act(async () => input.dispatchEvent(new Event("change", { bubbles: true })));
   expect(onFiles).toHaveBeenCalledWith([clip]);
+});
+
+it("opens the same choices from a track's own +, which names its track", async () => {
+  const onFiles = vi.fn();
+  const host = mountHost(<TrackAddButton onFiles={onFiles} trackName="track 2" />);
+  await act(async () =>
+    host.querySelector<HTMLButtonElement>('[aria-label="Add media to track 2"]')!.click(),
+  );
+  expect(items().map((item) => item.textContent)).toEqual(["From gallery", "Upload from computer"]);
+});
+
+it("adds after a track's last clip, and from 0 on an empty one", () => {
+  expect(
+    trackEnd([
+      { start: 4, duration: 2 },
+      { start: 0, duration: 3 },
+    ]),
+  ).toBe(6);
+  expect(trackEnd([])).toBe(0);
 });

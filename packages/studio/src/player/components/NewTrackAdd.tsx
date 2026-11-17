@@ -7,17 +7,20 @@ import { usePlayerStore } from "../store/playerStore";
 import { getDefaultDroppedTrack } from "./timelineLayout";
 import type { TimelineDropCallbacks } from "./timelineCallbacks";
 
-/** Files from the computer onto a new track at the playhead; none where the timeline takes no files. */
+/**
+ * Files from the computer onto the timeline: a new track at the playhead, or `at` a given track and
+ * time. None where the timeline takes no files.
+ */
 export function useAddFilesToNewTrack(
   onFileDrop: TimelineDropCallbacks["onFileDrop"],
   trackOrderRef: RefObject<number[]>,
   readOnly: boolean,
 ) {
   const add = useCallback(
-    (files: File[]) => {
+    (files: File[], at?: { track: number; start: number }) => {
       const order = trackOrderRef.current;
       const start = usePlayerStore.getState().currentTime;
-      void onFileDrop?.(files, { start, track: getDefaultDroppedTrack(order, order.length) });
+      void onFileDrop?.(files, at ?? { start, track: getDefaultDroppedTrack(order, order.length) });
     },
     [onFileDrop, trackOrderRef],
   );
@@ -63,6 +66,45 @@ export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
       />
     </>
   );
+}
+
+/**
+ * A track's "+", where its lane begins: a dashed square that takes the accent on hover, as the
+ * old promptwise timeline had it. What it adds lands on that track, after its last clip.
+ */
+export function TrackAddButton({
+  onFiles,
+  trackName,
+}: {
+  onFiles: (files: File[]) => void;
+  trackName: string;
+}) {
+  const label = `Add media to ${trackName}`;
+  return (
+    <AddMediaMenu
+      onFiles={onFiles}
+      trigger={(onClick) => (
+        <button
+          type="button"
+          aria-label={label}
+          title={label}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--timeline-text-faint)] bg-transparent p-0 text-[var(--timeline-text-faint)] transition-colors hover:border-[var(--timeline-accent)] hover:text-[var(--timeline-accent)] focus-visible:outline-solid focus-visible:outline-1 focus-visible:outline-[var(--timeline-accent)]"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onClick?.();
+          }}
+        >
+          <Plus size={12} weight="bold" />
+        </button>
+      )}
+    />
+  );
+}
+
+/** A track's "+" adds after its last clip, so nothing it brings lands on a clip already there. */
+export function trackEnd(elements: readonly { start: number; duration: number }[]): number {
+  return Math.max(0, ...elements.map((element) => element.start + element.duration));
 }
 
 /** The empty lane's "+". */

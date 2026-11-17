@@ -54,6 +54,9 @@ export interface TimelineLaneBaseProps {
   renderClipContent?: TimelineProps["renderClipContent"];
   renderClipOverlay?: TimelineProps["renderClipOverlay"];
   onDrillDown?: (element: TimelineElement) => void;
+  /** Puts files from the computer on the timeline: without `at`, on a new track at the playhead (the
+   *  empty lane's "+"); with it, on that track from that time (a track's own "+", after its last clip). */
+  onAddFiles?: (files: File[], at?: { track: number; start: number }) => void;
   onSelectElement?: (element: TimelineElement | null) => void;
   setHoveredClip: (key: string | null) => void;
   setShowPopover: (v: boolean) => void;
