@@ -524,7 +524,7 @@ describe("Timeline without readOnly (unchanged)", () => {
     expect(t.host.querySelector('[role="slider"]')).not.toBeNull();
     act(() => root!.unmount());
     root = null;
-    expect(mount({}, []).host.textContent).toContain("Drop or upload media");
+    expect(mount({}, []).host.textContent).toContain("Your timeline is empty");
   });
 
   it("draws the trim handles on a selected clip", () => {
