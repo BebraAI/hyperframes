@@ -26,7 +26,10 @@ it("uploads from the computer or opens the gallery from the empty timeline's dro
   const zone = host.querySelector<HTMLButtonElement>("button")!;
   expect(zone.textContent).toBe("Drop or upload media, or describe your video to start");
   await act(async () => zone.click());
-  expect(items().map((item) => item.textContent)).toEqual(["From gallery", "Upload from computer"]);
+  expect(items().map((item) => item.querySelector(".text-body-2-medium")?.textContent)).toEqual([
+    "From gallery",
+    "Upload from computer",
+  ]);
   await act(async () => (items()[0] as HTMLElement).click());
   expect(activatePanel).toHaveBeenCalledWith("assets");
 

@@ -1,5 +1,6 @@
-import { useCallback, useRef, type ReactElement, type RefObject } from "react";
+import { useCallback, useRef, type ReactElement, type ReactNode, type RefObject } from "react";
 import { Plus } from "@phosphor-icons/react";
+import { IconLibraryPhoto, IconUpload } from "../../boardui/components/icons";
 import { IconButton, Menu, MenuItem } from "../../components/ui";
 import { useDockLayoutStore } from "../../components/dock/dockLayoutStore";
 import { embeddedInPromptwise } from "../../promptwise/embed";
@@ -27,6 +28,31 @@ export function useAddFilesToNewTrack(
   return onFileDrop && !readOnly ? add : undefined;
 }
 
+/** A row of the add menu: an icon in its tile, the choice, and a line on where the media comes from. */
+const ROW = "justify-start p-1.5";
+
+function AddMediaChoice({
+  icon,
+  title,
+  detail,
+}: {
+  icon: ReactNode;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <span className="flex items-center gap-2.5">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background-secondary-default">
+        {icon}
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-body-2-medium text-text-primary">{title}</span>
+        <span className="truncate text-caption-1-regular text-text-tertiary">{detail}</span>
+      </span>
+    </span>
+  );
+}
+
 interface AddMediaMenuProps {
   onFiles: (files: File[]) => void;
   /**
@@ -44,9 +70,21 @@ export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
   return (
     <>
       {embeddedInPromptwise ? (
-        <Menu aria-label="Add media" trigger={trigger()}>
-          <MenuItem onClick={() => activatePanel("assets")}>From gallery</MenuItem>
-          <MenuItem onClick={pick}>Upload from computer</MenuItem>
+        <Menu aria-label="Add media" className="w-64 gap-0.5 p-1.5" trigger={trigger()}>
+          <MenuItem className={ROW} onClick={() => activatePanel("assets")}>
+            <AddMediaChoice
+              icon={<IconLibraryPhoto />}
+              title="From gallery"
+              detail="Project media and chats"
+            />
+          </MenuItem>
+          <MenuItem className={ROW} onClick={pick}>
+            <AddMediaChoice
+              icon={<IconUpload />}
+              title="Upload from computer"
+              detail="Video, image or sound"
+            />
+          </MenuItem>
         </Menu>
       ) : (
         trigger(pick)
