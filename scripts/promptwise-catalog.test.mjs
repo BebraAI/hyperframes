@@ -4,7 +4,14 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { catalogMenu, loadPromptwiseCatalog, visibleCatalog } from "./promptwise-catalog.mjs";
+import { BLOCK_CATEGORIES, resolveBlockCategory } from "../packages/core/src/registry/types.ts";
+import {
+  CATEGORIES,
+  catalogMenu,
+  categoryOf,
+  loadPromptwiseCatalog,
+  visibleCatalog,
+} from "./promptwise-catalog.mjs";
 
 const REPO = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
@@ -14,13 +21,20 @@ function fixture(promptwise) {
   const items = [
     {
       name: "a",
+      description: "A block. It closes.",
       type: "hyperframes:block",
       dir: "blocks",
       dimensions: { width: 1080, height: 1920 },
       duration: 4.5,
     },
-    { name: "b", type: "hyperframes:component", dir: "components", variables: [{ id: "accent" }] },
-    { name: "c", type: "hyperframes:component", dir: "components" },
+    {
+      name: "b",
+      description: "A component.",
+      type: "hyperframes:component",
+      dir: "components",
+      variables: [{ id: "accent" }],
+    },
+    { name: "c", description: "Another.", type: "hyperframes:component", dir: "components" },
   ];
   mkdirSync(join(root, "registry"));
   writeFileSync(
@@ -58,14 +72,18 @@ test("the catalog leaves out hidden items and keeps the rest in the registry's o
 test("without promptwise.json nothing is hidden or offered", () => {
   const root = fixture();
   assert.equal(visibleCatalog(root).length, 3);
-  assert.doesNotMatch(catalogMenu(root), /^- `/m);
+  const menu = catalogMenu(root);
+  assert.match(
+    menu,
+    /look at the frames\.\n\n## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): A block\.\n/,
+  );
+  assert.match(menu, /- `b` \(component\): A component\.\n- `c` \(component\): Another\.\n/);
 });
 
 test("the menu gives each offered item its shape and note, in the file's order", () => {
   const root = fixture({ use: { b: "For accents.", a: "As an outro." } });
-  const offers = catalogMenu(root)
-    .split("\n")
-    .filter((line) => line.startsWith("- `"));
+  const first = catalogMenu(root).split("## Reach for these first\n")[1].split("\n## ")[0];
+  const offers = first.split("\n").filter((line) => line.startsWith("- `"));
   assert.deepEqual(offers, [
     "- `b` (component, variables: accent): For accents.",
     "- `a` (block, 1080x1920, 4.5s): As an outro.",
@@ -82,4 +100,24 @@ test("every mistake in promptwise.json is reported at once", () => {
       error.message.includes('use: no block or component "ghost"') &&
       error.message.includes('use: "c" says nothing'),
   );
+});
+
+test("the menu lists every other visible item under its catalog tab, and no hidden one", () => {
+  const root = fixture({ hidden: ["c"], use: { b: "For accents." } });
+  const menu = catalogMenu(root);
+  assert.match(menu, /## Reach for these first\n\n- `b`/);
+  assert.match(menu, /## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): /);
+  assert.doesNotMatch(menu, /`c`/);
+  assert.equal(menu.match(/`b`/g).length, 1);
+});
+
+test("the menu's tabs are Studio's: same order, same tag rule", () => {
+  assert.deepEqual(
+    CATEGORIES,
+    BLOCK_CATEGORIES.map((c) => [c.id, c.label]),
+  );
+  const { items } = loadPromptwiseCatalog(REPO);
+  for (const item of items.values())
+    assert.equal(categoryOf(item.tags), resolveBlockCategory(item.tags), item.name);
+  assert.equal(categoryOf(undefined), resolveBlockCategory(undefined));
 });

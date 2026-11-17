@@ -49,24 +49,61 @@ export function visibleCatalog(root) {
   return [...items.values()].filter((item) => !hidden.has(item.name));
 }
 
-/** One line on an item's shape: block or component, its size and length, its variables. */
-function shape(item) {
+/** One line on an item's shape: block or component, its size and length, and its variables if asked. */
+function shape(item, withVariables = true) {
   const parts = [item.type === "hyperframes:block" ? "block" : "component"];
   if (item.dimensions) parts.push(`${item.dimensions.width}x${item.dimensions.height}`);
   if (item.duration) parts.push(`${Math.round(item.duration * 10) / 10}s`);
-  const vars = (item.variables ?? []).map((v) => v.id);
+  const vars = withVariables ? (item.variables ?? []).map((v) => v.id) : [];
   if (vars.length) parts.push(`variables: ${vars.join(", ")}`);
   return parts.join(", ");
 }
 
-/** The agent's menu: the offered items, in the file's order, with when to use each and how to put it in. */
+// Studio's catalog tabs, in its order, and the tag rule that puts an item in one: resolveBlockCategory and
+// BLOCK_CATEGORIES in packages/core/src/registry/types.ts (this file runs before core is built; a test keeps them equal).
+export const CATEGORIES = [
+  ["captions", "Captions"],
+  ["code-animation", "Code Animations"],
+  ["vfx", "VFX"],
+  ["transitions", "Transitions"],
+  ["effects", "Effects"],
+  ["text-effects", "Text Effects"],
+  ["social", "Social"],
+  ["data", "Data"],
+  ["scenes", "Scenes"],
+];
+
+export function categoryOf(tags) {
+  if (!tags || tags.length === 0) return "scenes";
+  const set = new Set(tags);
+  if (set.has("captions") || set.has("caption-style")) return "captions";
+  if (set.has("code-animation")) return "code-animation";
+  if (set.has("transition")) return "transitions";
+  if (set.has("social") || set.has("overlay")) return "social";
+  if (set.has("data") || set.has("chart") || set.has("map")) return "data";
+  if (set.has("html-in-canvas") || set.has("webgl") || set.has("shader")) return "vfx";
+  if (set.has("text-effect")) return "text-effects";
+  if (set.has("effect") || set.has("grain") || set.has("vignette")) return "effects";
+  return "scenes";
+}
+
+/** An item's description cut to its first sentence, at most about 120 characters. */
+function brief(description) {
+  const first = description.split(/(?<=[.!?])\s/)[0].trim();
+  return first.length <= 120 ? first : `${first.slice(0, 117).replace(/\s+\S*$/, "")}...`;
+}
+
+/**
+ * The agent's menu: the offered items first, in the file's order, with when to use each and how to put one in; then
+ * every other item Studio lists, by its catalog tab, with the registry's own description.
+ */
 export function catalogMenu(root) {
-  const { use, items } = loadPromptwiseCatalog(root);
+  const { hidden, use, items } = loadPromptwiseCatalog(root);
   const lines = [
     "# Ready-made catalog items",
     "",
-    "These are the HyperFrames registry items to reach for first. Each is ordinary source once installed: change it,",
-    "cut it down, restyle it to the video's colours and fonts.",
+    "These are the HyperFrames registry items the Timeline tab's catalog lists. Each is ordinary source once installed:",
+    "change it, cut it down, restyle it to the video's colours and fonts.",
     "",
     "- Install in the project folder: `hyperframes add <name> --json` (needs the network). It prints the files it",
     "  wrote and a mount snippet.",
@@ -77,14 +114,18 @@ export function catalogMenu(root) {
     "- Set an item's variables for one mount with `data-variable-values` on its host (`add --vars '{...}'` writes it).",
     "  Point its colour and font variables at the brand's.",
     "- A 16:9 block in a 9:16 video (or the other way) needs its layout checked: look with preview_timeline.",
+    "- Items tagged webgl, webgpu or html-in-canvas can render blank here: check their frames, and say so if they do.",
     "- Then `hyperframes check`, and look at the frames.",
-    "",
-    "Anything else in the registry can be installed the same way when nothing here fits.",
-    "",
   ];
-  for (const [name, note] of use) {
-    const item = items.get(name);
-    lines.push(`- \`${name}\` (${shape(item)}): ${note}`);
+  if (use.size) lines.push("", "## Reach for these first", "");
+  for (const [name, note] of use) lines.push(`- \`${name}\` (${shape(items.get(name))}): ${note}`);
+  const rest = [...items.values()].filter((item) => !hidden.has(item.name) && !use.has(item.name));
+  for (const [id, label] of CATEGORIES) {
+    const inTab = rest.filter((item) => categoryOf(item.tags) === id);
+    if (!inTab.length) continue;
+    lines.push("", `## ${label}`, "");
+    for (const item of inTab)
+      lines.push(`- \`${item.name}\` (${shape(item, false)}): ${brief(item.description)}`);
   }
   return `${lines.join("\n")}\n`;
 }
