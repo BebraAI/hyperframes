@@ -24,7 +24,7 @@ import type { TimelineTheme } from "./timelineTheme";
 import { trackDisplaySuffix } from "./timelineTrackDisplay";
 import { AutomationLaneHeaderRow, PropertyGroupHeaderRow } from "./trackHeaderLabelRows";
 import { useMemo } from "react";
-import { TrackAddButton } from "./NewTrackAdd";
+import { TrackAddButton, type AddedMedia } from "./NewTrackAdd";
 
 /** Accent rail + inset marking a row as a group MEMBER, matching the level-2
  *  nesting its `aria-level` already reports. */
@@ -83,7 +83,7 @@ interface TimelineTrackHeaderProps {
   onRemoveAutomationLane?: (target: string) => void;
   onSeek?: (time: number) => void;
   /** The track's "+": files onto this track, after its last clip. Absent where the timeline takes no files. */
-  onAddFiles?: (files: File[]) => void;
+  onAddFiles?: (media: AddedMedia) => void;
 }
 
 // fallow-ignore-next-line complexity
@@ -221,7 +221,7 @@ export function TimelineTrackHeader({
   const addButton =
     onAddFiles && showTrackLabel ? (
       <TrackAddButton
-        onFiles={onAddFiles}
+        onAdd={onAddFiles}
         trackName={`track${trackDisplaySuffix(trackDisplayNumber)}`}
       />
     ) : null;

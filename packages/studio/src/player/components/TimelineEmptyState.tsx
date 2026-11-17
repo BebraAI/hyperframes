@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentPropsWithoutRef, type DragEventHandler } from "react";
 import { UploadingText, usePromptwiseUploads } from "../../promptwise/uploads";
-import { AddMediaMenu } from "./NewTrackAdd";
+import { AddMediaMenu, type AddedMedia } from "./NewTrackAdd";
 import { GUTTER, RULER_H } from "./timelineLayout";
 
 interface TimelineEmptyStateProps {
@@ -10,7 +10,7 @@ interface TimelineEmptyStateProps {
   onDragLeave: DragEventHandler<HTMLDivElement>;
   onDrop: DragEventHandler<HTMLDivElement>;
   /** Files picked from the computer; the drop zone is then also a button that opens the picker. */
-  onAddFiles?: (files: File[]) => void;
+  onAddFiles?: (media: AddedMedia) => void;
 }
 
 const ZONE =
@@ -81,7 +81,7 @@ export function TimelineEmptyState({
           </div>
         ) : onAddFiles ? (
           <AddMediaMenu
-            onFiles={onAddFiles}
+            onAdd={onAddFiles}
             trigger={(onClick) => (
               <ZoneButton onClick={onClick}>
                 <UploadIcon className="text-text-tertiary" />

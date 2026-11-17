@@ -3,7 +3,6 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../../components/ui/mountHost.testHelpers";
-import { useDockLayoutStore } from "../../components/dock/dockLayoutStore";
 import { TimelineEmptyState } from "./TimelineEmptyState";
 
 vi.mock("../../promptwise/embed", async (importOriginal) => ({
@@ -19,8 +18,6 @@ const items = () => [...document.querySelectorAll('[role="menuitem"]')];
 
 it("uploads from the computer or opens the gallery from the empty timeline's drop zone", async () => {
   const onAddFiles = vi.fn();
-  const activatePanel = vi.fn();
-  useDockLayoutStore.setState({ activatePanel });
   const host = mountHost(<TimelineEmptyState {...drop} onFileDrop onAddFiles={onAddFiles} />);
 
   const zone = host.querySelector<HTMLButtonElement>("button")!;
@@ -31,7 +28,13 @@ it("uploads from the computer or opens the gallery from the empty timeline's dro
     "Upload from computer",
   ]);
   await act(async () => (items()[0] as HTMLElement).click());
-  expect(activatePanel).toHaveBeenCalledWith("assets");
+  // The gallery opens where the "+" was, not in the Assets panel.
+  expect(document.querySelector('[role="dialog"]')?.getAttribute("aria-label")).toBe(
+    "Add media to a new track",
+  );
+  await act(async () =>
+    document.querySelector<HTMLButtonElement>('[role="dialog"] [aria-label="Close"]')!.click(),
+  );
 
   const input = host.querySelector<HTMLInputElement>('[data-testid="new-track-files"]')!;
   const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });

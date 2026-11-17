@@ -1,31 +1,60 @@
-import { useCallback, useRef, type ReactElement, type ReactNode, type RefObject } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import { MediaPickerDialog } from "./MediaPickerDialog";
 import { Plus } from "@phosphor-icons/react";
 import { IconLibraryPhoto, IconUpload } from "../../boardui/components/icons";
 import { IconButton, Menu, MenuItem } from "../../components/ui";
-import { useDockLayoutStore } from "../../components/dock/dockLayoutStore";
 import { embeddedInPromptwise } from "../../promptwise/embed";
 import { usePlayerStore } from "../store/playerStore";
 import { getDefaultDroppedTrack } from "./timelineLayout";
 import type { TimelineDropCallbacks } from "./timelineCallbacks";
 
+/** Files from the computer, or the addresses of media picked from promptwise's gallery. */
+export type AddedMedia = File[] | string[];
+type Placement = { track: number; start: number };
+
+const isFiles = (media: AddedMedia): media is File[] => media[0] instanceof File;
+
+/** Gallery picks land one after another from `at`, in the order picked, as a drop of several does. */
+async function placeUrls(
+  urls: readonly string[],
+  at: Placement,
+  onAssetDrop: NonNullable<TimelineDropCallbacks["onAssetDrop"]>,
+) {
+  let next = at;
+  for (const url of urls) {
+    const clip = await onAssetDrop(url, next);
+    if (clip) next = { start: clip.start + clip.duration, track: clip.track };
+  }
+}
+
 /**
- * Files from the computer onto the timeline: a new track at the playhead, or `at` a given track and
- * time. None where the timeline takes no files.
+ * Media onto the timeline: a new track at the playhead, or `at` a given track and time. None where
+ * the timeline takes no files.
  */
-export function useAddFilesToNewTrack(
+export function useAddMedia(
   onFileDrop: TimelineDropCallbacks["onFileDrop"],
+  onAssetDrop: TimelineDropCallbacks["onAssetDrop"],
   trackOrderRef: RefObject<number[]>,
   readOnly: boolean,
 ) {
   const add = useCallback(
-    (files: File[], at?: { track: number; start: number }) => {
+    (media: AddedMedia, at?: Placement) => {
       const order = trackOrderRef.current;
       const { currentTime, elements } = usePlayerStore.getState();
       // Into an empty timeline the first clip starts it; later ones go where the playhead is.
       const start = elements.length ? currentTime : 0;
-      void onFileDrop?.(files, at ?? { start, track: getDefaultDroppedTrack(order, order.length) });
+      const where = at ?? { start, track: getDefaultDroppedTrack(order, order.length) };
+      if (isFiles(media)) void onFileDrop?.(media, where);
+      else if (onAssetDrop) void placeUrls(media, where, onAssetDrop);
     },
-    [onFileDrop, trackOrderRef],
+    [onFileDrop, onAssetDrop, trackOrderRef],
   );
   return onFileDrop && !readOnly ? add : undefined;
 }
@@ -56,7 +85,9 @@ function AddMediaChoice({
 }
 
 interface AddMediaMenuProps {
-  onFiles: (files: File[]) => void;
+  onAdd: (media: AddedMedia) => void;
+  /** Where what it adds lands, as the gallery's title says it: "track 2", "a new track". */
+  target?: string;
   /**
    * The control that opens it. Inside promptwise it opens "From gallery / Upload from computer";
    * elsewhere there is no gallery, so it gets `onClick` and opens the file picker straight away.
@@ -64,16 +95,22 @@ interface AddMediaMenuProps {
   trigger: (onClick?: () => void) => ReactElement;
 }
 
-/** Media from promptwise's project (the Assets panel) or files from the computer. */
-export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
+/** Media from promptwise's gallery, picked in a dialog where the "+" was, or files from the computer. */
+export function AddMediaMenu({ onAdd, target = "a new track", trigger }: AddMediaMenuProps) {
   const input = useRef<HTMLInputElement>(null);
-  const activatePanel = useDockLayoutStore((state) => state.activatePanel);
+  const [gallery, setGallery] = useState(false);
   const pick = () => input.current?.click();
   return (
-    <>
+    // The menu and the gallery are portals, but React still bubbles their events through here: a
+    // track header's or a lane's pointer handlers would take an item's press as a seek or a select.
+    <span
+      className="contents"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
       {embeddedInPromptwise ? (
         <Menu aria-label="Add media" className="w-64 gap-0.5 p-1.5" trigger={trigger()}>
-          <MenuItem className={ROW} onClick={() => activatePanel("assets")}>
+          <MenuItem className={ROW} onClick={() => setGallery(true)}>
             <AddMediaChoice
               icon={<IconLibraryPhoto />}
               title="From gallery"
@@ -91,6 +128,17 @@ export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
       ) : (
         trigger(pick)
       )}
+      {gallery && (
+        <MediaPickerDialog
+          target={target}
+          onPick={onAdd}
+          onUpload={() => {
+            setGallery(false);
+            pick();
+          }}
+          onClose={() => setGallery(false)}
+        />
+      )}
       <input
         ref={input}
         type="file"
@@ -101,10 +149,10 @@ export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
         onChange={(event) => {
           const files = Array.from(event.target.files ?? []);
           event.target.value = "";
-          if (files.length) onFiles(files);
+          if (files.length) onAdd(files);
         }}
       />
-    </>
+    </span>
   );
 }
 
@@ -113,16 +161,17 @@ export function AddMediaMenu({ onFiles, trigger }: AddMediaMenuProps) {
  * old promptwise timeline had it. What it adds lands on that track, after its last clip.
  */
 export function TrackAddButton({
-  onFiles,
+  onAdd,
   trackName,
 }: {
-  onFiles: (files: File[]) => void;
+  onAdd: (media: AddedMedia) => void;
   trackName: string;
 }) {
   const label = `Add media to ${trackName}`;
   return (
     <AddMediaMenu
-      onFiles={onFiles}
+      onAdd={onAdd}
+      target={trackName}
       trigger={(onClick) => (
         <button
           type="button"
@@ -148,7 +197,7 @@ export function trackEnd(elements: readonly { start: number; duration: number }[
 }
 
 /** The empty lane's "+". */
-export function NewTrackAdd({ onFiles }: { onFiles: (files: File[]) => void }) {
+export function NewTrackAdd({ onAdd }: { onAdd: (media: AddedMedia) => void }) {
   return (
     // The lane lets pointers through to the timeline; the button takes its own, so a click doesn't seek or select.
     <div
@@ -156,7 +205,7 @@ export function NewTrackAdd({ onFiles }: { onFiles: (files: File[]) => void }) {
       onPointerDown={(event) => event.stopPropagation()}
     >
       <AddMediaMenu
-        onFiles={onFiles}
+        onAdd={onAdd}
         trigger={(onClick) => (
           <IconButton
             size="sm"

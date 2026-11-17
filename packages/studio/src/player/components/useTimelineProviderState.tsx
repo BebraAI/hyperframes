@@ -17,7 +17,7 @@ import { useTimelineStackingSync } from "./useTimelineStackingSync";
 import { useTimelineGeometry } from "./useTimelineGeometry";
 import { useAutoExpandKeyframedClips } from "./useAutoExpandKeyframedClips";
 import { GUTTER } from "./timelineLayout";
-import { useAddFilesToNewTrack } from "./NewTrackAdd";
+import { useAddMedia } from "./NewTrackAdd";
 import { useTimelineLabelColumn } from "./useTimelineLabelColumn";
 import { useTimelineKeyframeData } from "./useTimelineKeyframeData";
 import { useTimelineScrollViewport } from "./useTimelineScrollViewport";
@@ -246,7 +246,7 @@ export function useTimelineProviderState({
     sessionEpoch,
     readOnlyPress,
   });
-  const addFiles = useAddFilesToNewTrack(pinnedOnFileDrop, trackOrderRef, !!readOnlyPress);
+  const addFiles = useAddMedia(pinnedOnFileDrop, pinnedOnAssetDrop, trackOrderRef, !!readOnlyPress);
   const displayLayout = useTimelineDisplayLayout(draggedClip, trackOrder, rowGeometry);
   const { resizingElementIds, getPreviewElement, draggedElement, multiDragPreview, snapGuide } =
     useTimelineDragPreviewState(draggedClip, resizingClip, selectedElementIds, timelineElements);
