@@ -22,7 +22,10 @@ it("adds files from the computer, or opens the project's media, from the empty l
   const host = mountHost(<NewTrackAdd onFiles={onFiles} />);
 
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Add media"]')!.click());
-  expect(items().map((item) => item.textContent)).toEqual(["From gallery", "Upload from computer"]);
+  expect(items().map((item) => item.querySelector(".text-body-2-medium")?.textContent)).toEqual([
+    "From gallery",
+    "Upload from computer",
+  ]);
   await act(async () => (items()[0] as HTMLElement).click());
   expect(activatePanel).toHaveBeenCalledWith("assets");
 
@@ -39,7 +42,10 @@ it("opens the same choices from a track's own +, which names its track", async (
   await act(async () =>
     host.querySelector<HTMLButtonElement>('[aria-label="Add media to track 2"]')!.click(),
   );
-  expect(items().map((item) => item.textContent)).toEqual(["From gallery", "Upload from computer"]);
+  expect(items().map((item) => item.querySelector(".text-body-2-medium")?.textContent)).toEqual([
+    "From gallery",
+    "Upload from computer",
+  ]);
 });
 
 it("adds after a track's last clip, and from 0 on an empty one", () => {
