@@ -2,21 +2,7 @@ import type { MouseEvent, PointerEvent } from "react";
 import type { TimelineElement } from "../player/store/playerStore";
 import { useTimelineEditContextOptional } from "../contexts/TimelineEditContext";
 import { studioApiFetch } from "../utils/studioApiFetch";
-import { usePromptwiseUploadMap } from "./uploads";
-
-const PREVIEW = /\/api\/projects\/[^/]+\/preview\//;
-
-/** The project path of the file a clip plays, from the preview URL the timeline holds, or null for none of the project's. */
-export function clipUploadPath(src: string | undefined): string | null {
-  const at = src ? PREVIEW.exec(src) : null;
-  if (!src || !at) return null;
-  const rest = src.slice(at.index + at[0].length).split(/[?#]/)[0]!;
-  try {
-    return decodeURIComponent(rest);
-  } catch {
-    return rest;
-  }
-}
+import { PREVIEW, clipUploadPath, usePromptwiseUploadMap } from "./uploads";
 
 /** Studio's ask to send a file that failed up again: the project's API, beside the preview it's served from. */
 export function retryUrl(src: string, path: string): string {

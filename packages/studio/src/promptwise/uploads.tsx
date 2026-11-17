@@ -1,5 +1,20 @@
 import { useSyncExternalStore } from "react";
+import { usePlayerStore } from "../player/store/playerStore";
 import { embeddedInPromptwise } from "./embed";
+
+export const PREVIEW = /\/api\/projects\/[^/]+\/preview\//;
+
+/** The project path of the file a clip plays, from the preview URL the timeline holds, or null for none of the project's. */
+export function clipUploadPath(src: string | undefined): string | null {
+  const at = src ? PREVIEW.exec(src) : null;
+  if (!src || !at) return null;
+  const rest = src.slice(at.index + at[0].length).split(/[?#]/)[0]!;
+  try {
+    return decodeURIComponent(rest);
+  } catch {
+    return rest;
+  }
+}
 
 /** How far one file Studio adds has got in promptwise: `sent` of `total` bytes in its storage. */
 type Progress = { path: string; sent: number; total: number; done: boolean };
@@ -75,9 +90,13 @@ export function usePromptwiseUploadMap(): ReadonlyMap<string, UploadEntry> {
   return useSyncExternalStore(subscribe, snapshot, snapshot);
 }
 
-/** The files going up now, as one line: "photo.png" or "3 files", and the share of their bytes that is up. */
+/** The files going up now that no clip shows yet, as one line: "photo.png" or "3 files", and the share of their bytes that is up. */
 export function usePromptwiseUploads(): { name: string; part: number } | null {
-  const going = [...usePromptwiseUploadMap()].filter(([, upload]) => !upload.failed);
+  const uploads = usePromptwiseUploadMap();
+  const onClips = usePlayerStore((s) => s.elements.map((el) => clipUploadPath(el.src)).join("\n"));
+  // A file a clip already plays shows its bar on that clip: the lane would say it twice.
+  const shown = new Set(onClips.split("\n"));
+  const going = [...uploads].filter(([path, upload]) => !upload.failed && !shown.has(path));
   if (!going.length) return null;
   const total = going.reduce((sum, [, u]) => sum + u.total, 0);
   const sent = going.reduce((sum, [, u]) => sum + Math.min(u.sent, u.total), 0);

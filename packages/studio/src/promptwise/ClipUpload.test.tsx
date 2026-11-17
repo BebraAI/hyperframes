@@ -5,7 +5,8 @@ import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
 import { TimelineEditProvider } from "../contexts/TimelineEditContext";
 import type { TimelineElement } from "../player/store/playerStore";
-import { ClipUpload, clipUploadPath, retryUrl } from "./ClipUpload";
+import { ClipUpload, retryUrl } from "./ClipUpload";
+import { clipUploadPath } from "./uploads";
 import { resetPromptwiseUploads } from "./uploads";
 
 vi.mock("./embed", async (importOriginal) => ({
