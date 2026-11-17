@@ -5,7 +5,12 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PromptwiseMediaView } from "../components/sidebar/PromptwiseMediaView";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
-import { promptwiseMedia, promptwiseMediaName, usePromptwiseMedia } from "./media";
+import {
+  promptwiseMedia,
+  promptwiseMediaDuration,
+  promptwiseMediaName,
+  usePromptwiseMedia,
+} from "./media";
 
 vi.mock("./embed", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./embed")>()),
@@ -96,6 +101,26 @@ describe("promptwise media", () => {
     expect(added).toEqual(["https://media.test/a.png"]);
   });
 
+  it("lists the account's media from other chats after the project's, under their own heading", () => {
+    const host = mountHost(
+      <PromptwiseMediaView
+        media={
+          promptwiseMedia({
+            type: "promptwise:media",
+            items: [
+              { url: "https://media.test/old.png", name: "Old", kind: "image", account: true },
+              ...items,
+            ],
+          })!
+        }
+        searchQuery=""
+      />,
+    );
+    expect(host.textContent).toContain("From your other chats");
+    const names = [...host.querySelectorAll("[data-promptwise-media]")].map((c) => c.textContent);
+    expect(names.at(-1)).toContain("Old");
+  });
+
   it("filters by name", () => {
     const host = mountHost(
       <PromptwiseMediaView
@@ -120,5 +145,17 @@ describe("promptwise media names", () => {
     });
     expect(promptwiseMediaName("https://media.test/02d44e15.mp4")).toBe("Beach take");
     expect(promptwiseMediaName("https://media.test/untitled.mp3")).toBeUndefined();
+  });
+
+  it("keeps how long promptwise says its media plays, so a clip lands without probing it", () => {
+    promptwiseMedia({
+      type: "promptwise:media",
+      items: [
+        { url: "https://media.test/v.mp4", kind: "video", duration: 5.2 },
+        { url: "https://media.test/w.mp4", kind: "video", duration: -1 },
+      ],
+    });
+    expect(promptwiseMediaDuration("https://media.test/v.mp4")).toBe(5.2);
+    expect(promptwiseMediaDuration("https://media.test/w.mp4")).toBeUndefined();
   });
 });

@@ -3,6 +3,7 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../components/ui/mountHost.testHelpers";
+import { usePlayerStore } from "../player/store/playerStore";
 import {
   GhostLaneText,
   resetPromptwiseUploads,
@@ -48,6 +49,26 @@ it("shows what is uploading and how much is up, then the drop hint again once it
   expect(host.textContent).toBe("Uploading clip.mp4 · 75%");
   await tell(progress("clip.mp4", 200, 200, true));
   expect(host.textContent).toBe("Drop media here");
+});
+
+it("leaves out a file whose clip is already on the timeline: the clip shows its own bar", async () => {
+  const host = mountHost(<GhostLaneText acceptsMediaDrop />);
+  await tell(progress("assets/clip.mp4", 50, 200));
+  expect(host.textContent).toBe("Uploading clip.mp4 · 25%");
+  await act(async () =>
+    usePlayerStore.getState().setElements([
+      {
+        id: "clip",
+        tag: "video",
+        start: 0,
+        duration: 3,
+        track: 0,
+        src: "/api/projects/p/preview/assets/clip.mp4",
+      },
+    ]),
+  );
+  expect(host.textContent).toBe("Drop media here");
+  await act(async () => usePlayerStore.getState().setElements([]));
 });
 
 it("takes only promptwise's upload messages", () => {

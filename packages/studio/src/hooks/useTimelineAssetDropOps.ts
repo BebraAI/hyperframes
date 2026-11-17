@@ -18,7 +18,7 @@ import {
   resolveTimelineAssetSrc,
   timelineIdFromName,
 } from "../utils/timelineAssetDrop";
-import { promptwiseMediaName } from "../promptwise/media";
+import { promptwiseMediaDuration, promptwiseMediaName } from "../promptwise/media";
 import { generateId } from "../utils/generateId";
 import { saveProjectFilesWithHistory, type RecordEditInput } from "../utils/studioFileHistory";
 import {
@@ -132,15 +132,19 @@ export function useTimelineAssetDropOps({
 
       try {
         const normalizedStart = Number(formatTimelineAttributeNumber(placement.start));
-        const duration =
-          Number.isFinite(durationOverride) && durationOverride != null && durationOverride > 0
-            ? durationOverride
-            : await resolveDroppedAssetDuration(pid, assetPath, kind);
-        const normalizedDuration = Number(formatTimelineAttributeNumber(duration));
+        // Media from promptwise often comes with its length: then nothing waits on loading its metadata.
+        const known =
+          durationOverride ??
+          (isRemoteAsset(assetPath) ? promptwiseMediaDuration(assetPath) : undefined);
         // A video with an audio stream lands audible; the mixer only hears a
         // <video> marked data-has-audio, and a muted drop was losing the sound.
-        const hasAudio =
-          hasAudioOverride ?? (await resolveDroppedAssetHasAudio(pid, assetPath, kind));
+        const [duration, hasAudio] = await Promise.all([
+          Number.isFinite(known) && known != null && known > 0
+            ? known
+            : resolveDroppedAssetDuration(pid, assetPath, kind),
+          hasAudioOverride ?? resolveDroppedAssetHasAudio(pid, assetPath, kind),
+        ]);
+        const normalizedDuration = Number(formatTimelineAttributeNumber(duration));
         const resolvedAssetSrc = isRemoteAsset(assetPath)
           ? assetPath
           : resolveTimelineAssetSrc(targetPath, assetPath);

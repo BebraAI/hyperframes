@@ -8,6 +8,10 @@ export interface PromptwiseMedia {
   kind: "image" | "video" | "audio";
   /** A picture to show for it: the image itself, or a video's poster. */
   thumb?: string;
+  /** How long it plays, in seconds, when promptwise knows: a clip placed from it then lands at once, unprobed. */
+  duration?: number;
+  /** One of the account's from another chat, which the Assets panel lists apart from the project's. */
+  account?: boolean;
 }
 
 const KINDS = new Set(["image", "video", "audio"]);
@@ -15,20 +19,39 @@ const KINDS = new Set(["image", "video", "audio"]);
 const isHttp = (value: unknown): value is string =>
   typeof value === "string" && /^https?:\/\//.test(value);
 
+const isLength = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value) && value > 0;
+
+/** What an item may say besides what it is: its poster, its length, and that it's the account's. */
+function extras(thumb: unknown, duration: unknown, account: unknown): Partial<PromptwiseMedia> {
+  return {
+    ...(isHttp(thumb) ? { thumb } : {}),
+    ...(isLength(duration) ? { duration } : {}),
+    ...(account === true ? { account } : {}),
+  };
+}
+
 /** One item of the message, or null for one Studio can't play from its address. */
 function mediaItem(item: unknown): PromptwiseMedia | null {
-  const { url, name, kind, thumb } = (item ?? {}) as Record<string, unknown>;
+  const { url, name, kind, thumb, duration, account } = (item ?? {}) as Record<string, unknown>;
   if (!isHttp(url) || typeof kind !== "string" || !KINDS.has(kind)) return null;
-  const media: PromptwiseMedia = {
+  return {
     url,
     name: typeof name === "string" && name ? name : kind,
     kind: kind as PromptwiseMedia["kind"],
+    ...extras(thumb, duration, account),
   };
-  return isHttp(thumb) ? { ...media, thumb } : media;
 }
 
 /** The names promptwise gave its media, by address: a clip placed from one is named after it, not its file. */
 const names = new Map<string, string>();
+/** How long promptwise says its media plays, in seconds, by address. */
+const durations = new Map<string, number>();
+
+/** How long the media at `url` plays by promptwise's word, in seconds; undefined when it didn't say. */
+export function promptwiseMediaDuration(url: string): number | undefined {
+  return durations.get(url);
+}
 
 /** The name promptwise gave the media at `url`, without a file extension; undefined for one it didn't send. */
 export function promptwiseMediaName(url: string): string | undefined {
@@ -46,7 +69,10 @@ export function promptwiseMedia(data: unknown): PromptwiseMedia[] | null {
     const one = mediaItem(item);
     return one ? [one] : [];
   });
-  for (const m of media) if (m.name !== m.kind) names.set(m.url, m.name);
+  for (const m of media) {
+    if (m.name !== m.kind) names.set(m.url, m.name);
+    if (m.duration) durations.set(m.url, m.duration);
+  }
   return media;
 }
 

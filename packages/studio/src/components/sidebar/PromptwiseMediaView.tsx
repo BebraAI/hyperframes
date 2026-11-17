@@ -15,19 +15,38 @@ export function PromptwiseMediaView({
   onAdd?: (url: string) => void;
 }) {
   const query = searchQuery.trim().toLowerCase();
-  const shown = query ? media.filter((m) => m.name.toLowerCase().includes(query)) : media;
-  if (shown.length === 0) {
+  const found = query ? media.filter((m) => m.name.toLowerCase().includes(query)) : media;
+  if (found.length === 0) {
     return (
       <p className="px-4 py-6 text-center text-caption-1-regular text-panel-text-3">
         {query
           ? "No project media matches."
-          : "The project's images, videos and sounds show up here."}
+          : "The project's images, videos and sounds show up here, and those of your other chats."}
       </p>
     );
   }
+  const project = found.filter((m) => !m.account);
+  const account = found.filter((m) => m.account);
+  return (
+    <>
+      <MediaGrid media={project} onAdd={onAdd} />
+      {account.length > 0 && (
+        <>
+          <p className="px-4 pb-1 pt-2 text-caption-1-medium text-panel-text-3">
+            From your other chats
+          </p>
+          <MediaGrid media={account} onAdd={onAdd} />
+        </>
+      )}
+    </>
+  );
+}
+
+function MediaGrid({ media, onAdd }: { media: PromptwiseMedia[]; onAdd?: (url: string) => void }) {
+  if (media.length === 0) return null;
   return (
     <div className="grid grid-cols-2 gap-1 px-2 pb-1">
-      {shown.map((m) => (
+      {media.map((m) => (
         <button
           key={m.url}
           type="button"

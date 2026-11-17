@@ -19,7 +19,9 @@ export function useAddFilesToNewTrack(
   const add = useCallback(
     (files: File[], at?: { track: number; start: number }) => {
       const order = trackOrderRef.current;
-      const start = usePlayerStore.getState().currentTime;
+      const { currentTime, elements } = usePlayerStore.getState();
+      // Into an empty timeline the first clip starts it; later ones go where the playhead is.
+      const start = elements.length ? currentTime : 0;
       void onFileDrop?.(files, at ?? { start, track: getDefaultDroppedTrack(order, order.length) });
     },
     [onFileDrop, trackOrderRef],
