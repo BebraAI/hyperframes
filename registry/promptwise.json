@@ -33,6 +33,14 @@
     "yt-feather-highlight": "Dim everything but one area of the frame, to point at a detail in a screen recording or a product shot.",
     "hw-arrow": "Hand-drawn arrow that points at something in the frame; for tutorials, reviews and UGC call-outs.",
     "hw-callout-circle": "Hand-drawn circle with a label around something in the frame; for tutorials and reviews.",
-    "yt-circle-pointer": "Circle around a target with a countdown chip; for \"watch this\" moments in tutorials."
+    "yt-circle-pointer": "Circle around a target with a countdown chip; for \"watch this\" moments in tutorials.",
+    "chart-story": "Any chart from the user's own numbers (bars, a line with area, a donut or progress bars) that lands the exact values; for results, stats and proof beats in explainers and ads. Set its data, labels and unit variables.",
+    "mk-line-graph": "A minimal line graph of one or two series drawn on with value labels; for growth over time in a 16:9 explainer.",
+    "bar-chart-race": "Ranked bars overtaking each other over periods; only when the user has a ranking that changes over time.",
+    "world-map": "World map with countries revealed and coloured by value; for where something happens or a global reach beat. Use a 16:9 layout or check it in 9:16.",
+    "us-map": "US map with states coloured by value and a legend; for US-only data or reach.",
+    "nyc-paris-flight": "A plane flying a route on a realistic map with a landing pop; for travel, shipping or 'from here to there' beats. Change the two places to the user's.",
+    "logo-wall": "Trusted-by wall of logos; for a social proof beat in a B2B or product ad. Replace the placeholder lettermarks with the user's real client logos.",
+    "star-rating-fill": "Star row that fills to a rating (4.8 out of 5); for a review or app-store rating proof beat."
   }
 }

@@ -35,7 +35,14 @@ function fixture(promptwise) {
       dir: "components",
       variables: [{ id: "accent" }],
     },
-    { name: "c", description: "Another.", type: "hyperframes:component", dir: "components" },
+    {
+      name: "c",
+      description: "Another.",
+      type: "hyperframes:component",
+      dir: "components",
+      jobs: ["prove"],
+      tags: ["deterministic", "bars", "prove", "proof"],
+    },
   ];
   mkdirSync(join(root, "registry"));
   writeFileSync(
@@ -76,7 +83,10 @@ test("without promptwise.json nothing is hidden or offered", () => {
   assert.doesNotMatch(catalogMenu(root), /^- `/m);
   const all = catalogAll(root);
   assert.match(all, /## Scenes\n\n- `a` \(block, 1080x1920, 4.5s\): A block\.\n/);
-  assert.match(all, /- `b` \(component\): A component\.\n- `c` \(component\): Another\.\n/);
+  assert.match(
+    all,
+    /- `b` \(component\): A component\.\n- `c` \(component\): Another\. \[jobs: prove; tags: bars, proof\]\n/,
+  );
 });
 
 test("the menu gives each offered item its shape and note, in the file's order", () => {
