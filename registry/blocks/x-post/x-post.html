@@ -203,6 +203,13 @@
     <div
       id="root"
       data-composition-id="x-post"
+      data-composition-variables='[
+        {"id":"name","type":"string","label":"Display name","default":"Hyperframes"},
+        {"id":"handle","type":"string","label":"Handle","default":"@hyperframes"},
+        {"id":"text","type":"string","label":"Post text","default":"Prompt to replace this text with your tweet. Change the display name, handle, timestamp, and engagement counts to match your content."},
+        {"id":"hashtag","type":"string","label":"Hashtag","default":"#YourHashtag"},
+        {"id":"timestamp","type":"string","label":"Timestamp","default":"1:10 PM · Apr 7, 2026"}
+      ]'
       data-width="1920"
       data-height="1080"
       data-start="0"
@@ -220,7 +227,7 @@
           </div>
           <div class="user-info">
             <div class="name-row">
-              <span class="display-name">Hyperframes</span>
+              <span class="display-name" data-var-text="name">Hyperframes</span>
               <span class="verified-badge">
                 <svg viewBox="0 0 22 22" fill="none">
                   <circle cx="11" cy="11" r="11" fill="#1d9bf0" />
@@ -231,7 +238,7 @@
                 </svg>
               </span>
             </div>
-            <span class="handle">@hyperframes</span>
+            <span class="handle" data-var-text="handle">@hyperframes</span>
           </div>
           <div class="x-logo">
             <svg viewBox="0 0 24 24" fill="#e7e9ea">
@@ -244,12 +251,15 @@
 
         <!-- Tweet body: prompt to replace with your content -->
         <div class="tweet-body">
-          Prompt to replace this text with your tweet. Change the display name, handle, timestamp,
-          and engagement counts to match your content. <span class="hashtag">#YourHashtag</span>
+          <span data-var-text="text"
+            >Prompt to replace this text with your tweet. Change the display name, handle,
+            timestamp, and engagement counts to match your content.</span
+          >
+          <span class="hashtag" data-var-text="hashtag">#YourHashtag</span>
         </div>
 
         <!-- Timestamp: prompt to replace -->
-        <div class="timestamp">1:10 PM &middot; Apr 7, 2026</div>
+        <div class="timestamp" data-var-text="timestamp">1:10 PM &middot; Apr 7, 2026</div>
 
         <!-- Metrics bar -->
         <div class="metrics-bar">

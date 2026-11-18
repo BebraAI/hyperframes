@@ -16,5 +16,28 @@
       "target": "compositions/lt-clean-bar.html",
       "type": "hyperframes:composition"
     }
+  ],
+  "variables": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Name",
+      "description": "The person's name, on the first line.",
+      "default": "Dr. Maya Chen"
+    },
+    {
+      "id": "role",
+      "type": "string",
+      "label": "Role",
+      "description": "Their role or title, on the second line.",
+      "default": "Host · Neuroscientist"
+    },
+    {
+      "id": "accent",
+      "type": "color",
+      "label": "Accent",
+      "description": "Colour of the tab on the card's left edge.",
+      "default": "#ff5a36"
+    }
   ]
 }

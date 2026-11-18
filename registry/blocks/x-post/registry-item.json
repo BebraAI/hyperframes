@@ -20,5 +20,39 @@
   "preview": {
     "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/x-post.mp4",
     "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/x-post.png"
-  }
+  },
+  "variables": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Display name",
+      "default": "Hyperframes"
+    },
+    {
+      "id": "handle",
+      "type": "string",
+      "label": "Handle",
+      "default": "@hyperframes"
+    },
+    {
+      "id": "text",
+      "type": "string",
+      "label": "Post text",
+      "description": "The post's words, before the hashtag.",
+      "default": "Prompt to replace this text with your tweet. Change the display name, handle, timestamp, and engagement counts to match your content."
+    },
+    {
+      "id": "hashtag",
+      "type": "string",
+      "label": "Hashtag",
+      "description": "Shown in blue after the text; empty to leave it out.",
+      "default": "#YourHashtag"
+    },
+    {
+      "id": "timestamp",
+      "type": "string",
+      "label": "Timestamp",
+      "default": "1:10 PM · Apr 7, 2026"
+    }
+  ]
 }

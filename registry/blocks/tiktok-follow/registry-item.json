@@ -25,5 +25,31 @@
   "preview": {
     "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/tiktok-follow.mp4",
     "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/tiktok-follow.png"
-  }
+  },
+  "variables": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Display name",
+      "default": "HeyGen"
+    },
+    {
+      "id": "handle",
+      "type": "string",
+      "label": "Handle",
+      "default": "@heygen.com"
+    },
+    {
+      "id": "followers",
+      "type": "string",
+      "label": "Followers line",
+      "default": "1,999 followers"
+    },
+    {
+      "id": "avatar",
+      "type": "image",
+      "label": "Avatar",
+      "description": "The account's profile picture, shown in a circle."
+    }
+  ]
 }
