@@ -128,6 +128,12 @@
     <div
       id="root"
       data-composition-id="tiktok-follow"
+      data-composition-variables='[
+        {"id":"name","type":"string","label":"Display name","default":"HeyGen"},
+        {"id":"handle","type":"string","label":"Handle","default":"@heygen.com"},
+        {"id":"followers","type":"string","label":"Followers line","default":"1,999 followers"},
+        {"id":"avatar","type":"image","label":"Avatar","default":"assets/avatar.jpg"}
+      ]'
       data-width="1080"
       data-height="1920"
       data-start="0"
@@ -140,11 +146,17 @@
         data-duration="4.5"
         data-track-index="0"
       >
-        <img class="avatar" src="assets/avatar.jpg" alt="HeyGen" crossorigin="anonymous" />
+        <img
+          class="avatar"
+          data-var-src="avatar"
+          src="assets/avatar.jpg"
+          alt="HeyGen"
+          crossorigin="anonymous"
+        />
         <div class="profile-info">
-          <div class="display-name">HeyGen</div>
-          <div class="handle">@heygen.com</div>
-          <div class="follower-count">1,999 followers</div>
+          <div class="display-name" data-var-text="name">HeyGen</div>
+          <div class="handle" data-var-text="handle">@heygen.com</div>
+          <div class="follower-count" data-var-text="followers">1,999 followers</div>
         </div>
         <div id="follow-btn" class="follow-btn">
           <span id="btn-follow" class="btn-text btn-text-follow">Follow</span>

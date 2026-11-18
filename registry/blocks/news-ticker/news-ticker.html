@@ -140,10 +140,6 @@
         text-shadow: 0 2px 14px rgba(0, 0, 0, 0.34);
       }
 
-      #nt-root .nt-headline-accent {
-        color: #ff4455;
-      }
-
       #nt-root .nt-time {
         position: absolute;
         top: 25px;
@@ -277,6 +273,12 @@
     <div
       id="nt-root"
       data-composition-id="news-ticker"
+      data-composition-variables='[
+        {"id":"label","type":"string","label":"Label","default":"Breaking"},
+        {"id":"desk","type":"string","label":"Desk","default":"Global Desk"},
+        {"id":"headline","type":"string","label":"Headline","default":"AI video tools move from prototype to production"},
+        {"id":"time","type":"string","label":"Time","default":"09:41 UTC"}
+      ]'
       data-width="1920"
       data-height="1080"
       data-start="0"
@@ -296,19 +298,18 @@
               <div id="nt-live-dot" class="nt-live-dot"></div>
               <div class="nt-brand-text">
                 <div class="nt-live">Live</div>
-                <div class="nt-desk">Global Desk</div>
+                <div class="nt-desk" data-var-text="desk">Global Desk</div>
               </div>
             </div>
             <div class="nt-headline-wrap">
-              <h1 id="nt-headline" class="nt-headline">
-                AI video tools move from <span class="nt-headline-accent">prototype</span> to
-                production
+              <h1 id="nt-headline" class="nt-headline" data-var-text="headline">
+                AI video tools move from prototype to production
               </h1>
-              <div id="nt-time" class="nt-time">09:41 UTC</div>
+              <div id="nt-time" class="nt-time" data-var-text="time">09:41 UTC</div>
             </div>
           </div>
           <div class="nt-bottom-row">
-            <div id="nt-label" class="nt-label">Breaking</div>
+            <div id="nt-label" class="nt-label" data-var-text="label">Breaking</div>
             <div class="nt-ticker-window">
               <div id="nt-ticker-track" class="nt-ticker-track">
                 <span class="nt-item"

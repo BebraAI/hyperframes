@@ -25,5 +25,32 @@
   "preview": {
     "video": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/instagram-follow.mp4",
     "poster": "https://static.heygen.ai/hyperframes-oss/docs/images/catalog/blocks/instagram-follow.png"
-  }
+  },
+  "variables": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Display name",
+      "default": "HeyGen"
+    },
+    {
+      "id": "handle",
+      "type": "string",
+      "label": "Handle",
+      "default": "@heygen_official"
+    },
+    {
+      "id": "followers",
+      "type": "string",
+      "label": "Followers line",
+      "default": "47.5K followers"
+    },
+    {
+      "id": "avatar",
+      "type": "image",
+      "label": "Avatar",
+      "default": "assets/avatar.jpg",
+      "description": "The account's profile picture, shown in a circle."
+    }
+  ]
 }

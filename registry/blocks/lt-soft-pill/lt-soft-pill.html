@@ -40,7 +40,7 @@
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: #ff5a36;
+        background: var(--accent, #ff5a36);
         flex-shrink: 0;
       }
       #root .lt-text {
@@ -70,6 +70,11 @@
     <div
       id="root"
       data-composition-id="lt-soft-pill"
+      data-composition-variables='[
+        {"id":"name","type":"string","label":"Name","default":"Dr. Maya Chen"},
+        {"id":"role","type":"string","label":"Role","default":"Host · Neuroscientist"},
+        {"id":"accent","type":"color","label":"Accent","default":"#ff5a36"}
+      ]'
       data-width="1920"
       data-height="1080"
       data-start="0"
@@ -80,8 +85,8 @@
           <div id="lt-pill" class="lt-pill">
             <div id="lt-dot" class="lt-dot"></div>
             <div class="lt-text">
-              <div id="lt-name" class="lt-name">Dr. Maya Chen</div>
-              <div id="lt-role" class="lt-role">Host · Neuroscientist</div>
+              <div id="lt-name" class="lt-name" data-var-text="name">Dr. Maya Chen</div>
+              <div id="lt-role" class="lt-role" data-var-text="role">Host · Neuroscientist</div>
             </div>
           </div>
         </div>

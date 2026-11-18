@@ -33,7 +33,7 @@
       }
       #root .lt-tab {
         width: 12px;
-        background: #ff5a36;
+        background: var(--accent, #ff5a36);
         flex-shrink: 0;
       }
       #root .lt-body {
@@ -65,6 +65,11 @@
     <div
       id="root"
       data-composition-id="lt-clean-bar"
+      data-composition-variables='[
+        {"id":"name","type":"string","label":"Name","default":"Dr. Maya Chen"},
+        {"id":"role","type":"string","label":"Role","default":"Host · Neuroscientist"},
+        {"id":"accent","type":"color","label":"Accent","default":"#ff5a36"}
+      ]'
       data-width="1920"
       data-height="1080"
       data-start="0"
@@ -74,8 +79,8 @@
         <div id="lt" class="lt">
           <div id="lt-tab" class="lt-tab"></div>
           <div class="lt-body">
-            <div id="lt-name" class="lt-name">Dr. Maya Chen</div>
-            <div id="lt-role" class="lt-role">Host · Neuroscientist</div>
+            <div id="lt-name" class="lt-name" data-var-text="name">Dr. Maya Chen</div>
+            <div id="lt-role" class="lt-role" data-var-text="role">Host · Neuroscientist</div>
           </div>
         </div>
       </div>

@@ -37,7 +37,7 @@
         font-size: 22px;
         font-weight: 700;
         color: #141518;
-        background: #46e5b7;
+        background: var(--accent, #46e5b7);
         padding: 6px 14px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -57,7 +57,7 @@
       #root .lt-baseline {
         height: 5px;
         width: 100%;
-        background: #46e5b7;
+        background: var(--accent, #46e5b7);
         border-radius: 3px;
         transform-origin: 0% 50%;
       }
@@ -67,6 +67,11 @@
     <div
       id="root"
       data-composition-id="lt-kicker-name"
+      data-composition-variables='[
+        {"id":"kicker","type":"string","label":"Kicker","default":"Episode 47"},
+        {"id":"name","type":"string","label":"Name","default":"Maya Chen"},
+        {"id":"accent","type":"color","label":"Accent","default":"#46e5b7"}
+      ]'
       data-width="1920"
       data-height="1080"
       data-start="0"
@@ -75,9 +80,9 @@
       <div id="lt-clip" class="clip" data-start="0" data-duration="4.8" data-track-index="0">
         <div id="lt" class="lt">
           <div class="lt-kickwrap">
-            <span id="lt-kicker" class="lt-kicker">Episode 47</span>
+            <span id="lt-kicker" class="lt-kicker" data-var-text="kicker">Episode 47</span>
           </div>
-          <div id="lt-name" class="lt-name">Maya Chen</div>
+          <div id="lt-name" class="lt-name" data-var-text="name">Maya Chen</div>
           <div id="lt-baseline" class="lt-baseline"></div>
         </div>
       </div>
