@@ -54,9 +54,12 @@ const alias = {
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 const dist = here("./dist");
 
+// Studio reports usage to HeyGen's PostHog unless it is built with VITE_HYPERFRAMES_NO_TELEMETRY: promptwise's users
+// are not HeyGen's, so this build always opts out, whatever the shell that runs it has set.
 execFileSync("npx", ["vite", "build", "--base", "./", "--outDir", dist, "--emptyOutDir"], {
   cwd: here("../packages/studio"),
   stdio: "inherit",
+  env: { ...process.env, VITE_HYPERFRAMES_NO_TELEMETRY: "1" },
 });
 copyFileSync(here("../packages/core/dist/hyperframe.runtime.iife.js"), `${dist}/runtime.js`);
 

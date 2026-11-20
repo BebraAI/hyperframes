@@ -3,7 +3,7 @@
 import React, { act } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanupMounted, mountHost } from "../../components/ui/mountHost.testHelpers";
-import { NewTrackAdd, TrackAddButton, trackEnd } from "./NewTrackAdd";
+import { NewTrackAdd, TrackAddButton, placeUrls, trackEnd } from "./NewTrackAdd";
 import { hearFromHost, resetHostPicker } from "../../promptwise/hostPicker";
 
 vi.mock("../../promptwise/embed", async (importOriginal) => ({
@@ -93,4 +93,36 @@ it("opens the tab's own Assets window from a track's + where the tab has one, an
   );
   expect(onAdd).toHaveBeenCalledWith(["https://r2.test/b.png", "https://r2.test/a.png"]);
   post.mockRestore();
+});
+
+it("chains picked pictures and puts picked sounds under them from the same start", async () => {
+  const placed: { url: string; start: number; track: number }[] = [];
+  const drop = vi.fn(async (url: string, at: { start: number; track: number }) => {
+    placed.push({ url, ...at });
+    return { id: url, tag: "video", start: at.start, duration: 5, track: at.track };
+  });
+  await placeUrls(
+    ["https://x/a.webm", "https://x/music.wav", "https://x/b.mp4", "https://x/hit.mp3"],
+    { start: 2, track: 0 },
+    drop,
+    3,
+  );
+  expect(placed).toEqual([
+    { url: "https://x/a.webm", start: 2, track: 0 },
+    { url: "https://x/b.mp4", start: 7, track: 0 },
+    { url: "https://x/music.wav", start: 2, track: 3 },
+    { url: "https://x/hit.mp3", start: 7, track: 3 },
+  ]);
+});
+
+it("puts sounds picked alone where the add was asked for", async () => {
+  const drop = vi.fn(async (url: string, at: { start: number; track: number }) => ({
+    id: url,
+    tag: "audio",
+    start: at.start,
+    duration: 4,
+    track: at.track,
+  }));
+  await placeUrls(["https://x/music.wav"], { start: 1, track: 2 }, drop, 5);
+  expect(drop).toHaveBeenCalledWith("https://x/music.wav", { start: 1, track: 2 });
 });

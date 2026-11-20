@@ -105,7 +105,8 @@ export function useTimelineDeleteOps({
       try {
         // Shared with the ripple move below so a folded ripple is one undo step with the delete.
         const step = timingGestureStep("main-track-ripple-delete");
-        const deleteHistoryLabel = "Delete timeline clip";
+        // The undo toast reads "Undid: Delete Shot B", naming what went.
+        const deleteHistoryLabel = `Delete ${label}`;
         let rollbackDuration = () => {};
         try {
           await saveServerRewriteWithHistory({
@@ -125,6 +126,7 @@ export function useTimelineDeleteOps({
                 }
                 return patchTarget;
               });
+              // fallow-ignore-next-line code-duplication
               const removeResponse = await studioApiFetch(
                 buildProjectApiPath(
                   pid,
@@ -176,7 +178,15 @@ export function useTimelineDeleteOps({
         const rippleChanges = rippleShifts ? resolveShiftedElements(survivors, rippleShifts) : null;
         // The timeline follows the delete's write at once, as the owner of the ripple's optimistic update.
         usePlayerStore.getState().setElements(applyRippleShifts(survivors, rippleChanges));
-        let rippleFailed = false;
+        // The delete has landed: say so, with its Undo, and drop the selection now. The ripple's write below can
+        // take long (in promptwise it goes through the host), and the toast waited for it before, so a delete
+        // that rippled sometimes showed nothing and left the deleted clip in the inspector.
+        usePlayerStore.getState().setSelectedElementId(null);
+        usePlayerStore.getState().setSelectedElementIds(new Set());
+        showToast(
+          rippleChanges ? `Deleted ${label}, Ripple closed the gap` : `Deleted ${label}`,
+          "undo",
+        );
         if (rippleChanges) {
           try {
             await handleTimelineGroupMove(rippleChanges, {
@@ -193,25 +203,14 @@ export function useTimelineDeleteOps({
             // The delete already committed; a failed ripple leaves the gap the
             // toggle-off behaviour would have left anyway — not worth undoing
             // an otherwise-successful delete over.
-            rippleFailed = true;
             usePlayerStore.getState().setElements(survivors);
             console.error("[Timeline] ripple-edit failed to persist after delete", error);
             showToast("Clip deleted, but the gap could not be closed.", "error");
           }
         }
 
-        usePlayerStore.getState().setSelectedElementId(null);
-        usePlayerStore.getState().setSelectedElementIds(new Set());
         forceReloadSdkSession?.();
         reloadPreview();
-        // A failed ripple already showed its own toast above; the user did one
-        // thing (delete), so they get one message, whose Undo also takes back the gap Ripple closed.
-        if (!rippleFailed) {
-          showToast(
-            rippleChanges ? `Deleted ${label}, Ripple closed the gap` : `Deleted ${label}`,
-            "undo",
-          );
-        }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to delete timeline clip";
         showToast(message);

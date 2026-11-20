@@ -86,6 +86,18 @@ async function resolveSelectionsForIds(
   return resolved.filter((selection): selection is DomEditSelection => Boolean(selection));
 }
 
+/** The timeline holds nothing now: clear the canvas selection when it still maps to timeline clips, or when its
+ *  elements were deleted. Those no longer map to timeline ids, but the inspector still listed them ("2 elements
+ *  selected" after deleting both). */
+function shouldClearEmptiedSelection(
+  currentIds: readonly string[],
+  currentSelections: readonly { element: Element }[],
+): boolean {
+  return (
+    currentIds.length > 0 || currentSelections.some((selection) => !selection.element.isConnected)
+  );
+}
+
 function applyResolvedSelections(
   selections: DomEditSelection[],
   applyDomSelection: UseTimelineSelectionPreviewSyncParams["applyDomSelection"],
@@ -158,7 +170,10 @@ export function useTimelineSelectionPreviewSync({
         previousKey: previousSelectedKey.length > 0,
         clearing: previousSelectedKey.length > 0 && currentIds.length > 0,
       });
-      if (previousSelectedKey.length > 0 && currentIds.length > 0) {
+      if (
+        previousSelectedKey.length > 0 &&
+        shouldClearEmptiedSelection(currentIds, currentSelections)
+      ) {
         applyDomSelection(null, { revealPanel: false });
       }
       return;
