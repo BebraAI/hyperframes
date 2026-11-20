@@ -16,5 +16,34 @@
       "target": "compositions/news-ticker.html",
       "type": "hyperframes:composition"
     }
+  ],
+  "variables": [
+    {
+      "id": "label",
+      "type": "string",
+      "label": "Label",
+      "description": "The tag before the crawl.",
+      "default": "Breaking"
+    },
+    {
+      "id": "desk",
+      "type": "string",
+      "label": "Desk",
+      "description": "The desk name under LIVE.",
+      "default": "Global Desk"
+    },
+    {
+      "id": "headline",
+      "type": "string",
+      "label": "Headline",
+      "description": "The main line, set large.",
+      "default": "AI video tools move from prototype to production"
+    },
+    {
+      "id": "time",
+      "type": "string",
+      "label": "Time",
+      "default": "09:41 UTC"
+    }
   ]
 }

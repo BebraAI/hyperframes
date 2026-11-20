@@ -146,6 +146,12 @@
     <div
       id="root"
       data-composition-id="instagram-follow"
+      data-composition-variables='[
+        {"id":"name","type":"string","label":"Display name","default":"HeyGen"},
+        {"id":"handle","type":"string","label":"Handle","default":"@heygen_official"},
+        {"id":"followers","type":"string","label":"Followers line","default":"47.5K followers"},
+        {"id":"avatar","type":"image","label":"Avatar","default":"assets/avatar.jpg"}
+      ]'
       data-width="1080"
       data-height="1920"
       data-start="0"
@@ -158,18 +164,24 @@
         data-duration="4.5"
         data-track-index="0"
       >
-        <img class="avatar" src="assets/avatar.jpg" alt="HeyGen" crossorigin="anonymous" />
+        <img
+          class="avatar"
+          data-var-src="avatar"
+          src="assets/avatar.jpg"
+          alt="HeyGen"
+          crossorigin="anonymous"
+        />
         <div class="profile-info">
           <div class="name-row">
-            <div class="display-name">HeyGen</div>
+            <div class="display-name" data-var-text="name">HeyGen</div>
             <span class="verified-badge"
               ><svg viewBox="0 0 40 40" fill="none">
                 <circle cx="20" cy="20" r="20" fill="#0095F6" />
                 <path d="M17.5 27.5L10 20l2.5-2.5 5 5 10-10L30 15 17.5 27.5z" fill="#fff" /></svg
             ></span>
           </div>
-          <div class="handle">@heygen_official</div>
-          <div class="follower-count">47.5K followers</div>
+          <div class="handle" data-var-text="handle">@heygen_official</div>
+          <div class="follower-count" data-var-text="followers">47.5K followers</div>
         </div>
         <div id="follow-btn" class="follow-btn">
           <span id="btn-follow" class="btn-text btn-text-follow">Follow</span>

@@ -122,13 +122,43 @@ export function catalogMenu(root) {
   return `${lines.join("\n")}\n`;
 }
 
+// Tags that say nothing about what an item is for: how it was built, or that it is one of many.
+const PLAIN_TAGS = new Set([
+  "deterministic",
+  "motion-primitive",
+  "video-primitive",
+  "transition-primitive",
+  "transitions-dev-port",
+  "experiment",
+  "showcase",
+  "minimal",
+  "youtube",
+  "sfx",
+]);
+
+/**
+ * What a search can find an item by beyond its words: the registry's `jobs` (its role in a video: demonstrate, reveal,
+ * prove...) and its telling tags, so `grep -i 'prove\|chart'` finds an item whose description says neither.
+ */
+function keywords(item) {
+  const jobs = Array.isArray(item.jobs) ? item.jobs : [];
+  const tags = (item.tags ?? [])
+    .filter((tag) => !PLAIN_TAGS.has(tag) && !jobs.includes(tag))
+    .slice(0, 6);
+  const parts = [];
+  if (jobs.length) parts.push(`jobs: ${jobs.join(", ")}`);
+  if (tags.length) parts.push(`tags: ${tags.join(", ")}`);
+  return parts.length ? ` [${parts.join("; ")}]` : "";
+}
+
 /** The rest of the catalog (catalog-all.md): every item Studio lists that isn't offered first, by its catalog tab. */
 export function catalogAll(root) {
   const { hidden, use, items } = loadPromptwiseCatalog(root);
   const lines = [
     "# The rest of the catalog",
     "",
-    "Every other item the Timeline tab's catalog lists, by its tab, with the registry's own description. Install and",
+    "Every other item the Timeline tab's catalog lists, by its tab, with the registry's own description and, in brackets,",
+    "its jobs (its role in a video) and tags. Search it with grep (one item per line); don't read it whole. Install and",
     "mount one as catalog.md says. Items tagged webgl, webgpu or html-in-canvas can render blank here: check their",
     "frames, and say so if they do.",
   ];
@@ -138,7 +168,9 @@ export function catalogAll(root) {
     if (!inTab.length) continue;
     lines.push("", `## ${label}`, "");
     for (const item of inTab)
-      lines.push(`- \`${item.name}\` (${shape(item, false)}): ${brief(item.description)}`);
+      lines.push(
+        `- \`${item.name}\` (${shape(item, false)}): ${brief(item.description)}${keywords(item)}`,
+      );
   }
   return `${lines.join("\n")}\n`;
 }

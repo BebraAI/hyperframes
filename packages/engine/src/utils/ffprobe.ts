@@ -1017,9 +1017,10 @@ export async function extractMediaMetadata(filePath: string): Promise<VideoMetad
     // A live-muxed WebM (what a browser's MediaRecorder writes: screen and camera
     // recordings) declares no duration anywhere, so both reads above are 0 and the
     // file looked unrenderable. Its packets still carry their times: the last one
-    // ends the stream.
+    // ends the stream. A still image has no length, so its one packet's end
+    // (a frame at 25 fps) is not one.
     let durationSeconds = containerDuration;
-    if (!(effectiveStreamDuration > 0)) {
+    if (!(effectiveStreamDuration > 0) && output && !(await isStillImageVisual(output, filePath))) {
       const packetEnd = await lastVideoPacketEndSeconds(filePath);
       if (packetEnd > streamStart) {
         effectiveStreamDuration = packetEnd - streamStart;

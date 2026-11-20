@@ -5,13 +5,39 @@
   "title": "Lower Third — Soft Pill",
   "description": "Rounded white pill lower third for podcasts/interviews: status dot, name + role, scale-pop entrance",
   "tags": ["lower-third", "overlay", "podcast", "interview", "minimal"],
-  "dimensions": { "width": 1920, "height": 1080 },
+  "dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
   "duration": 4.8,
   "files": [
     {
       "path": "lt-soft-pill.html",
       "target": "compositions/lt-soft-pill.html",
       "type": "hyperframes:composition"
+    }
+  ],
+  "variables": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Name",
+      "description": "The person's name, on the first line.",
+      "default": "Dr. Maya Chen"
+    },
+    {
+      "id": "role",
+      "type": "string",
+      "label": "Role",
+      "description": "Their role or title, on the second line.",
+      "default": "Host · Neuroscientist"
+    },
+    {
+      "id": "accent",
+      "type": "color",
+      "label": "Accent",
+      "description": "Colour of the dot before the name.",
+      "default": "#ff5a36"
     }
   ]
 }
