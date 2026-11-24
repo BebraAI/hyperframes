@@ -35,5 +35,6 @@ Hosting: the Vercel project `bebraai-studio` (team triangleint), a static site w
 
 Build (after `bun run build` at the root): `npm install && node build.mjs`. A `promptwise-v*` release builds it in CI
 with `PROMPTWISE_RELEASE` set and attaches `studio-web.tgz`; the page says that release to the tab
-(`promptwise:studio-ready`), which checks it against `NEXT_PUBLIC_STUDIO_RELEASE`. CI runs the tests and the build on
+(`promptwise:studio-ready`), which checks it against `NEXT_PUBLIC_STUDIO_RELEASE`. The release then starts promptwise's
+Bump sandbox pins workflow, which opens the PR that pins it in the sandbox image (`BEBRAAI_DISPATCH_TOKEN`). CI runs the tests and the build on
 every PR. Test: `npm test`; in a browser: `node check.mjs dist <files.json>` (see the file).

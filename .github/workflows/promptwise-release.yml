@@ -41,3 +41,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || github.ref_name }}
+      # Starts promptwise's Bump sandbox pins workflow (BebraAI/bebraai, .github/workflows/bump.yml), which opens a draft
+      # PR there pinning this release in the sandbox image. BEBRAAI_DISPATCH_TOKEN is a fine-grained token with
+      # Actions: write on BebraAI/bebraai; without it, run that workflow by hand with this tag.
+      - name: Bump promptwise's sandbox
+        env:
+          GH_TOKEN: ${{ secrets.BEBRAAI_DISPATCH_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::notice::No BEBRAAI_DISPATCH_TOKEN: run BebraAI/bebraai's Bump sandbox pins workflow with hyperframes=$TAG by hand."; exit 0; fi
+          gh workflow run bump.yml -R BebraAI/bebraai --ref main -f hyperframes="$TAG"
